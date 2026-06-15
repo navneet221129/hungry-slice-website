@@ -2720,7 +2720,7 @@ function initCardFormatting(){
 }
 
 
-/* ===================== UI Click Sound ===================== */
+/* ===================== UI Sound Engine (scenario-aware) + Welcome voice ===================== */
 (function(){
   let _actx = null;
   function _ctx(){
@@ -2728,22 +2728,125 @@ function initCardFormatting(){
     if(_actx.state === 'suspended') _actx.resume();
     return _actx;
   }
-  window.playClickSound = function(){
-    const ctx = _ctx(); if(!ctx) return;
-    const t = ctx.currentTime;
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'triangle';
-    o.frequency.setValueAtTime(900, t);
-    o.frequency.exponentialRampToValueAtTime(420, t + 0.05);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.16, t + 0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(t); o.stop(t + 0.12);
+  // Each sound = sequence of tones. f: freq or [from,to] glide; d: dur(s); g: peak gain; delay: start offset(s)
+  const SOUNDS = {
+    click:   [{f:600, d:0.05, type:'triangle', g:0.11}],
+    tab:     [{f:[760,1020], d:0.07, type:'sine', g:0.13}],
+    add:     [{f:[520,780], d:0.10, type:'sine', g:0.16},{f:1040, d:0.08, type:'sine', g:0.09, delay:0.085}],
+    pop:     [{f:980, d:0.055, type:'triangle', g:0.14}],
+    remove:  [{f:[560,300], d:0.12, type:'sine', g:0.14}],
+    confirm: [{f:660, d:0.09, type:'sine', g:0.15},{f:990, d:0.13, type:'sine', g:0.15, delay:0.09}],
+    success: [{f:660,d:0.10,type:'sine',g:0.16},{f:880,d:0.10,type:'sine',g:0.16,delay:0.10},{f:1320,d:0.20,type:'sine',g:0.16,delay:0.20}],
+    error:   [{f:210, d:0.16, type:'sawtooth', g:0.11},{f:150, d:0.18, type:'sawtooth', g:0.11, delay:0.13}],
+    open:    [{f:[420,720], d:0.12, type:'sine', g:0.12}]
   };
-  const SEL = 'button, a, [role="button"], input[type="button"], input[type="submit"], .plc';
+  function tone(ctx, t0, n){
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = n.type || 'sine';
+    const t = t0 + (n.delay || 0);
+    if(Array.isArray(n.f)){ o.frequency.setValueAtTime(n.f[0], t); o.frequency.exponentialRampToValueAtTime(n.f[1], t + n.d); }
+    else { o.frequency.setValueAtTime(n.f, t); }
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(n.g || 0.14, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + n.d);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t + n.d + 0.03);
+  }
+  window.playSound = function(type){
+    if(window.__muteSounds) return;
+    const ctx = _ctx(); if(!ctx) return;
+    const seq = SOUNDS[type] || SOUNDS.click;
+    const t0 = ctx.currentTime;
+    seq.forEach(n => tone(ctx, t0, n));
+  };
+  window.playClickSound = function(){ window.playSound('click'); }; // back-compat
+
+  // Pick the right sound for whatever was clicked.
+  function classify(el){
+    const oc = (el.getAttribute && el.getAttribute('onclick')) || '';
+    if(el.closest('.plc-add-btn') || /addProductToCart|addCustomPizzaToCart/.test(oc)) return 'add';
+    if(/updateQty\([^)]*,\s*1\s*\)/.test(oc)) return 'add';
+    if(/updateQty\([^)]*,\s*-1\s*\)/.test(oc)) return 'remove';
+    if(/removeFrom|removeItem|deleteItem/.test(oc)) return 'remove';
+    if(el.closest('.topping-btn') || el.closest('.option-btn')) return 'pop';
+    if(el.closest('.filter-pill, .c-step, .zom-nav-tab') || /filterCategory|scrollToSection|zomSetActive|toggleStepUI/.test(oc)) return 'tab';
+    if(el.id === 'next-checkout-btn' || el.closest('#next-checkout-btn') || /stepCheckoutNext/.test(oc)) return 'confirm';
+    if(el.closest('.footer-staff-link') || el.closest('.cart-btn') || /openStaffLogin|toggleCartDrawer/.test(oc)) return 'open';
+    return 'click';
+  }
+  const SEL = 'button, a, [role="button"], input[type="button"], input[type="submit"], .plc, .qty-btn, .filter-pill, .topping-btn, .option-btn';
   document.addEventListener('click', function(e){
-    if(e.target && e.target.closest && e.target.closest(SEL)) window.playClickSound();
+    const el = e.target && e.target.closest && e.target.closest(SEL);
+    if(el) window.playSound(classify(el));
   }, true);
+
+  /* ---- Spoken welcome greeting (once per page open) ---- */
+  let _spoke = false;
+  function attemptGreet(){
+    if(_spoke) return;
+    if(!('speechSynthesis' in window)){ _spoke = true; return; }
+    try{
+      const vs = window.speechSynthesis.getVoices() || [];
+      const u = new SpeechSynthesisUtterance('Welcome to the Hungry Slice');
+      u.rate = 0.96; u.pitch = 1.0; u.volume = 1.0;
+      const pref = vs.find(v => /^en/i.test(v.lang) && /female|samantha|karen|victoria|moira|tessa|fiona|google uk english female|zira|aria|jenny/i.test(v.name))
+                || vs.find(v => /en-GB|en-AU/.test(v.lang))
+                || vs.find(v => /^en/i.test(v.lang));
+      if(pref) u.voice = pref;
+      u.onstart = () => { _spoke = true; };
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  function greetWhenReady(){
+    if(!('speechSynthesis' in window)) return;
+    if(window.speechSynthesis.getVoices().length) attemptGreet();
+    else { window.speechSynthesis.addEventListener('voiceschanged', attemptGreet, { once:true }); setTimeout(attemptGreet, 600); }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', greetWhenReady); else greetWhenReady();
+  // Browsers usually block audio/speech until a user gesture — retry on the first interaction.
+  ['pointerdown','keydown','touchstart'].forEach(ev => window.addEventListener(ev, attemptGreet, { passive:true }));
+})();
+
+
+/* ===================== Staff (Admin) Login ===================== */
+const STAFF_SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
+const STAFF_SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
+let _staffAuthClient = null;
+function _staffClient(){
+  if (_staffAuthClient) return _staffAuthClient;
+  if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth) { _staffAuthClient = supabaseClient; return _staffAuthClient; }
+  if (window.supabase && window.supabase.createClient) { _staffAuthClient = window.supabase.createClient(STAFF_SUPA_URL, STAFF_SUPA_ANON); return _staffAuthClient; }
+  return null;
+}
+function openStaffLogin(e){ if(e && e.preventDefault) e.preventDefault(); const m=document.getElementById('staff-modal'); if(m){ m.classList.add('active'); const em=document.getElementById('staff-email'); if(em) setTimeout(()=>em.focus(),60); } }
+function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m) m.classList.remove('active'); }
+(function initStaffLogin(){
+  function wire(){
+    const form=document.getElementById('staff-login-form');
+    if(form && !form.dataset.wired){
+      form.dataset.wired='1';
+      form.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const email=document.getElementById('staff-email').value.trim();
+        const password=document.getElementById('staff-password').value;
+        const errEl=document.getElementById('staff-login-error');
+        const btn=document.getElementById('staff-login-btn');
+        const client=_staffClient();
+        if(!client){ errEl.textContent='Login unavailable right now. Please refresh.'; return; }
+        errEl.textContent=''; btn.disabled=true; btn.textContent='Signing in\u2026';
+        try{
+          const { error } = await client.auth.signInWithPassword({ email, password });
+          if(error){ errEl.textContent=error.message; btn.disabled=false; btn.textContent='Sign In'; return; }
+          window.location.href='admin.html';
+        }catch(err){ errEl.textContent='Login failed. Please try again.'; btn.disabled=false; btn.textContent='Sign In'; }
+      });
+    }
+    const overlay=document.getElementById('staff-modal');
+    if(overlay && !overlay.dataset.wired){
+      overlay.dataset.wired='1';
+      overlay.addEventListener('click', (e)=>{ if(e.target===overlay) closeStaffLogin(); });
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })();

@@ -3655,3 +3655,23 @@ img.hero-pizza-img{
 
 /* Overlay clips drawer — prevents 1px overflow edge */
 .cart-drawer-overlay { overflow: hidden; }
+
+
+/* ===================== Staff Login Modal ===================== */
+.footer-staff-link{ color: var(--text-footer, var(--text-muted)); opacity:.55; text-decoration:none; font-size:.82rem; transition: color .15s, opacity .15s; }
+.footer-staff-link:hover{ opacity:1; color: var(--accent); }
+.staff-modal-overlay{ position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.62); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+.staff-modal-overlay.active{ display:flex; }
+.staff-modal-card{ position:relative; width:100%; max-width:360px; background:var(--bg-card); border:1px solid var(--border-light); border-radius:18px; padding:30px 26px; box-shadow:0 24px 60px rgba(0,0,0,.4); }
+.staff-modal-close{ position:absolute; top:10px; right:14px; background:none; border:none; font-size:1.7rem; line-height:1; color:var(--text-muted); cursor:pointer; }
+.staff-modal-logo{ font-family:var(--font-display); font-weight:800; font-size:1.25rem; text-align:center; color:var(--text-color); letter-spacing:-.5px; }
+.staff-modal-logo span{ color:var(--accent); }
+.staff-modal-sub{ color:var(--text-muted); font-size:.82rem; text-align:center; margin:5px 0 20px; }
+#staff-login-form{ display:flex; flex-direction:column; }
+#staff-login-form label{ font-size:.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.4px; margin:10px 0 5px; }
+#staff-login-form input{ background:var(--input-bg, rgba(0,0,0,.04)); border:1px solid var(--border-input, var(--border-light)); border-radius:10px; padding:12px 13px; color:var(--text-color); font-size:.95rem; }
+#staff-login-form input:focus{ outline:none; border-color:var(--accent); }
+#staff-login-btn{ margin-top:18px; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:13px; font-weight:700; font-size:.98rem; cursor:pointer; transition:filter .15s; }
+#staff-login-btn:hover{ filter:brightness(1.07); }
+#staff-login-btn:disabled{ opacity:.6; cursor:default; }
+.staff-login-error{ color:#e25555; font-size:.8rem; margin-top:10px; min-height:16px; text-align:center; }

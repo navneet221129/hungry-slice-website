@@ -23,7 +23,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1781700003">
+  <link rel="stylesheet" href="style.css?v=1781700005">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
@@ -1070,6 +1070,7 @@
       <div>
         <h4>Legal</h4>
         <p>&copy; 2026 The Hungry Slice. All rights reserved.</p>
+        <p><a href="#" class="footer-staff-link" onclick="openStaffLogin(event)">Staff Login</a></p>
       </div>
     </div>
   </footer>
@@ -1083,6 +1084,23 @@
       <h2 id="success-modal-title">Success!</h2>
       <p id="success-modal-desc">Your coupon code has been applied successfully.</p>
       <button class="btn btn-primary" onclick="closeSuccessModal()">Awesome</button>
+    </div>
+  </div>
+
+  <!-- Staff (Admin) Login Modal -->
+  <div class="staff-modal-overlay" id="staff-modal">
+    <div class="staff-modal-card">
+      <button class="staff-modal-close" onclick="closeStaffLogin()" aria-label="Close">&times;</button>
+      <div class="staff-modal-logo"><span>THE</span> HUNGRY SLICE</div>
+      <div class="staff-modal-sub">Staff &mdash; Order Console Login</div>
+      <form id="staff-login-form" autocomplete="on">
+        <label for="staff-email">Email</label>
+        <input type="email" id="staff-email" autocomplete="username" required placeholder="you@hungryslice.nz">
+        <label for="staff-password">Password</label>
+        <input type="password" id="staff-password" autocomplete="current-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        <button type="submit" id="staff-login-btn">Sign In</button>
+        <div id="staff-login-error" class="staff-login-error"></div>
+      </form>
     </div>
   </div>
 
@@ -1100,6 +1118,6 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1781700003"></script>
+  <script src="app.js?v=1781700005"></script>
 </body>
 </html>
