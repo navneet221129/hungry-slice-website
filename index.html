@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Hungry Slice | Big Bites. Bold Flavours.</title>
+  <meta name="description" content="Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand. Wood-fired pizza engineered for perfect delivery.">
+  
+  <!-- Inline theme loader to prevent visual flash -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="assets/lucide.min.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=1781600000">
+  
+  <!-- Spline Viewer module -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
+</head>
+<body>
+
+  <!-- Background Aurora Blur Blobs -->
+  <div class="aurora-blob blob-1"></div>
+  <div class="aurora-blob blob-2"></div>
+  <div class="aurora-blob blob-3"></div>
+
+  <!-- Canvas for Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Promo Announcement Bar -->
+  <div class="promo-bar" id="promo-bar">
+    <div class="promo-bar-track" id="promo-bar-track">
+      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
+      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
+      <span>🍕 New: Bollywood Range — Spiced to perfection!</span>
+      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
+      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
+    </div>
+    <button class="promo-bar-close" onclick="closePromoBar()" aria-label="Close promo">×</button>
+  </div>
+  <div id="nav-spacer" style="height:116px;transition:height 0.3s ease;pointer-events:none"></div>
+
+  <!-- Premium Blended Header -->
+  <header class="main-header">
+    <div class="header-container">
+      <a href="#" class="logo">
+        <span class="logo-accent">THE</span> HUNGRY SLICE
+      </a>
+      <nav class="nav-links">
+        <a href="#story">Our Story</a>
+        <a href="#featured">Featured</a>
+        <a href="#builder">Pizza Builder</a>
+        <a href="#delivery">Delivery</a>
+        <a href="#tracker">Order Tracker</a>
+        <a href="#offers">Offers</a>
+      </nav>
+      <div class="header-actions">
+        <!-- Day/Night Theme Switcher Button -->
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" id="theme-toggle">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+        <button class="cart-btn" onclick="toggleCartDrawer()">
+          <i data-lucide="shopping-bag"></i>
+          <span class="cart-badge">0</span>
+        </button>
+        <button class="order-now-btn" onclick="scrollToSection('featured')">Order Now</button>
+        <button class="hamburger-btn" onclick="toggleMobileNav()" aria-label="Open Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Nav Overlay -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <button class="mobile-nav-close" onclick="toggleMobileNav()" aria-label="Close Menu">
+      <i data-lucide="x"></i>
+    </button>
+    <nav class="mobile-nav-links">
+      <a href="#story" onclick="toggleMobileNav()">Our Story</a>
+      <a href="#featured" onclick="toggleMobileNav()">Featured</a>
+      <a href="#builder" onclick="toggleMobileNav()">Pizza Builder</a>
+      <a href="#delivery" onclick="toggleMobileNav()">Delivery</a>
+      <a href="#tracker" onclick="toggleMobileNav()">Order Tracker</a>
+      <a href="#offers" onclick="toggleMobileNav()">Offers</a>
+    </nav>
+  </div>
+
+  <!-- Hero Section -->
+  <!-- Order Method Bar -->
+  <div class="order-method-bar" id="order-method-bar">
+    <div class="ombar-inner">
+      <span class="ombar-label">Start Your Order:</span>
+      <div class="ombar-toggle">
+        <button class="ombar-btn active" id="ombar-delivery" onclick="setHeroOrderMethod('delivery')">
+          <i data-lucide="bike"></i> Delivery
+        </button>
+        <button class="ombar-btn" id="ombar-pickup" onclick="setHeroOrderMethod('pickup')">
+          <i data-lucide="store"></i> Pickup
+        </button>
+      </div>
+      <div class="ombar-eta">
+        <i data-lucide="clock-3"></i>
+        <span id="ombar-eta-text">~28 min • Hamilton</span>
+      </div>
+      <span class="ombar-badge">📍 Open Now</span>
+    </div>
+  </div>
+
+  <section class="hero-section">
+    <div class="hero-bg-accent"></div>
+    <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto" poster="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1600&q=80&fit=crop">
+      <source src="assets/hero-pizza.mp4" type="video/mp4">
+      <source src="https://assets.mixkit.co/videos/44001/44001-720.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-scrim"></div>
+    <div class="hero-container">
+      <div class="hero-text-content">
+        <div class="tagline-badge">Hamilton, New Zealand</div>
+        <h1 class="hero-title">Big Bites.<br><span class="text-gradient">Bold Flavours.</span></h1>
+        <p class="hero-subtitle">Artisanal cloud-kitchen pizzas delivered scorching hot across Hamilton in under 28 minutes.</p>
+        <div class="hero-cta-group">
+          <button class="btn btn-primary" onclick="scrollToSection('featured')">
+            Order Now <i data-lucide="arrow-right"></i>
+          </button>
+          <button class="btn btn-secondary" onclick="scrollToSection('builder')">
+            Build Custom Pizza
+          </button>
+        </div>
+
+        <!-- Live Social Proof -->
+        <div class="hero-social-proof">
+          <div class="proof-item">
+            <span class="proof-number" id="live-order-count">142</span>
+            <span class="proof-label">orders today</span>
+          </div>
+          <div class="proof-divider"></div>
+          <div class="proof-item">
+            <span class="proof-number">4.9★</span>
+            <span class="proof-label">avg rating</span>
+          </div>
+          <div class="proof-divider"></div>
+          <div class="proof-item">
+            <span class="proof-number">&lt;28m</span>
+            <span class="proof-label">avg delivery</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Interactive Parallax Pizza Container -->
+      <div class="hero-visual-container">
+        <div class="hero-pizza-wrapper">
+          <img id="hero-pizza-real" src="assets/hero-pizza.png" class="hero-pizza-img" alt="Fresh artisan pizza" draggable="false">
+          
+          <!-- Floating Ingredients (Real Food Photos) -->
+          <div class="floating-ingredient layer-1" data-speed="1.2" style="top: 8%; left: 2%;">
+            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=140&q=85&fit=crop&crop=entropy" alt="Pepperoni">
+            <span class="ing-label">Pepperoni</span>
+          </div>
+          <div class="floating-ingredient layer-2" data-speed="2.5" style="top: 20%; right: 0%;">
+            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=140&q=85&fit=crop&crop=entropy" alt="Gourmet">
+            <span class="ing-label">Fresh Basil</span>
+          </div>
+          <div class="floating-ingredient layer-3" data-speed="1.8" style="bottom: 12%; left: 6%;">
+            <img src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=140&q=85&fit=crop&crop=entropy" alt="Jalapeño">
+            <span class="ing-label">Jalapeño</span>
+          </div>
+          <div class="floating-ingredient layer-4" data-speed="3" style="bottom: 22%; right: 2%;">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=140&q=85&fit=crop&crop=entropy" alt="Mozzarella">
+            <span class="ing-label">Mozzarella</span>
+          </div>
+          <div class="floating-ingredient layer-5" data-speed="1.4" style="top: 48%; left: -2%;">
+            <img src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=140&q=85&fit=crop&crop=entropy" alt="Oregano">
+            <span class="ing-label">Oregano</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Story Section (Scroll-Driven Timeline) -->
+  <section class="story-section" id="story">
+    <div class="section-header">
+      <span class="sub-heading">THE EVOLUTION</span>
+      <h2 class="section-title">The Tech Behind the Taste</h2>
+      <p class="section-subtitle">How we re-engineered the classic local takeaway into a high-performance food delivery model.</p>
+    </div>
+    
+    <div class="timeline-container">
+      <div class="timeline-progress-bar">
+        <div class="timeline-progress-fill"></div>
+      </div>
+      
+      <!-- Timeline Node 1 -->
+      <div class="timeline-item" id="node-1">
+        <div class="timeline-marker">
+          <span class="marker-number">1</span>
+        </div>
+        <div class="timeline-content glass-card">
+          <div class="timeline-icon-box"><i data-lucide="store"></i></div>
+          <h3>Traditional Takeaway</h3>
+          <p>Local pizzerias focus on storefronts, leaving delivery to third-party drivers. Slices arrive cold, cardboard soggy. We knew Hamilton deserved better.</p>
+        </div>
+      </div>
+
+      <!-- Timeline Node 2 -->
+      <div class="timeline-item" id="node-2">
+        <div class="timeline-marker">
+          <span class="marker-number">2</span>
+        </div>
+        <div class="timeline-content glass-card">
+          <div class="timeline-icon-box"><i data-lucide="cpu"></i></div>
+          <h3>Cloud Kitchen Ops</h3>
+          <p>We built high-capacity, technology-enabled kitchens optimized purely for prep speed, thermal retention, and ingredient freshness. Zero dining room distraction.</p>
+        </div>
+      </div>
+
+      <!-- Timeline Node 3 -->
+      <div class="timeline-item" id="node-3">
+        <div class="timeline-marker">
+          <span class="marker-number">3</span>
+        </div>
+        <div class="timeline-content glass-card">
+          <div class="timeline-icon-box"><i data-lucide="smartphone"></i></div>
+          <h3>Digital Ordering</h3>
+          <p>Our custom software stack connects the builder, kitchen displays, and driver dispatches instantly. Every slice tracks in real-time with zero friction.</p>
+        </div>
+      </div>
+
+      <!-- Timeline Node 4 -->
+      <div class="timeline-item" id="node-4">
+        <div class="timeline-marker">
+          <span class="marker-number">4</span>
+        </div>
+        <div class="timeline-content glass-card">
+          <div class="timeline-icon-box"><i data-lucide="zap"></i></div>
+          <h3>Ultra-Fast Delivery</h3>
+          <p>Thermal-boosted packaging paired with smart-routed Hamilton courier dispatches guarantees your order arrives fresh out of the fire, right to your doorstep.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Products Section (Horizontal Showcase) -->
+  <section class="featured-section" id="featured">
+    <div class="section-header">
+      <span class="sub-heading">THE SIGNATURES</span>
+      <h2 class="section-title">Premium Product Launches</h2>
+      <p class="section-subtitle">Crafted with artisan ingredients, engineered for optimal crunch and flavour profile.</p>
+    </div>
+
+    <!-- Category Filters & Search Controls -->
+    <div class="menu-controls-container">
+      <div class="mobile-menu-heading">What would you like? 🍕</div>
+      <div class="category-filters-container" id="category-filters">
+        <button class="filter-pill active" onclick="filterCategory('All')"><span class="pill-icon">🍽️</span>All</button>
+      </div>
+      
+      <div class="search-container">
+        <div class="search-wrapper">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="menu-search-input" placeholder="Search for pizzas, burgers, sides..." oninput="handleSearch(event)">
+          <button class="clear-search-btn" id="clear-search-btn" onclick="clearSearch()" style="display: none;">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Showcase Wrapper -->
+    <div class="product-showcase-container">
+      <div class="product-showcase-track" id="product-showcase-track">
+        
+        <!-- Pizza Card 1 -->
+        <div class="pizza-launch-card glass-card" data-pizza-id="truffle-truce" data-name="The Truffle Truce" data-price="26.00">
+          <div class="pizza-badge">BEST SELLER</div>
+          <div class="pizza-card-image-box">
+            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=420&q=80" alt="The Truffle Truce" class="card-pizza-img">
+          </div>
+          <div class="pizza-card-content">
+            <div class="pizza-card-header">
+              <h3>The Truffle Truce</h3>
+              <span class="pizza-price">$26.00</span>
+            </div>
+            <p class="pizza-desc">White base, wild forest mushrooms, caramelized onion jam, fresh thyme, finished with white truffle oil spray.</p>
+            
+            <div class="pizza-hover-details">
+              <div class="pizza-macro-breakdown">
+                <div class="macro-item">
+                  <span class="macro-val">240</span>
+                  <span class="macro-lbl">CALORIES</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">28g</span>
+                  <span class="macro-lbl">CARBS</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">12g</span>
+                  <span class="macro-lbl">PROTEIN</span>
+                </div>
+              </div>
+              <div class="pizza-rating">
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <span>(4.9 • 240 reviews)</span>
+              </div>
+            </div>
+
+            <button class="add-to-cart-launch-btn" onclick="addProductToCart('truffle-truce', 'The Truffle Truce', 26.00, 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=420&q=80')">
+              Add to Cart <i data-lucide="plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pizza Card 2 -->
+        <div class="pizza-launch-card glass-card" data-pizza-id="smoked-inferno" data-name="The Smoked Inferno" data-price="27.50">
+          <div class="pizza-badge alert-badge">SPICY</div>
+          <div class="pizza-card-image-box">
+            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=420&q=80" alt="The Smoked Inferno" class="card-pizza-img rotate-offset">
+          </div>
+          <div class="pizza-card-content">
+            <div class="pizza-card-header">
+              <h3>The Smoked Inferno</h3>
+              <span class="pizza-price">$27.50</span>
+            </div>
+            <p class="pizza-desc">Smoked mozzarella, local artisan spicy chorizo, fresh sliced jalapeños, finished with organic hot chili-infused honey.</p>
+            
+            <div class="pizza-hover-details">
+              <div class="pizza-macro-breakdown">
+                <div class="macro-item">
+                  <span class="macro-val">290</span>
+                  <span class="macro-lbl">CALORIES</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">30g</span>
+                  <span class="macro-lbl">CARBS</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">15g</span>
+                  <span class="macro-lbl">PROTEIN</span>
+                </div>
+              </div>
+              <div class="pizza-rating">
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-half"></i>
+                <span>(4.8 • 180 reviews)</span>
+              </div>
+            </div>
+
+            <button class="add-to-cart-launch-btn" onclick="addProductToCart('smoked-inferno', 'The Smoked Inferno', 27.50, 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=420&q=80')">
+              Add to Cart <i data-lucide="plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pizza Card 3 -->
+        <div class="pizza-launch-card glass-card" data-pizza-id="green-garden" data-name="Green Garden Gold" data-price="25.00">
+          <div class="pizza-badge veg-badge">VEGETARIAN</div>
+          <div class="pizza-card-image-box">
+            <img src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=420&q=80" alt="Green Garden Gold" class="card-pizza-img">
+          </div>
+          <div class="pizza-card-content">
+            <div class="pizza-card-header">
+              <h3>Green Garden Gold</h3>
+              <span class="pizza-price">$25.00</span>
+            </div>
+            <p class="pizza-desc">Fresh baby spinach leaves, roasted organic butternut pumpkin, creamed goat cheese, toasted pine nuts, rosemary.</p>
+            
+            <div class="pizza-hover-details">
+              <div class="pizza-macro-breakdown">
+                <div class="macro-item">
+                  <span class="macro-val">210</span>
+                  <span class="macro-lbl">CALORIES</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">26g</span>
+                  <span class="macro-lbl">CARBS</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">10g</span>
+                  <span class="macro-lbl">PROTEIN</span>
+                </div>
+              </div>
+              <div class="pizza-rating">
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star"></i>
+                <span>(4.6 • 95 reviews)</span>
+              </div>
+            </div>
+
+            <button class="add-to-cart-launch-btn" onclick="addProductToCart('green-garden', 'Green Garden Gold', 25.00, 'https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=420&q=80')">
+              Add to Cart <i data-lucide="plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pizza Card 4 -->
+        <div class="pizza-launch-card glass-card" data-pizza-id="hamilton-hero" data-name="The Hamilton Hero" data-price="28.00">
+          <div class="pizza-badge kiwi-badge">NZ CLASSIC</div>
+          <div class="pizza-card-image-box">
+            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=420&q=80" alt="The Hamilton Hero" class="card-pizza-img rotate-offset-large">
+          </div>
+          <div class="pizza-card-content">
+            <div class="pizza-card-header">
+              <h3>The Hamilton Hero</h3>
+              <span class="pizza-price">$28.00</span>
+            </div>
+            <p class="pizza-desc">San Marzano tomato base, triple cured pepperoni, crispy streaky bacon, caramelized onions, topped with fresh Hamilton micro-herbs.</p>
+            
+            <div class="pizza-hover-details">
+              <div class="pizza-macro-breakdown">
+                <div class="macro-item">
+                  <span class="macro-val">280</span>
+                  <span class="macro-lbl">CALORIES</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">29g</span>
+                  <span class="macro-lbl">CARBS</span>
+                </div>
+                <div class="macro-item">
+                  <span class="macro-val">16g</span>
+                  <span class="macro-lbl">PROTEIN</span>
+                </div>
+              </div>
+              <div class="pizza-rating">
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <i data-lucide="star" class="star-filled"></i>
+                <span>(4.9 • 312 reviews)</span>
+              </div>
+            </div>
+
+            <button class="add-to-cart-launch-btn" onclick="addProductToCart('hamilton-hero', 'The Hamilton Hero', 28.00, 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=420&q=80')">
+              Add to Cart <i data-lucide="plus-circle"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Build Your Own Pizza (Interactive Creator) -->
+  <section class="builder-section" id="builder">
+    <div class="section-header">
+      <span class="sub-heading">PIZZA LAB</span>
+      <h2 class="section-title">Build Your Custom Masterpiece</h2>
+      <p class="section-subtitle">Real-time modular construction. Tweak the layers, add toppings, track pricing instantly.</p>
+    </div>
+
+    <div class="builder-container">
+      
+      <!-- Interactive Builder Visual Screen -->
+      <div class="builder-canvas-box glass-card">
+        <div class="pizza-builder-view">
+          <!-- Real pizza base photo -->
+          <img src="assets/hero-pizza.png" class="bp-base" alt="Pizza base">
+          <!-- Sauce overlay -->
+          <div class="builder-layer layer-sauce" id="p-sauce"></div>
+          <!-- Cheese overlay -->
+          <div class="builder-layer layer-cheese" id="p-cheese"></div>
+          <!-- Toppings container -->
+          <div class="toppings-rendered-container" id="rendered-toppings"></div>
+          <!-- Gloss ring -->
+          <div class="bp-gloss"></div>
+        </div>
+      </div>
+
+      <!-- Controls Side Card -->
+      <div class="builder-controls glass-card">
+        <div class="control-group">
+          <h3>1. Choose Your Crust</h3>
+          <div class="options-grid">
+            <button class="option-btn active" data-type="crust" data-val="neapolitan" data-price="0">
+              <h4>Neapolitan</h4>
+              <span>Traditional bubbly crust</span>
+            </button>
+            <button class="option-btn" data-type="crust" data-val="thin-crispy" data-price="1.00">
+              <h4>Thin & Crispy</h4>
+              <span>Crisp woodfired style (+$1.00)</span>
+            </button>
+            <button class="option-btn" data-type="crust" data-val="gluten-free" data-price="3.00">
+              <h4>Gluten Free</h4>
+              <span>Coeliac safe (+$3.00)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>2. Base Sauce</h3>
+          <div class="options-grid">
+            <button class="option-btn active" data-type="sauce" data-val="tomato" data-price="0">
+              <h4>San Marzano Tomato</h4>
+              <span>Rich tomato sauce</span>
+            </button>
+            <button class="option-btn" data-type="sauce" data-val="truffle" data-price="2.00">
+              <h4>Garlic Truffle Paste</h4>
+              <span>Creamy rich garlic (+$2.00)</span>
+            </button>
+            <button class="option-btn" data-type="sauce" data-val="bbq" data-price="0">
+              <h4>Smokey BBQ</h4>
+              <span>Bold sweet sauce</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>3. Cheese Factor</h3>
+          <div class="options-grid">
+            <button class="option-btn" data-type="cheese" data-val="light" data-price="-0.50">
+              <h4>Light Mozzarella</h4>
+              <span>Subtle sprinkle (-$0.50)</span>
+            </button>
+            <button class="option-btn active" data-type="cheese" data-val="normal" data-price="0">
+              <h4>Standard Blend</h4>
+              <span>Rich creamy melt</span>
+            </button>
+            <button class="option-btn" data-type="cheese" data-val="double" data-price="2.50">
+              <h4>Double Mozzarella</h4>
+              <span>Indulgent stretch (+$2.50)</span>
+            </button>
+            <button class="option-btn" data-type="cheese" data-val="vegan" data-price="2.00">
+              <h4>Vegan Cheese</h4>
+              <span>Plant-based melt (+$2.00)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>4. Premium Toppings (+$2.00 each)</h3>
+          <div class="toppings-selection-grid">
+            <button class="topping-btn" data-topping="pepperoni">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?w=80&q=80&fit=crop&crop=center" alt="Pepperoni"></div>
+              <span>Pepperoni</span>
+            </button>
+            <button class="topping-btn" data-topping="basil">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=80&q=80&fit=crop&crop=center" alt="Fresh Basil"></div>
+              <span>Fresh Basil</span>
+            </button>
+            <button class="topping-btn" data-topping="jalapeno">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1588169770080-c33b4e39cf44?w=80&q=80&fit=crop&crop=center" alt="Jalapeño"></div>
+              <span>Jalapeño</span>
+            </button>
+            <button class="topping-btn" data-topping="mushrooms">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=80&fit=crop&crop=center" alt="Mushrooms"></div>
+              <span>Mushrooms</span>
+            </button>
+            <button class="topping-btn" data-topping="chicken">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=80&q=80&fit=crop&crop=center" alt="Shredded Chicken"></div>
+              <span>Shredded Chicken</span>
+            </button>
+            <button class="topping-btn" data-topping="onions">
+              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=80&q=80&fit=crop&crop=center" alt="Red Onion"></div>
+              <span>Red Onion</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-summary-card">
+          <div class="price-box">
+            <span class="price-lbl">TOTAL PRICE:</span>
+            <span class="price-amount" id="builder-price">$18.00</span>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="addCustomPizzaToCart()">
+            Add Custom Pizza to Cart <i data-lucide="shopping-cart"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Delivery Checker Section -->
+  <section class="delivery-section" id="delivery">
+    <div class="section-header">
+      <span class="sub-heading">SPEED & LOCATION</span>
+      <h2 class="section-title">Hamilton Delivery Zones</h2>
+      <p class="section-subtitle">Enter your postcode to check delivery capability and estimated travel routing.</p>
+    </div>
+
+    <div class="delivery-container">
+      <div class="delivery-checker glass-card">
+        <h3>Check Postcode</h3>
+        <div class="postcode-form">
+          <input type="text" id="postcode-input" placeholder="e.g. 3204" maxlength="4">
+          <button class="btn btn-primary" onclick="verifyPostcode()">Verify Zone</button>
+        </div>
+        <div class="postcode-results" id="postcode-status">
+          <!-- Populated via Javascript -->
+          <div class="result-placeholder">
+            <i data-lucide="map-pin" style="width: 48px; height: 48px; color: var(--text-muted); stroke-width: 1;"></i>
+            <p>Awaiting postcode entry to map route...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animated SVG Delivery Route map of Hamilton -->
+      <div class="delivery-map-card glass-card">
+        <svg viewBox="0 0 400 400" class="hamilton-svg-map">
+          <!-- River outline -->
+          <path d="M 120 0 Q 180 150 140 250 T 220 400" fill="none" stroke="rgba(0, 100, 250, 0.15)" stroke-width="20" stroke-linecap="round"></path>
+          
+          <!-- Hamilton Grid Roads -->
+          <line x1="50" y1="80" x2="350" y2="80" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
+          <line x1="80" y1="20" x2="80" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
+          <line x1="200" y1="20" x2="200" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
+          <line x1="320" y1="20" x2="320" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
+          <line x1="50" y1="240" x2="350" y2="240" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
+          
+          <!-- Cloud Kitchen Hub Location -->
+          <circle cx="200" cy="180" r="10" fill="var(--primary)"></circle>
+          <circle cx="200" cy="180" r="22" class="hub-pulse" fill="none" stroke="var(--primary)" stroke-width="2"></circle>
+          
+          <text x="215" y="185" font-family="Outfit" font-size="12" font-weight="700" fill="var(--text-color)">HUB</text>
+          
+          <!-- Active delivery path target -->
+          <path id="delivery-route" d="M 200 180" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="1000" stroke-dashoffset="1000" stroke-linecap="round"></path>
+          
+          <!-- Delivery target node -->
+          <circle id="map-target" cx="0" cy="0" r="6" fill="var(--accent)" style="opacity:0;"></circle>
+          
+          <!-- Hamilton neighborhoods text -->
+          <text x="70" y="50" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Rototuna</text>
+          <text x="290" y="110" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Ruakura</text>
+          <text x="70" y="310" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Melville</text>
+          <text x="290" y="340" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Hillcrest</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Order Tracker Section -->
+  <section class="tracker-section" id="tracker">
+    <div class="section-header">
+      <span class="sub-heading">LIVE FLIGHT</span>
+      <h2 class="section-title">Scorch-Hot Flight Tracker</h2>
+      <p class="section-subtitle">Follow your custom build through the woodfired engine directly to your location.</p>
+    </div>
+
+    <div class="tracker-container glass-card">
+      <div class="tracker-stepper">
+        <div class="step-progress-track">
+          <div class="step-progress-fill" id="track-fill"></div>
+        </div>
+        
+        <div class="step-node active" id="step-received">
+          <div class="step-icon"><i data-lucide="receipt"></i></div>
+          <span>Order Placed</span>
+        </div>
+        
+        <div class="step-node" id="step-prep">
+          <div class="step-icon"><i data-lucide="chef-hat"></i></div>
+          <span>Preparing</span>
+        </div>
+        
+        <div class="step-node" id="step-oven">
+          <div class="step-icon"><i data-lucide="flame"></i></div>
+          <span>In Oven</span>
+        </div>
+        
+        <div class="step-node" id="step-delivery">
+          <div class="step-icon"><i data-lucide="bike"></i></div>
+          <span>Out for Delivery</span>
+        </div>
+        
+        <div class="step-node" id="step-delivered">
+          <div class="step-icon"><i data-lucide="home"></i></div>
+          <span>Delivered</span>
+        </div>
+      </div>
+
+      <!-- Animation Hub details -->
+      <div class="tracker-details">
+        <div class="tracker-text">
+          <h3 id="tracker-status-title">Order Received</h3>
+          <p id="tracker-status-desc">We are locking in your crust and validating ingredients coordinates.</p>
+        </div>
+        <div class="tracker-scooter-animation" style="width: 150px; height: 100px; display: flex; align-items: center; justify-content: center; position: relative; overflow: visible;">
+          <!-- Road Line -->
+          <div style="position: absolute; bottom: 20px; left: 0; right: 0; height: 2px; border-bottom: 2px dashed var(--border-color); opacity: 0.5; z-index: 1;"></div>
+          
+          <!-- Lottie Player for Scooter -->
+          <div id="scooter-body" class="animated-scooter" style="width: 120px; height: 120px; z-index: 2; transform: translate(0px, 0px);">
+            <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_ycwp4rrq.json" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Simulation Controls -->
+      <div class="tracker-simulation-banner">
+        <span>💡 <i>Simulated Tracker Speed:</i></span>
+        <button class="simulation-btn" onclick="runSimulatedOrder()">Speed Up Cycle</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Special Offers Section -->
+  <section class="offers-section" id="offers">
+    <div class="section-header">
+      <span class="sub-heading">TECH DEALS</span>
+      <h2 class="section-title">Digital Vouchers & Power-Ups</h2>
+      <p class="section-subtitle">Redeem discount badges with instant coupon success canvas feedback.</p>
+    </div>
+
+    <div class="offers-grid">
+      <!-- Offer 1 -->
+      <div class="offer-card glass-card">
+        <div class="offer-badge">30% OFF</div>
+        <h3>Tuesdays Core Booster</h3>
+        <p>Use code <span class="coupon-code">BOOST30</span> to slice 30% off any order containing signature premium launches.</p>
+        <div class="countdown-timer" id="timer-tues">00:00:00</div>
+        <button class="btn btn-secondary btn-full" onclick="applyCouponCode('BOOST30')">Redeem Coupon</button>
+      </div>
+
+      <!-- Offer 2 -->
+      <div class="offer-card glass-card">
+        <div class="offer-badge accent-badge">FREE DELIVERY</div>
+        <h3>Hamilton Midweek Pass</h3>
+        <p>Hamilton postcode ranges get free shipping on all orders over $40.00 this Wednesday. Code: <span class="coupon-code">HAMFREE</span></p>
+        <div class="countdown-timer" id="timer-free">00:00:00</div>
+        <button class="btn btn-secondary btn-full" onclick="applyCouponCode('HAMFREE')">Redeem Coupon</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Netflix Style Testimonials -->
+  <section class="reviews-section">
+    <div class="section-header">
+      <span class="sub-heading">CRITIC BUZZ</span>
+      <h2 class="section-title">Netflix food documentary reviews</h2>
+      <p class="section-subtitle">Real feedback from local Hamilton food lovers and culinary tech specialists.</p>
+    </div>
+
+    <div class="testimonials-slider">
+      <div class="testimonials-track">
+        <!-- Review 1 -->
+        <div class="review-card glass-card">
+          <div class="review-rating">⭐⭐⭐⭐•</div>
+          <p>"The Hamilton Hero arrives so fast the cheese stretch is still structural. This is food delivery at Tesla-level efficiency."</p>
+          <div class="reviewer-meta">
+            <div class="reviewer-avatar">S</div>
+            <div>
+              <h4>Sarah Connor</h4>
+              <span>Hillcrest, Hamilton</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="review-card glass-card">
+          <div class="review-rating">⭐⭐⭐⭐⭐</div>
+          <p>"Truffle White pizza is absolute perfection. Crust has those beautiful woodfire charcoal bubbles. Incredible food tech platform!"</p>
+          <div class="reviewer-meta">
+            <div class="reviewer-avatar">L</div>
+            <div>
+              <h4>Liam Miller</h4>
+              <span>Rototuna, Hamilton</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="review-card glass-card">
+          <div class="review-rating">⭐⭐⭐⭐⭐</div>
+          <p>"Customizing toppings with instant pricing was amazing. The order was on my table in 22 minutes. Outstanding."</p>
+          <div class="reviewer-meta">
+            <div class="reviewer-avatar">E</div>
+            <div>
+              <h4>Emma Watson</h4>
+              <span>Ruakura, Hamilton</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cart-drawer">
+    <div class="cart-drawer glass-card">
+      <div class="cart-header">
+        <h2>Your Flight Bag</h2>
+        <button class="close-drawer-btn" onclick="toggleCartDrawer()"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- Steps indicator -->
+      <div class="checkout-steps-bar">
+        <div class="c-step active" id="c-step-1">1. Bag</div>
+        <div class="c-step" id="c-step-2">2. Route</div>
+        <div class="c-step" id="c-step-3">3. Pay</div>
+      </div>
+
+      <div class="drawer-scrollable">
+        <!-- Step 1 View: Cart Items -->
+        <div class="checkout-view active" id="checkout-view-1">
+          <div class="cart-items-container" id="cart-items-list">
+            <!-- Dynamic Cart Items -->
+            <div class="cart-empty-message">
+              <i data-lucide="shopping-cart"></i>
+              <p>Your bag is empty. Start adding pizzas!</p>
+            </div>
+          </div>
+          <!-- Free Delivery Progress Bar -->
+          <div class="free-delivery-progress" id="free-delivery-bar">
+            <div class="fdp-text">
+              <span class="fdp-icon">🚚</span>
+              <span id="fdp-message">Add <strong id="fdp-remaining">$45.00</strong> more for <strong>free delivery!</strong></span>
+            </div>
+            <div class="fdp-track">
+              <div class="fdp-fill" id="fdp-fill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="coupon-input-box">
+            <input type="text" id="coupon-entry" placeholder="Coupon Code">
+            <button onclick="submitCoupon()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Step 2 View: Shipping Address / Delivery details -->
+        <div class="checkout-view" id="checkout-view-2">
+          <h3>Delivery Details</h3>
+          <div class="checkout-form">
+            <div class="form-row">
+              <label>Delivery Method</label>
+              <div class="method-toggle">
+                <button class="method-btn active" id="m-delivery" onclick="setDeliveryMethod('delivery')">Delivery</button>
+                <button class="method-btn" id="m-pickup" onclick="setDeliveryMethod('pickup')">Pickup</button>
+              </div>
+            </div>
+            <div class="form-row" id="address-field-box">
+              <label>Street Address</label>
+              <input type="text" id="ship-address" placeholder="e.g. 15 Grey Street, Hamilton East">
+            </div>
+            <div class="form-row" id="landmark-field-box">
+              <label>Landmark / Nearby Reference <span class="opt-tag">optional</span></label>
+              <input type="text" id="ship-landmark" placeholder="e.g. opposite Z petrol station, near Westfield mall">
+            </div>
+            <div class="form-row">
+              <label>Postcode</label>
+              <input type="text" id="ship-postcode" placeholder="3204" maxlength="4">
+            </div>
+            <div class="form-row">
+              <label>Contact Phone</label>
+              <input type="text" id="ship-phone" placeholder="021 XXX XXX">
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 View: Mock Card Payments -->
+        <div class="checkout-view" id="checkout-view-3">
+          <h3>Confirm &amp; Pay</h3>
+          <div class="payment-summary-box">
+            <div class="summary-line"><span>Subtotal:</span><span id="p-subtotal">$0.00</span></div>
+            <div class="summary-line"><span>Delivery Fee:</span><span id="p-delivery-fee">$5.00</span></div>
+            <div class="summary-line" id="summary-discount-line" style="display:none;"><span>Coupon Discount:</span><span id="p-discount">-$0.00</span></div>
+            <hr>
+            <div class="summary-line total-line"><span>Total Balance:</span><span id="p-total">$0.00</span></div>
+          </div>
+
+          <div class="pay-secure-head">
+            <span class="pay-lock"><i data-lucide="lock"></i> Secure checkout</span>
+            <span class="pay-brands">
+              <span class="brand-chip brand-visa">VISA</span>
+              <span class="brand-chip brand-mc"><b></b><b></b></span>
+              <span class="brand-chip brand-amex">AMEX</span>
+            </span>
+          </div>
+
+          <div class="pay-card-panel">
+          <div class="checkout-form" id="checkout-payment-form">
+            <div class="form-row">
+              <label>Cardholder Name</label>
+              <input type="text" id="paynuts-cardholder" placeholder="Cardholder Name">
+            </div>
+            
+            <!-- Secure Paynuts iframe elements (hidden by default unless configured) -->
+            <div class="paynuts-fields" id="paynuts-payment-fields" style="display: none;">
+              <div class="form-row">
+                <label>Card Number</label>
+                <div id="paynuts-card-number" class="secure-input-container"></div>
+              </div>
+              <div class="form-row flex-row">
+                <div style="flex: 1; margin-right: 10px;">
+                  <label>Expiry Date</label>
+                  <div class="expiry-row flex-row" style="display: flex;">
+                    <input type="text" id="paynuts-expiry-month" placeholder="MM" maxlength="2" style="width: 60px; text-align: center; margin-right: 10px;">
+                    <input type="text" id="paynuts-expiry-year" placeholder="YY" maxlength="2" style="width: 60px; text-align: center;">
+                  </div>
+                </div>
+                <div style="flex: 1;">
+                  <label>CVC</label>
+                  <div id="paynuts-cvc" class="secure-input-container"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Standard static mock fields (visible by default) -->
+            <div class="mock-fields" id="mock-payment-fields">
+              <div class="form-row">
+                <label>Card Number</label>
+                <div class="card-input-wrap">
+                  <input type="text" inputmode="numeric" autocomplete="cc-number" id="mock-card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                  <i data-lucide="credit-card" class="card-input-icon"></i>
+                </div>
+              </div>
+              <div class="form-row flex-row">
+                <div>
+                  <label>Expiry Date</label>
+                  <input type="text" inputmode="numeric" autocomplete="cc-exp" id="mock-expiry" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div>
+                  <label>CVC</label>
+                  <input type="text" inputmode="numeric" autocomplete="cc-csc" id="mock-cvc" placeholder="123" maxlength="4">
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          <p class="pay-trust-note"><i data-lucide="shield-check"></i> Encrypted &amp; secure. We never store your full card details.</p>
+        </div>
+      </div>
+
+      <!-- Fixed Checkout Drawer Footer -->
+      <div class="cart-footer">
+        <div class="cart-total-bar">
+          <span>Amount due:</span>
+          <span class="cart-grand-total" id="drawer-price-total">$0.00</span>
+        </div>
+        <div class="drawer-action-row">
+          <button class="btn btn-secondary" id="back-checkout-btn" style="display:none;" onclick="stepCheckoutBack()">Back</button>
+          <button class="btn btn-primary btn-grow" id="next-checkout-btn" onclick="stepCheckoutNext()">Proceed to Route <i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky bottom mobile order bar -->
+  <div class="sticky-order-bar-mobile">
+    <div class="mobile-bar-container">
+      <div class="mobile-bar-info">
+        <span class="mb-items">0 items</span>
+        <span class="mb-price">$0.00</span>
+      </div>
+      <button class="btn btn-primary" onclick="toggleCartDrawer()">
+        View Cart <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Zomato-style Mobile Bottom Navigation -->
+  <!-- Mobile sticky cart CTA (appears when items in cart) -->
+  <button class="mcart-cta" id="mcart-cta" onclick="toggleCartDrawer(true)" aria-label="View cart and checkout">
+    <span class="mcart-left"><span class="mcart-count" id="mcart-count">0</span><span class="mcart-lbl">items in bag</span></span>
+    <span class="mcart-right"><span class="mcart-total" id="mcart-total">$0.00</span><span class="mcart-go">View Cart &rarr;</span></span>
+  </button>
+  <nav class="zom-bottom-nav" id="zom-bottom-nav">
+    <button class="zom-nav-tab active" onclick="window.scrollTo({top:0,behavior:'smooth'});zomSetActive(this)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="zom-nav-tab" onclick="scrollToSection('featured');zomSetActive(this)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Menu</span>
+    </button>
+    <button class="zom-nav-tab zom-cart-tab" onclick="toggleCartDrawer();zomSetActive(this)">
+      <div class="zom-cart-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="zom-cart-badge" id="zom-cart-count" style="display:none">0</span>
+      </div>
+      <span>Cart</span>
+    </button>
+    <button class="zom-nav-tab" onclick="scrollToSection('delivery');zomSetActive(this)">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Delivery</span>
+    </button>
+  </nav>
+
+  <!-- Developer Settings Panel for Supabase & Paynuts -->
+  <div class="developer-panel glass-card collapsed" id="developer-panel">
+    <div class="dev-panel-header" onclick="toggleDevPanel()">
+      <div class="dev-panel-title">
+        <i data-lucide="database" class="dev-icon"></i>
+        <span>CONNECTION & GATEWAY LAB</span>
+      </div>
+      <i data-lucide="chevron-up" class="dev-chevron" id="dev-chevron"></i>
+    </div>
+    <div class="dev-panel-content">
+      <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary);">1. Supabase Database Link</h4>
+      <p class="dev-panel-desc">Configure database credentials to persist live orders and tracking states. Falls back to offline mock state if keys are empty.</p>
+      <div class="dev-form-row">
+        <label>Supabase URL</label>
+        <input type="text" id="dev-supabase-url" placeholder="https://your-project.supabase.co">
+      </div>
+      <div class="dev-form-row">
+        <label>Supabase Anon Key</label>
+        <input type="password" id="dev-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      </div>
+      
+      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+      
+      <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary);">2. Paynuts Payment Gateway</h4>
+      <p class="dev-panel-desc">Configure Paynuts secure tokenization settings. Card fields will transition to secure iframes if keys are provided.</p>
+      <div class="dev-form-row">
+        <label>Paynuts Gateway Host</label>
+        <input type="text" id="dev-paynuts-host" placeholder="https://gateway.paynuts.com.au">
+      </div>
+      <div class="dev-form-row">
+        <label>Paynuts Public Integration Key</label>
+        <input type="password" id="dev-paynuts-key" placeholder="Public Integration Key">
+      </div>
+      <div class="dev-form-row">
+        <label>Paynuts Merchant ID</label>
+        <input type="text" id="dev-paynuts-mid" placeholder="e.g. 548941070001848">
+      </div>
+      
+      <div class="dev-actions" style="margin-top: 15px;">
+        <button class="dev-btn btn-primary" onclick="saveDevSettings()">Apply Settings</button>
+        <button class="dev-btn btn-secondary" onclick="clearDevSettings()">Reset to Defaults</button>
+      </div>
+      <div class="dev-status-row" id="dev-status">
+        <span class="status-dot offline"></span>
+        <span class="status-text">OFFLINE MOCK DB ACTIVE</span>
+      </div>
+      <div class="dev-status-row" id="dev-paynuts-status" style="margin-top: 5px;">
+        <span class="status-dot offline"></span>
+        <span class="status-text">PAYNUTS GATEWAY INACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>
+        <h4>THE HUNGRY SLICE</h4>
+        <p>Hamilton, New Zealand. Fast culinary delivery ops.</p>
+      </div>
+      <div>
+        <h4>Open Hours</h4>
+        <p>Daily 11:00 AM - 10:00 PM</p>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <p><a href="https://www.facebook.com/share/18ksGR4uxJ/?mibextid=wwXIfr" target="_blank" rel="noopener" class="footer-social-link"><i data-lucide="facebook"></i> Facebook</a></p>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <p>&copy; 2026 The Hungry Slice. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Coupon Success & Order Placed Lottie Modal -->
+  <div class="lottie-modal-overlay" id="success-modal">
+    <div class="lottie-modal-card glass-card">
+      <div class="success-lottie-container">
+        <lottie-player id="success-lottie" src="https://assets3.lottiefiles.com/packages/lf20_UJNc2t.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+      </div>
+      <h2 id="success-modal-title">Success!</h2>
+      <p id="success-modal-desc">Your coupon code has been applied successfully.</p>
+      <button class="btn btn-primary" onclick="closeSuccessModal()">Awesome</button>
+    </div>
+  </div>
+
+  <!-- Animation & 3D CDN Libraries -->
+  <!-- Motion (Vanilla Framer Motion) -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@11.11.17/dist/motion.js"></script>
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- Supabase CDN Client and Fallback Data -->
+  <script src="assets/supabase-js.js"></script>
+  <script src="menu-data.js"></script>
+  <script src="app.js?v=1781600000"></script>
+</body>
+</html>

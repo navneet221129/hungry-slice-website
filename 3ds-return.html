@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Verification — The Hungry Slice</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#faf8f5;color:#1a1a1a;padding:20px;}
+.card{background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.08);padding:40px 32px;max-width:420px;width:100%;text-align:center;}
+.spinner{width:48px;height:48px;border:4px solid #eee;border-top-color:#ff5500;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+h2{font-size:1.4rem;margin-bottom:8px;}
+.sub{color:#6b7280;font-size:.9rem;margin-bottom:20px;}
+.status{padding:14px;border-radius:10px;font-weight:600;font-size:.95rem;margin-top:16px;}
+.status.ok{background:#d1fae5;color:#065f46;}
+.status.fail{background:#fee2e2;color:#991b1b;}
+.status.pending{background:#fef3c7;color:#92400e;}
+.btn{display:inline-block;margin-top:20px;padding:12px 28px;border-radius:10px;background:#ff5500;color:#fff;font-weight:700;text-decoration:none;font-size:.95rem;border:none;cursor:pointer;}
+.btn:hover{background:#e64d00;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner" id="spinner"></div>
+  <h2 id="title">Verifying payment...</h2>
+  <p class="sub" id="sub">Please wait while we confirm your transaction.</p>
+  <div class="status pending hidden" id="status-box"></div>
+  <a class="btn hidden" id="back-btn" href="/">Back to The Hungry Slice</a>
+</div>
+
+<script>
+(async function(){
+  const params = new URLSearchParams(window.location.search);
+  const spinner = document.getElementById('spinner');
+  const title = document.getElementById('title');
+  const sub = document.getElementById('sub');
+  const statusBox = document.getElementById('status-box');
+  const backBtn = document.getElementById('back-btn');
+
+  function show(t, s, cls, msg){
+    spinner.style.display='none';
+    title.textContent=t;
+    sub.textContent=s;
+    statusBox.textContent=msg;
+    statusBox.className='status '+cls;
+    statusBox.classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+  }
+
+  // Till sends result info as query params after 3DS
+  const tillResult = params.get('result') || params.get('status');
+  const tillUuid = params.get('uuid') || params.get('transactionId') || params.get('chargeRef');
+
+  // Retrieve pending order from localStorage
+  const pendingRaw = localStorage.getItem('hs_pending_order');
+
+  if (!pendingRaw) {
+    show('No pending order', 'Could not find your order details.', 'fail', 'Order data missing. Please try again from the menu.');
+    return;
+  }
+
+  let pending;
+  try { pending = JSON.parse(pendingRaw); } catch(e) {
+    show('Error', 'Invalid order data.', 'fail', 'Could not parse stored order.');
+    return;
+  }
+
+  // Determine if payment succeeded
+  const isSuccess = tillResult === 'OK' || tillResult === 'success' || tillResult === 'FINISHED';
+
+  if (!isSuccess) {
+    show(
+      'Payment not completed',
+      tillResult === 'CANCELLED' ? 'You cancelled the verification.' : 'Your bank did not approve this transaction.',
+      'fail',
+      'Reason: ' + (tillResult || 'Unknown') + (tillUuid ? ' (Ref: ' + tillUuid + ')' : '')
+    );
+    localStorage.removeItem('hs_pending_order');
+    return;
+  }
+
+  // Payment succeeded — save order to Supabase
+  title.textContent = 'Payment verified!';
+  sub.textContent = 'Saving your order...';
+
+  const orderData = pending.orderData;
+  orderData.payment_token = tillUuid || pending.token || 'verified_3ds';
+  orderData.status = 'received';
+
+  const SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
+  const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
+
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/orders', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPA_ANON,
+        'apikey': SUPA_ANON,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(orderData)
+    });
+
+    if (res.ok) {
+      show(
+        'Order confirmed!',
+        'Your pizza is being prepared. Ref: ' + (tillUuid || 'N/A'),
+        'ok',
+        pending.orderData.customer_name + ' — $' + parseFloat(pending.orderData.total).toFixed(2) + ' ' + (pending.orderData.delivery_method === 'delivery' ? 'Delivery' : 'Pickup')
+      );
+      localStorage.removeItem('hs_pending_order');
+    } else {
+      const errText = await res.text();
+      show('Order save failed', 'Payment succeeded but order could not be saved. Contact us.', 'fail', 'DB error: ' + errText);
+    }
+  } catch(err) {
+    show('Connection error', 'Payment OK but could not reach our server. Your payment is safe.', 'pending', 'Error: ' + err.message + '. Contact us with ref: ' + (tillUuid || 'N/A'));
+  }
+})();
+</script>
+</body>
+</html>
