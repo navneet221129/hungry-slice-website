@@ -692,6 +692,7 @@ function renderDynamicProducts() {
         <div class="plc-img-wrap">
           <img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">
           <span class="plc-cat-tag">${p.category}</span>
+          ${p.category === 'Hungry Special' ? '<span class="plc-flag">★ Top Pick</span>' : ''}
         </div>
         <div class="plc-body">
           <h3 class="plc-name">${p.name}</h3>
@@ -2849,4 +2850,61 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
     }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})();
+
+
+/* FX v2: count-up + parallax orbs */
+(function(){
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* --- count-up stats --- */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(ents){
+      ents.forEach(function(e){
+        if(!e.isIntersecting) return; var el=e.target; io.unobserve(el);
+        var m = el.textContent.trim().match(/^([^\d]*)([\d.]+)(.*)$/); if(!m) return;
+        var pre=m[1], target=parseFloat(m[2]), suf=m[3], dec=(m[2].split('.')[1]||'').length;
+        if(reduce){ el.textContent = pre+target.toFixed(dec)+suf; return; }
+        var dur=1100, t0=performance.now();
+        (function tick(now){
+          var p=Math.min(1,(now-t0)/dur), val=target*(1-Math.pow(1-p,3));
+          el.textContent = pre+val.toFixed(dec)+suf;
+          if(p<1) requestAnimationFrame(tick); else el.textContent=pre+target.toFixed(dec)+suf;
+        })(t0);
+      });
+    }, {threshold:0.45});
+    document.querySelectorAll('.proof-number').forEach(function(el){ io.observe(el); });
+  }
+  /* --- parallax glow orbs (isolated; no conflict with hero mouse-parallax) --- */
+  var specs = [
+    ['.story-section',  [{c:'orb-a',top:'28%',left:'-3%',size:300,speed:0.10}]],
+    ['.featured-section',[{c:'orb-b',top:'12%',right:'-2%',size:320,speed:-0.08}]],
+    ['.builder-section',[{c:'orb-b',top:'18%',left:'-3%',size:320,speed:0.10}]],
+    ['.offers-section', [{c:'orb-a',top:'8%',left:'-2%',size:340,speed:0.12},{c:'orb-b',top:'52%',right:'-2%',size:300,speed:-0.08}]],
+    ['.reviews-section',[{c:'orb-b',top:'6%',right:'1%',size:320,speed:0.10}]]
+  ];
+  var orbs=[];
+  specs.forEach(function(pair){
+    var sec=document.querySelector(pair[0]); if(!sec) return;
+    pair[1].forEach(function(o){
+      var d=document.createElement('div'); d.className='fx-orb '+o.c; d.setAttribute('aria-hidden','true');
+      d.style.width=d.style.height=o.size+'px';
+      if(o.top)d.style.top=o.top; if(o.left)d.style.left=o.left; if(o.right)d.style.right=o.right;
+      sec.insertBefore(d, sec.firstChild);
+      orbs.push({el:d, sec:sec, speed:o.speed});
+    });
+  });
+  if(reduce || !orbs.length) return;
+  var ticking=false;
+  function update(){
+    var vh=window.innerHeight;
+    orbs.forEach(function(o){
+      var r=o.sec.getBoundingClientRect();
+      var prog=(vh - r.top)/(vh + r.height);
+      o.el.style.transform='translateY('+(prog*o.speed*220).toFixed(1)+'px)';
+    });
+    ticking=false;
+  }
+  window.addEventListener('scroll', function(){ if(!ticking){ ticking=true; requestAnimationFrame(update); } }, {passive:true});
+  window.addEventListener('resize', update, {passive:true});
+  update();
 })();
