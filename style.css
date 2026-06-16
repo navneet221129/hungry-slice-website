@@ -3697,3 +3697,8 @@ img.hero-pizza-img{
   padding-left: var(--page-pad);
   padding-right: var(--page-pad);
 }
+
+/* Hide redundant header CTA on mobile — bottom nav + mcart-cta cover ordering; frees header so hamburger fits (no horizontal overflow) */
+@media (max-width: 768px) {
+  .order-now-btn { display: none; }
+}
