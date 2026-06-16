@@ -167,6 +167,6 @@ document.getElementById('refresh-btn').addEventListener('click', loadOrders);
 document.getElementById('sound-toggle').addEventListener('click', (e) => {
   soundOn = !soundOn; e.target.textContent = 'Sound: ' + (soundOn ? 'On' : 'Off'); e.target.style.opacity = soundOn ? 1 : .5;
 });
-setInterval(() => { if(!dashView.hidden) loadOrders(); }, 30000);
+setInterval(() => { if(!dashView.hidden) loadOrders(); }, 5000);
 
 init();
