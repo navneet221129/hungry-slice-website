@@ -145,6 +145,7 @@ function initSupabase() {
       fetchSupabaseReviews();
       fetchSupabaseProducts();
       fetchSupabaseCategories();
+      fetchProductRatings();
     } catch (err) {
       console.error("Supabase Client init failed:", err);
       supabaseClient = null;
@@ -600,6 +601,25 @@ function renderDynamicCategories() {
   filterContainer.innerHTML = html;
 }
 
+window.PRODUCT_RATINGS = {};
+async function fetchProductRatings() {
+  if (!supabaseClient) return;
+  try {
+    const { data, error } = await supabaseClient.from('product_rating_stats').select('*');
+    if (error) { console.warn('ratings load failed:', error.message); return; }
+    const map = {};
+    (data || []).forEach(r => { map[r.product_id] = { avg: Number(r.avg), cnt: Number(r.cnt) }; });
+    window.PRODUCT_RATINGS = map;
+    if (typeof renderDynamicProducts === 'function') renderDynamicProducts();
+  } catch (e) { console.warn('ratings error:', e); }
+}
+function ratingStarsHTML(pid) {
+  const s = window.PRODUCT_RATINGS && window.PRODUCT_RATINGS[pid];
+  if (!s || !s.cnt) return '<span class="plc-rate-empty">☆☆☆☆☆ <em>Rate this</em></span>';
+  const full = Math.max(0, Math.min(5, Math.round(s.avg)));
+  return '★'.repeat(full) + '☆'.repeat(5 - full) + ' <span>' + s.avg.toFixed(1) + '</span> <em>(' + s.cnt + ')</em>';
+}
+
 function renderDynamicProducts() {
   const track = document.getElementById('product-showcase-track');
   if (!track) return;
@@ -703,7 +723,7 @@ function renderDynamicProducts() {
           <p class="plc-desc">${p.description || ''}</p>
           <div class="plc-foot">
             <div>
-              <div class="plc-stars">★★★★★ <span>4.9</span></div>
+              <div class="plc-stars" title="Tap to rate this item" onclick="openReviewModal('${p.id}','${safeName}')">${ratingStarsHTML(p.id)}</div>
               <div class="plc-price">$${Number(p.price).toFixed(2)}</div>
             </div>
             <button class="plc-add-btn" onclick="addProductToCart('${p.id}','${safeName}',${p.price},'${img}')">+ Add</button>
@@ -2920,8 +2940,15 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
 /* Review submit system */
 (function(){
   var rating = 0;
-  window.openReviewModal = function(){ var m=document.getElementById('review-modal'); if(m){ m.classList.add('active'); var n=document.getElementById('rm-name'); if(n) setTimeout(function(){n.focus();},60); } };
-  window.closeReviewModal = function(){ var m=document.getElementById('review-modal'); if(m) m.classList.remove('active'); };
+  window.openReviewModal = function(productId, productName){
+    var m=document.getElementById('review-modal'); if(!m) return;
+    window.__reviewProductId = productId || null;
+    var ctx=document.getElementById('rm-context');
+    if(ctx){ if(productId){ ctx.textContent='Reviewing: '+productName; ctx.style.display='block'; } else { ctx.textContent=''; ctx.style.display='none'; } }
+    m.classList.add('active');
+    var n=document.getElementById('rm-name'); if(n) setTimeout(function(){n.focus();},60);
+  };
+  window.closeReviewModal = function(){ var m=document.getElementById('review-modal'); if(m) m.classList.remove('active'); window.__reviewProductId=null; };
   function wire(){
     var form=document.getElementById('review-form'); var stars=document.getElementById('rm-stars');
     if(form && !form.dataset.wired){
@@ -2947,13 +2974,14 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
         if(Date.now()-last < 600000){ msg.textContent='Thanks — you just posted a review. Try again later.'; msg.classList.add('err'); return; }
         if(typeof supabaseClient==='undefined' || !supabaseClient){ msg.textContent='Reviews unavailable right now.'; msg.classList.add('err'); return; }
         btn.disabled=true; btn.textContent='Posting…';
-        var row={ customer_name:name.slice(0,80), rating:rating, comment:comment.slice(0,600), neighborhood:(hood.slice(0,60)||'Hamilton') };
+        var row={ customer_name:name.slice(0,80), rating:rating, comment:comment.slice(0,600), neighborhood:(hood.slice(0,60)||'Hamilton'), product_id: window.__reviewProductId || null };
         var res=await supabaseClient.from('reviews').insert([row]);
         btn.disabled=false; btn.textContent='Post Review';
         if(res.error){ msg.textContent='Could not post: '+res.error.message; msg.classList.add('err'); return; }
         localStorage.setItem('hs_review_ts', Date.now());
         msg.textContent='Thanks! Your review is live.'; msg.classList.add('ok');
         if(typeof fetchSupabaseReviews==='function') fetchSupabaseReviews();
+        if(window.__reviewProductId && typeof fetchProductRatings==='function') fetchProductRatings();
         if(typeof window.playSound==='function') window.playSound('success');
         setTimeout(function(){ closeReviewModal(); form.reset(); rating=0; paint(0); msg.textContent=''; msg.className='rm-msg'; }, 1500);
       });
