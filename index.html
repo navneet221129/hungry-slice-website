@@ -23,7 +23,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1781802500">
+  <link rel="stylesheet" href="style.css?v=1781802600">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
@@ -559,37 +559,22 @@
         </div>
       </div>
 
-      <!-- Animated SVG Delivery Route map of Hamilton -->
+      <!-- Live Google Map: Hungry Slice Hamilton outlet hub -->
       <div class="delivery-map-card glass-card">
-        <svg viewBox="0 0 400 400" class="hamilton-svg-map">
-          <!-- River outline -->
-          <path d="M 120 0 Q 180 150 140 250 T 220 400" fill="none" stroke="rgba(0, 100, 250, 0.15)" stroke-width="20" stroke-linecap="round"></path>
-          
-          <!-- Hamilton Grid Roads -->
-          <line x1="50" y1="80" x2="350" y2="80" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
-          <line x1="80" y1="20" x2="80" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
-          <line x1="200" y1="20" x2="200" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
-          <line x1="320" y1="20" x2="320" y2="380" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
-          <line x1="50" y1="240" x2="350" y2="240" stroke="rgba(0,0,0,0.05)" stroke-width="2"></line>
-          
-          <!-- Cloud Kitchen Hub Location -->
-          <circle cx="200" cy="180" r="10" fill="var(--primary)"></circle>
-          <circle cx="200" cy="180" r="22" class="hub-pulse" fill="none" stroke="var(--primary)" stroke-width="2"></circle>
-          
-          <text x="215" y="185" font-family="Outfit" font-size="12" font-weight="700" fill="var(--text-color)">HUB</text>
-          
-          <!-- Active delivery path target -->
-          <path id="delivery-route" d="M 200 180" fill="none" stroke="var(--accent)" stroke-width="4" stroke-dasharray="1000" stroke-dashoffset="1000" stroke-linecap="round"></path>
-          
-          <!-- Delivery target node -->
-          <circle id="map-target" cx="0" cy="0" r="6" fill="var(--accent)" style="opacity:0;"></circle>
-          
-          <!-- Hamilton neighborhoods text -->
-          <text x="70" y="50" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Rototuna</text>
-          <text x="290" y="110" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Ruakura</text>
-          <text x="70" y="310" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Melville</text>
-          <text x="290" y="340" font-family="Inter" font-size="9" fill="rgba(0,0,0,0.3)">Hillcrest</text>
-        </svg>
+        <div class="map-header">
+          <div class="map-hub-info">
+            <div class="hub-icon-pulse"><i data-lucide="store"></i></div>
+            <div class="hub-details">
+              <span class="hub-label">OUTLET HUB</span>
+              <strong class="hub-name">Hungry Slice Hamilton</strong>
+              <span class="hub-addr">5 Peachgrove Road, Hamilton East 3216</span>
+            </div>
+          </div>
+          <a href="https://maps.app.goo.gl/WcP71FMaQUzECgbr5" target="_blank" rel="noopener" class="map-open-btn"><i data-lucide="external-link"></i> Open in Maps</a>
+        </div>
+        <div class="map-frame-wrap">
+          <iframe class="map-frame" src="https://www.google.com/maps?q=Hungry+slice+5+Peachgrove+Road,+Hamilton+East,+Hamilton+3216&output=embed&z=14" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Hungry Slice Hamilton outlet map"></iframe>
+        </div>
       </div>
     </div>
   </section>
@@ -1115,6 +1100,6 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1781802500"></script>
+  <script src="app.js?v=1781802600"></script>
 </body>
 </html>

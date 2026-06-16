@@ -3940,3 +3940,27 @@ img.hero-pizza-img{
 
 .search-below-reco { max-width:1240px; margin:0 auto 32px; padding:0 clamp(16px,4vw,30px); }
 .search-below-reco .search-wrapper { max-width:600px; margin:0 auto; }
+
+/* Live map (delivery) */
+.delivery-map-card { padding:0; overflow:hidden; display:flex; flex-direction:column; }
+.map-header { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 22px; background:linear-gradient(135deg,rgba(255,85,0,0.12),rgba(255,107,53,0.04)); border-bottom:1px solid rgba(255,85,0,0.2); flex-wrap:wrap; }
+.map-hub-info { display:flex; align-items:center; gap:14px; }
+.hub-icon-pulse { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,#ff5500,#ff7a1a); display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow:0 0 0 0 rgba(255,85,0,0.6); animation:hubPulse 2s ease-in-out infinite; }
+.hub-icon-pulse i { width:22px; height:22px; }
+@keyframes hubPulse { 0%,100% { box-shadow:0 0 0 0 rgba(255,85,0,0.5); } 50% { box-shadow:0 0 0 10px rgba(255,85,0,0); } }
+.hub-details { display:flex; flex-direction:column; gap:2px; line-height:1.2; }
+.hub-label { font-size:0.7rem; letter-spacing:2px; color:#ff5500; font-weight:700; }
+.hub-name { font-family:var(--font-impact,'Anton'); font-size:1.15rem; color:#f5f5f5; letter-spacing:0.5px; text-transform:uppercase; }
+.hub-addr { font-size:0.82rem; color:#aaa; }
+.map-open-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:50px; color:#f5f5f5; text-decoration:none; font-weight:600; font-size:0.82rem; transition:all .25s ease; }
+.map-open-btn:hover { background:rgba(255,85,0,0.15); border-color:#ff5500; }
+.map-open-btn i { width:14px; height:14px; }
+.map-frame-wrap { position:relative; width:100%; padding-bottom:62%; background:#0a0a0a; }
+.map-frame { position:absolute; inset:0; width:100%; height:100%; border:0; filter:grayscale(0.05) contrast(1.05); }
+body.light-mode .map-frame { filter:none; }
+@media (max-width:560px){
+  .map-header { padding:14px; gap:10px; }
+  .hub-icon-pulse { width:38px; height:38px; }
+  .hub-name { font-size:1rem; }
+  .hub-addr { font-size:0.75rem; }
+}
