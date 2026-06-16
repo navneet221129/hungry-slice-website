@@ -3675,3 +3675,25 @@ img.hero-pizza-img{
 #staff-login-btn:hover{ filter:brightness(1.07); }
 #staff-login-btn:disabled{ opacity:.6; cursor:default; }
 .staff-login-error{ color:#e25555; font-size:.8rem; margin-top:10px; min-height:16px; text-align:center; }
+
+
+/* ===== Unified responsive page width — even alignment on every screen ===== */
+:root { --page-w: 1240px; --page-pad: clamp(16px, 4vw, 30px); }
+.header-container,
+.hero-container,
+.timeline-container,
+.menu-controls-container,
+.product-showcase-container,
+.builder-container,
+.delivery-container,
+.offers-grid,
+.testimonials-slider,
+.footer-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--page-w);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--page-pad);
+  padding-right: var(--page-pad);
+}
