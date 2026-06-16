@@ -3166,7 +3166,7 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   }
   function init(){
     if(typeof supabaseClient==='undefined'||!supabaseClient) return;
-    supabaseClient.auth.getSession().then(function(o){ _user=o.data.session?o.data.session.user:null; updateAccountUI(); if(_user) syncPrefs(); });
+    supabaseClient.auth.getSession().then(function(o){ _user=o.data.session?o.data.session.user:null; updateAccountUI(); if(_user) syncPrefs(); else { setTimeout(function(){ openAuthModal(); }, 800); } });
     supabaseClient.auth.onAuthStateChange(function(_e, session){ _user=session?session.user:null; updateAccountUI(); renderAuthState(); if(_user) syncPrefs(); });
     setInterval(function(){ if(_user) syncPrefs(); }, 45000);
     var ov=el('auth-modal'); if(ov && !ov.dataset.wired){ ov.dataset.wired='1'; ov.addEventListener('click', function(e){ if(e.target===ov) closeAuthModal(); }); }

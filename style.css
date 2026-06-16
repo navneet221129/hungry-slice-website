@@ -3850,7 +3850,7 @@ img.hero-pizza-img{
 .auth-modal-overlay { position:fixed; inset:0; z-index:3000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); padding:20px; }
 .auth-modal-overlay.active { display:flex; }
 .auth-modal-card { width:100%; max-width:400px; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:var(--radius-lg); padding:30px 26px; position:relative; box-shadow:var(--shadow-medium); }
-.auth-modal-close { position:absolute; top:12px; right:16px; background:none; border:none; font-size:1.7rem; line-height:1; color:var(--text-muted); cursor:pointer; }
+ position:absolute; top:12px; right:16px; background:rgba(255,255,255,0.08); border:1px solid var(--border-glass); border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; line-height:1; color:var(--text-color); cursor:pointer; transition:all .2s ease; }
 .auth-logo { font-family:var(--font-impact,'Outfit'); text-transform:uppercase; font-size:1.4rem; letter-spacing:.5px; color:var(--text-color); line-height:1.1; }
 .auth-logo span { display:block; color:var(--accent); font-size:.68rem; letter-spacing:2px; }
 .auth-sub { color:var(--text-muted); font-size:.85rem; margin:8px 0 18px; }
