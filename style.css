@@ -3965,3 +3965,7 @@ body.light-mode .map-frame { filter:none; }
   .hub-name { font-size:1rem; }
   .hub-addr { font-size:0.75rem; }
 }
+
+.step-icon svg { width: 28px !important; height: 28px !important; stroke-width: 2.5; }
+.step-icon { color: var(--accent); }
+.step-node.active .step-icon { color: #ffffff; }
