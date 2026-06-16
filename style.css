@@ -3956,7 +3956,7 @@ img.hero-pizza-img{
 .map-open-btn:hover { background:rgba(255,85,0,0.15); border-color:#ff5500; }
 .map-open-btn i { width:14px; height:14px; }
 .map-frame-wrap { position:relative; width:100%; padding-bottom:62%; background:#0a0a0a; }
-.map-frame { position:absolute; inset:0; width:100%; height:100%; border:0; filter:grayscale(0.05) contrast(1.05); }
+.map-frame { position:absolute; inset:0; width:100%; height:100%; border:0; background:#fff; }
 body.light-mode .map-frame { filter:none; }
 @media (max-width:560px){
   .map-header { padding:14px; gap:10px; }
