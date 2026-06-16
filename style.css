@@ -3792,3 +3792,23 @@ img.hero-pizza-img{
   @keyframes hsGradShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
   @keyframes hsGlowDrift { 0%,100% { opacity: .75; transform: translate(0,0); } 50% { opacity: 1; transform: translate(2.5%,2%); } }
 }
+
+/* Review submit modal */
+.review-cta-btn { margin-top: 18px; }
+.review-modal-overlay { position: fixed; inset: 0; z-index: 3000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); padding: 20px; }
+.review-modal-overlay.active { display: flex; }
+.review-modal-card { width: 100%; max-width: 420px; background: var(--bg-card); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); padding: 30px 26px; position: relative; box-shadow: var(--shadow-medium); }
+.review-modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.7rem; line-height: 1; color: var(--text-muted); cursor: pointer; }
+.review-modal-logo { font-family: var(--font-impact, 'Outfit'); text-transform: uppercase; font-size: 1.5rem; letter-spacing: .5px; color: var(--text-color); }
+.review-modal-logo span { color: var(--accent); }
+.review-modal-sub { color: var(--text-muted); font-size: .85rem; margin: 4px 0 18px; }
+#review-form { display: flex; flex-direction: column; gap: 12px; }
+.rm-stars { display: flex; gap: 6px; justify-content: center; margin-bottom: 4px; }
+.rm-star { background: none; border: none; font-size: 2rem; line-height: 1; cursor: pointer; color: rgba(140,140,140,0.38); transition: transform .12s ease, color .12s ease; padding: 0; }
+.rm-star.on { color: #ffc107; transform: scale(1.08); }
+#review-form input, #review-form textarea { width: 100%; box-sizing: border-box; background: var(--input-bg, rgba(255,255,255,0.06)); border: 1px solid var(--border-glass); border-radius: 12px; padding: 12px 14px; color: var(--text-color); font-family: var(--font-body); font-size: .95rem; }
+#review-form textarea { resize: vertical; }
+#review-form input:focus, #review-form textarea:focus { outline: none; border-color: var(--accent); }
+.rm-msg { font-size: .85rem; text-align: center; min-height: 18px; }
+.rm-msg.err { color: #ff6b6b; }
+.rm-msg.ok { color: #4cd07d; }

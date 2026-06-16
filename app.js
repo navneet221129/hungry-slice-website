@@ -502,6 +502,10 @@ async function fetchSupabaseReviews() {
     
     if (data && data.length > 0) {
       renderReviews(data);
+      try {
+        const _avg = data.reduce((s,r)=>s+(Number(r.rating)||0),0)/data.length;
+        setTimeout(()=>{ const _el=[...document.querySelectorAll('.proof-number')].find(e=>e.textContent.includes('★')); if(_el) _el.textContent=_avg.toFixed(1)+'★'; }, 1300);
+      } catch(_e){}
     }
   } catch (err) {
     console.error("Reviews connection error:", err);
@@ -748,20 +752,23 @@ window.clearSearch = function() {
 function renderReviews(reviewsList) {
   const track = document.querySelector('.testimonials-track');
   if (!track) return;
-  
-  track.innerHTML = reviewsList.map(r => `
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  track.innerHTML = reviewsList.map(r => {
+    const rt = Math.max(0, Math.min(5, Number(r.rating) || 0));
+    const name = esc(r.customer_name || 'Anonymous');
+    return `
     <div class="review-card glass-card">
-      <div class="review-rating">${'⭐'.repeat(r.rating)}${'•'.repeat(5 - r.rating)}</div>
-      <p>"${r.comment}"</p>
+      <div class="review-rating">${'⭐'.repeat(rt)}${'•'.repeat(5 - rt)}</div>
+      <p>"${esc(r.comment)}"</p>
       <div class="reviewer-meta">
-        <div class="reviewer-avatar">${r.customer_name.charAt(0)}</div>
+        <div class="reviewer-avatar">${name.charAt(0)}</div>
         <div>
-          <h4>${r.customer_name}</h4>
-          <span>${r.neighborhood}, Hamilton</span>
+          <h4>${name}</h4>
+          <span>${esc(r.neighborhood || 'Hamilton')}, Hamilton</span>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderDefaultReviews() {
@@ -2907,4 +2914,52 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   window.addEventListener('scroll', function(){ if(!ticking){ ticking=true; requestAnimationFrame(update); } }, {passive:true});
   window.addEventListener('resize', update, {passive:true});
   update();
+})();
+
+
+/* Review submit system */
+(function(){
+  var rating = 0;
+  window.openReviewModal = function(){ var m=document.getElementById('review-modal'); if(m){ m.classList.add('active'); var n=document.getElementById('rm-name'); if(n) setTimeout(function(){n.focus();},60); } };
+  window.closeReviewModal = function(){ var m=document.getElementById('review-modal'); if(m) m.classList.remove('active'); };
+  function wire(){
+    var form=document.getElementById('review-form'); var stars=document.getElementById('rm-stars');
+    if(form && !form.dataset.wired){
+      form.dataset.wired='1';
+      var btns=[].slice.call(stars.querySelectorAll('.rm-star'));
+      function paint(n){ btns.forEach(function(b){ b.classList.toggle('on', (+b.dataset.v)<=n); }); }
+      btns.forEach(function(b){
+        b.addEventListener('mouseenter', function(){ paint(+b.dataset.v); });
+        b.addEventListener('click', function(){ rating=+b.dataset.v; paint(rating); });
+      });
+      stars.addEventListener('mouseleave', function(){ paint(rating); });
+      form.addEventListener('submit', async function(e){
+        e.preventDefault();
+        var msg=document.getElementById('rm-msg');
+        var name=document.getElementById('rm-name').value.trim();
+        var hood=document.getElementById('rm-hood').value.trim();
+        var comment=document.getElementById('rm-comment').value.trim();
+        var btn=document.getElementById('rm-submit');
+        msg.className='rm-msg';
+        if(rating<1){ msg.textContent='Please tap a star rating.'; msg.classList.add('err'); return; }
+        if(!name || !comment){ msg.textContent='Name and review are required.'; msg.classList.add('err'); return; }
+        var last=+(localStorage.getItem('hs_review_ts')||0);
+        if(Date.now()-last < 600000){ msg.textContent='Thanks — you just posted a review. Try again later.'; msg.classList.add('err'); return; }
+        if(typeof supabaseClient==='undefined' || !supabaseClient){ msg.textContent='Reviews unavailable right now.'; msg.classList.add('err'); return; }
+        btn.disabled=true; btn.textContent='Posting…';
+        var row={ customer_name:name.slice(0,80), rating:rating, comment:comment.slice(0,600), neighborhood:(hood.slice(0,60)||'Hamilton') };
+        var res=await supabaseClient.from('reviews').insert([row]);
+        btn.disabled=false; btn.textContent='Post Review';
+        if(res.error){ msg.textContent='Could not post: '+res.error.message; msg.classList.add('err'); return; }
+        localStorage.setItem('hs_review_ts', Date.now());
+        msg.textContent='Thanks! Your review is live.'; msg.classList.add('ok');
+        if(typeof fetchSupabaseReviews==='function') fetchSupabaseReviews();
+        if(typeof window.playSound==='function') window.playSound('success');
+        setTimeout(function(){ closeReviewModal(); form.reset(); rating=0; paint(0); msg.textContent=''; msg.className='rm-msg'; }, 1500);
+      });
+    }
+    var ov=document.getElementById('review-modal');
+    if(ov && !ov.dataset.wired){ ov.dataset.wired='1'; ov.addEventListener('click', function(e){ if(e.target===ov) closeReviewModal(); }); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })();
