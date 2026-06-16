@@ -3,18 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hungry Slice — Order Console</title>
+  <title>Hungry Slice — Admin Console</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=1781700000">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Anton&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css?v=1781803300">
   <script src="assets/supabase-js.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+
   <!-- LOGIN -->
   <div id="login-view" class="login-wrap">
     <form id="login-form" class="login-card" autocomplete="on">
       <div class="login-logo"><span>THE</span> HUNGRY SLICE</div>
-      <div class="login-sub">Order Console — Staff Login</div>
+      <div class="login-sub">Admin Console — Staff Login</div>
       <label for="login-email">Email</label>
       <input type="email" id="login-email" autocomplete="username" required placeholder="you@hungryslice.nz">
       <label for="login-password">Password</label>
@@ -26,40 +28,197 @@
 
   <!-- DASHBOARD -->
   <div id="dash-view" class="dash" hidden>
+
     <header class="dash-head">
       <div class="dash-title">
         <span class="dash-brand">HUNGRY SLICE</span>
-        <span class="dash-page">Order Console</span>
+        <span class="dash-page">Admin Console</span>
       </div>
       <div class="dash-head-right">
+        <span id="store-status-pill" class="status-pill open">● OPEN</span>
+        <span id="busy-pill" class="status-pill" hidden>BUSY MODE</span>
         <span id="live-dot" class="live-dot" title="Realtime connection">LIVE</span>
-        <button id="sound-toggle" class="ghost-btn" title="Toggle new-order sound">Sound: On</button>
-        <button id="refresh-btn" class="ghost-btn">Refresh</button>
+        <button id="sound-toggle" class="ghost-btn" title="Toggle new-order sound">🔔 Sound: On</button>
         <button id="logout-btn" class="ghost-btn">Sign Out</button>
       </div>
     </header>
 
-    <section class="stats-row">
-      <div class="stat"><div class="stat-num" id="stat-today">0</div><div class="stat-lbl">Orders Today</div></div>
-      <div class="stat"><div class="stat-num" id="stat-revenue">$0</div><div class="stat-lbl">Revenue Today</div></div>
-      <div class="stat"><div class="stat-num" id="stat-active">0</div><div class="stat-lbl">Active Now</div></div>
-    </section>
-
-    <nav class="filter-tabs" id="filter-tabs">
-      <button class="ftab active" data-f="active">Active</button>
-      <button class="ftab" data-f="all">All</button>
-      <button class="ftab" data-f="received">Received</button>
-      <button class="ftab" data-f="preparing">Preparing</button>
-      <button class="ftab" data-f="oven">In Oven</button>
-      <button class="ftab" data-f="delivery">Out for Delivery</button>
-      <button class="ftab" data-f="delivered">Delivered</button>
+    <nav class="primary-tabs" id="primary-tabs">
+      <button class="ptab active" data-tab="orders">📋 Orders</button>
+      <button class="ptab" data-tab="menu">🍕 Menu</button>
+      <button class="ptab" data-tab="customers">👥 Customers</button>
+      <button class="ptab" data-tab="analytics">📊 Analytics</button>
+      <button class="ptab" data-tab="reviews">⭐ Reviews</button>
+      <button class="ptab" data-tab="settings">⚙️ Settings</button>
+      <button class="ptab" data-tab="activity">📝 Activity Log</button>
     </nav>
 
-    <main id="orders-list" class="orders-list">
-      <div class="empty-state">Loading orders…</div>
-    </main>
+    <!-- ===== ORDERS TAB ===== -->
+    <section class="tab-pane active" id="tab-orders">
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num" id="stat-today">0</div><div class="stat-lbl">Orders Today</div></div>
+        <div class="stat"><div class="stat-num" id="stat-revenue">$0</div><div class="stat-lbl">Revenue Today</div></div>
+        <div class="stat"><div class="stat-num" id="stat-active">0</div><div class="stat-lbl">Active Now</div></div>
+        <div class="stat"><div class="stat-num" id="stat-aov">$0</div><div class="stat-lbl">Avg Order</div></div>
+      </div>
+
+      <div class="orders-toolbar">
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="ftab active" data-f="active">Active</button>
+          <button class="ftab" data-f="all">All</button>
+          <button class="ftab" data-f="received">Received</button>
+          <button class="ftab" data-f="preparing">Preparing</button>
+          <button class="ftab" data-f="oven">In Oven</button>
+          <button class="ftab" data-f="delivery">Out for Delivery</button>
+          <button class="ftab" data-f="delivered">Delivered</button>
+          <button class="ftab" data-f="cancelled">Cancelled</button>
+        </div>
+        <div class="view-toggle">
+          <button class="vt-btn active" data-view="kanban">📊 Kanban</button>
+          <button class="vt-btn" data-view="list">📋 List</button>
+        </div>
+      </div>
+
+      <div id="kanban-board" class="kanban-board">
+        <div class="kanban-col" data-col="received">
+          <h3 class="kanban-head">📥 Received <span class="col-count" data-count="received">0</span></h3>
+          <div class="kanban-cards" data-cards="received"></div>
+        </div>
+        <div class="kanban-col" data-col="preparing">
+          <h3 class="kanban-head">👨‍🍳 Preparing <span class="col-count" data-count="preparing">0</span></h3>
+          <div class="kanban-cards" data-cards="preparing"></div>
+        </div>
+        <div class="kanban-col" data-col="oven">
+          <h3 class="kanban-head">🔥 In Oven <span class="col-count" data-count="oven">0</span></h3>
+          <div class="kanban-cards" data-cards="oven"></div>
+        </div>
+        <div class="kanban-col" data-col="delivery">
+          <h3 class="kanban-head">🛵 Out for Delivery <span class="col-count" data-count="delivery">0</span></h3>
+          <div class="kanban-cards" data-cards="delivery"></div>
+        </div>
+        <div class="kanban-col" data-col="delivered">
+          <h3 class="kanban-head">✅ Delivered <span class="col-count" data-count="delivered">0</span></h3>
+          <div class="kanban-cards" data-cards="delivered"></div>
+        </div>
+      </div>
+
+      <main id="orders-list" class="orders-list" hidden>
+        <div class="empty-state">Loading orders…</div>
+      </main>
+    </section>
+
+    <!-- ===== MENU TAB ===== -->
+    <section class="tab-pane" id="tab-menu">
+      <div class="menu-toolbar">
+        <input type="text" id="menu-search" placeholder="Search products…" class="search-inp">
+        <select id="menu-cat-filter" class="search-inp"><option value="">All categories</option></select>
+        <button class="primary-btn" onclick="window.openProductEditor()">+ New Product</button>
+      </div>
+      <div class="products-grid" id="products-grid"><div class="empty-state">Loading products…</div></div>
+    </section>
+
+    <!-- ===== CUSTOMERS TAB ===== -->
+    <section class="tab-pane" id="tab-customers">
+      <div class="menu-toolbar">
+        <input type="text" id="cust-search" placeholder="Search by name/phone/email…" class="search-inp">
+      </div>
+      <div class="customers-list" id="customers-list"><div class="empty-state">Loading…</div></div>
+    </section>
+
+    <!-- ===== ANALYTICS TAB ===== -->
+    <section class="tab-pane" id="tab-analytics">
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <h3>Revenue — Last 7 Days</h3>
+          <canvas id="chart-revenue"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Orders — Hourly Heatmap</h3>
+          <canvas id="chart-hourly"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Top 10 Sellers</h3>
+          <canvas id="chart-top"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Orders by Suburb</h3>
+          <div id="suburb-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== REVIEWS TAB ===== -->
+    <section class="tab-pane" id="tab-reviews">
+      <div class="menu-toolbar">
+        <select id="rev-filter" class="search-inp">
+          <option value="all">All reviews</option>
+          <option value="visible">Visible only</option>
+          <option value="hidden">Hidden only</option>
+          <option value="low">Low rating (≤2★)</option>
+        </select>
+      </div>
+      <div class="reviews-list" id="reviews-list"><div class="empty-state">Loading…</div></div>
+    </section>
+
+    <!-- ===== SETTINGS TAB ===== -->
+    <section class="tab-pane" id="tab-settings">
+      <div class="settings-grid">
+        <div class="setting-card">
+          <h3>Store Status</h3>
+          <label class="toggle-row"><span>Store Open</span><input type="checkbox" id="set-isopen"></label>
+          <label class="toggle-row"><span>Busy Mode (longer ETA)</span><input type="checkbox" id="set-busy"></label>
+        </div>
+        <div class="setting-card">
+          <h3>Operations</h3>
+          <label class="field-row"><span>Default Prep Time (min)</span><input type="number" id="set-prep" min="10" max="120"></label>
+          <label class="field-row"><span>Open Hour (0-23)</span><input type="number" id="set-open" min="0" max="23"></label>
+          <label class="field-row"><span>Close Hour (0-23)</span><input type="number" id="set-close" min="0" max="23"></label>
+        </div>
+        <div class="setting-card">
+          <h3>Customer Message</h3>
+          <textarea id="set-msg" rows="3" placeholder="Optional banner shown on the site (e.g. 'Closed for staff training')"></textarea>
+        </div>
+      </div>
+      <button class="primary-btn" id="save-settings">Save Settings</button>
+    </section>
+
+    <!-- ===== ACTIVITY TAB ===== -->
+    <section class="tab-pane" id="tab-activity">
+      <div class="activity-list" id="activity-list"><div class="empty-state">Loading…</div></div>
+    </section>
+
   </div>
 
-  <script src="admin.js?v=1781800000"></script>
+  <!-- ORDER DETAIL MODAL -->
+  <div class="modal-overlay" id="order-modal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeOrderModal()">✕</button>
+      <div id="order-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- PRODUCT EDITOR MODAL -->
+  <div class="modal-overlay" id="product-modal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+      <h2 id="product-modal-title">Edit Product</h2>
+      <form id="product-form">
+        <label class="field-row"><span>Name *</span><input type="text" id="pf-name" required></label>
+        <label class="field-row"><span>Category</span><input type="text" id="pf-category" list="cat-list"></label>
+        <datalist id="cat-list"></datalist>
+        <label class="field-row"><span>Price *</span><input type="number" step="0.01" id="pf-price" required></label>
+        <label class="field-row"><span>Description</span><textarea id="pf-description" rows="3"></textarea></label>
+        <label class="field-row"><span>Image URL</span><input type="text" id="pf-image" placeholder="https://…"></label>
+        <label class="toggle-row"><span>Available</span><input type="checkbox" id="pf-available" checked></label>
+        <label class="toggle-row"><span>Out of Stock</span><input type="checkbox" id="pf-oos"></label>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" id="pf-delete" hidden>Delete</button>
+          <button type="submit" class="primary-btn">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js?v=1781803300"></script>
 </body>
 </html>
