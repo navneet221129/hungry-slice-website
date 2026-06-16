@@ -2405,26 +2405,22 @@ function subscribeToOrderTracker(orderId) {
   if (trackingInterval) { clearInterval(trackingInterval); trackingInterval = null; }
   updateTrackerUI('received');
   
-  activeTrackingChannel = supabaseClient
-    .channel(`order-status-${orderId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'orders',
-        filter: `id=eq.${orderId}`
-      },
-      (payload) => {
-        console.log("Realtime order status change received:", payload.new.status);
-        const statusMap = { 'preparing': 'prep' };
-        const trackerKey = statusMap[payload.new.status] || payload.new.status;
-        updateTrackerUI(trackerKey);
+  // Poll the status-only RPC. Realtime postgres_changes needs SELECT on orders,
+  // which anon lost in the PII lockdown — get_order_status (SECURITY DEFINER) is anon-safe.
+  let _trackStopped = false;
+  const _statusMap = { 'preparing': 'prep' };
+  const pollStatus = async () => {
+    if (_trackStopped) return;
+    try {
+      const { data, error } = await supabaseClient.rpc('get_order_status', { p_id: orderId });
+      if (!error && data) {
+        updateTrackerUI(_statusMap[data] || data);
+        if (data === 'delivered') { _trackStopped = true; return; }
       }
-    )
-    .subscribe((status) => {
-      console.log("Supabase Realtime subscription state:", status);
-    });
+    } catch (e) { /* transient network — keep polling */ }
+    setTimeout(pollStatus, 8000);
+  };
+  setTimeout(pollStatus, 4000);
 }
 
 function stepCheckoutBack() {
