@@ -3820,3 +3820,23 @@ img.hero-pizza-img{
 .plc-rate-empty { color: var(--text-muted); opacity: .8; }
 .plc-rate-empty em { font-style: normal; color: var(--accent); font-size: .85em; }
 .rm-context { background: var(--accent-alpha, rgba(255,85,0,0.12)); color: var(--accent); border: 1px solid var(--border-glass); border-radius: 10px; padding: 8px 12px; font-size: .85rem; font-weight: 600; text-align: center; margin-bottom: 14px; }
+
+/* Recommender surfaces */
+.menu-reco { margin: 0 auto; max-width: 1240px; padding: 0 clamp(16px,4vw,30px); }
+.reco-title { font-family: var(--font-impact,'Outfit'); text-transform: uppercase; font-size: 1.15rem; letter-spacing:.5px; color: var(--text-color); margin: 20px 0 12px; display:flex; align-items:center; gap:8px; }
+.reco-title::before { content:""; width:22px; height:2px; background:var(--accent); border-radius:2px; }
+.reco-strip { display:flex; gap:12px; overflow-x:auto; padding:2px 2px 10px; scroll-snap-type:x mandatory; }
+.reco-strip::-webkit-scrollbar{ height:6px; }
+.reco-strip::-webkit-scrollbar-thumb{ background:var(--border-glass); border-radius:3px; }
+.reco-card { flex:0 0 152px; scroll-snap-align:start; background:var(--bg-card); border:1px solid var(--border-glass); border-radius:14px; overflow:hidden; position:relative; transition:transform .25s ease, box-shadow .25s ease; }
+.reco-card:hover { transform:translateY(-4px); box-shadow:0 14px 30px -12px rgba(255,85,0,0.38); }
+.reco-img { height:96px; background-size:cover; background-position:center; background-color:#1c1c1f; }
+.reco-info { padding:8px 10px; display:flex; flex-direction:column; gap:2px; }
+.reco-name { font-size:.82rem; font-weight:600; color:var(--text-color); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.reco-price { font-size:.82rem; color:var(--accent); font-weight:700; }
+.reco-add { position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; border:none; background:linear-gradient(135deg,var(--accent),#ff7a1a); color:#fff; font-size:1.25rem; line-height:1; cursor:pointer; box-shadow:0 4px 12px rgba(255,85,0,.45); display:flex; align-items:center; justify-content:center; padding:0; }
+.reco-add:hover { filter:brightness(1.1); transform:scale(1.08); }
+.cart-recos { margin-top:18px; }
+.cart-recos .reco-card { flex-basis:130px; }
+.cart-recos .reco-img { height:78px; }
+.cart-recos .reco-title { font-size:1rem; margin:8px 0 10px; }

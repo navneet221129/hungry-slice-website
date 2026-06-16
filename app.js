@@ -2991,3 +2991,104 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })();
+
+
+/* Phase 3: recommender surfaces */
+(function(){
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+  function getSeen(){ try{ return JSON.parse(localStorage.getItem('hs_seen')||'[]'); }catch(e){ return []; } }
+  function trackSeen(id){ if(!id) return; try{ var a=getSeen(); a=[id].concat(a.filter(function(x){return x!==id;})).slice(0,12); localStorage.setItem('hs_seen', JSON.stringify(a)); }catch(e){} }
+  function prodById(id){ return (databaseProducts||[]).find(function(p){return p.id===id;}); }
+  function recoImg(p){ return (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || p.image_url || ''; }
+  function recoCardHTML(p){
+    var img=recoImg(p); var safe=(p.name||'').replace(/'/g,"\\'");
+    return '<div class="reco-card" data-id="'+p.id+'">'
+      + '<div class="reco-img" style="background-image:url(\''+img+'\')"></div>'
+      + '<button class="reco-add" aria-label="Add '+esc(p.name)+'" onclick="addProductToCart(\''+p.id+'\',\''+safe+'\','+Number(p.price)+',\''+img+'\')">+</button>'
+      + '<div class="reco-info"><span class="reco-name">'+esc(p.name)+'</span><span class="reco-price">$'+Number(p.price).toFixed(2)+'</span></div>'
+      + '</div>';
+  }
+  function renderRecoSection(box, title, products){
+    if(!box) return;
+    if(!products || !products.length){ box.innerHTML=''; box.style.display='none'; return; }
+    box.style.display='';
+    box.innerHTML='<h3 class="reco-title">'+esc(title)+'</h3><div class="reco-strip">'+products.map(recoCardHTML).join('')+'</div>';
+  }
+  async function rpcRecommend(seedIds,k){ if(typeof supabaseClient==='undefined'||!supabaseClient||!seedIds.length) return []; var r=await supabaseClient.rpc('recommend_for_session',{seed_ids:seedIds,k:k}); if(r.error){console.warn('reco',r.error.message);return[];} return (r.data||[]).map(function(x){return prodById(x.id);}).filter(Boolean); }
+  async function rpcSimilar(pid,k){ if(typeof supabaseClient==='undefined'||!supabaseClient||!pid) return []; var r=await supabaseClient.rpc('similar_products',{p_id:pid,k:k}); if(r.error){console.warn('similar',r.error.message);return[];} return (r.data||[]).map(function(x){return prodById(x.id);}).filter(Boolean); }
+  async function popularProducts(k){
+    var recs=[];
+    if(typeof supabaseClient!=='undefined'&&supabaseClient){ var r=await supabaseClient.from('product_popularity').select('*').order('units',{ascending:false}).limit(k); recs=((r&&r.data)||[]).map(function(x){return prodById(x.product_id);}).filter(Boolean); }
+    if(recs.length<k){ for(var i=0;i<(databaseProducts||[]).length && recs.length<k;i++){ var p=databaseProducts[i]; if(p.is_available!==false && !recs.find(function(x){return x.id===p.id;})) recs.push(p); } }
+    return recs.slice(0,k);
+  }
+  function injectContainers(){
+    var showcase=document.querySelector('.product-showcase-container');
+    if(showcase && showcase.parentNode && !document.getElementById('menu-reco-for-you')){
+      var f=document.createElement('div'); f.id='menu-reco-for-you'; f.className='menu-reco'; f.style.display='none';
+      showcase.parentNode.insertBefore(f, showcase);
+    }
+    if(showcase && showcase.parentNode && !document.getElementById('menu-similar')){
+      var s=document.createElement('div'); s.id='menu-similar'; s.className='menu-reco'; s.style.display='none';
+      showcase.parentNode.insertBefore(s, showcase.nextSibling);
+    }
+    var cv1=document.getElementById('checkout-view-1');
+    if(cv1 && !document.getElementById('cart-recos')){ var c=document.createElement('div'); c.id='cart-recos'; c.className='cart-recos'; cv1.appendChild(c); }
+  }
+  var _fySig=null, _simSig=null;
+  async function updateMenuRecos(){
+    if(!(databaseProducts||[]).length) return;
+    var seen=getSeen();
+    var box=document.getElementById('menu-reco-for-you');
+    var sig=seen.join(',');
+    if(box && sig!==_fySig){
+      _fySig=sig;
+      var recs= seen.length ? await rpcRecommend(seen,8) : [];
+      if(!recs.length) recs=await popularProducts(8);
+      recs=recs.filter(function(p){return seen.indexOf(p.id)<0;}).slice(0,8);
+      renderRecoSection(box, seen.length?'Recommended for you':'Popular right now', recs);
+    }
+    var sbox=document.getElementById('menu-similar');
+    var last=seen[0]||'';
+    if(sbox && last!==_simSig){
+      _simSig=last;
+      var sr= last ? await rpcSimilar(last,8) : [];
+      sr=sr.filter(function(p){return seen.indexOf(p.id)<0;}).slice(0,8);
+      renderRecoSection(sbox, 'You may also like', sr);
+    }
+  }
+  async function updateCartRecos(){
+    var box=document.getElementById('cart-recos'); if(!box) return;
+    if(typeof cartState==='undefined' || !cartState.items) return;
+    var ids=cartState.items.map(function(i){return i.id;}).filter(Boolean);
+    if(!ids.length){ box.innerHTML=''; box.style.display='none'; return; }
+    var recs=await rpcRecommend(ids,4);
+    recs=recs.filter(function(p){return ids.indexOf(p.id)<0;}).slice(0,4);
+    renderRecoSection(box, 'Complete your meal', recs);
+  }
+  function init(){
+    injectContainers();
+    if(window.addProductToCart && !window.addProductToCart.__reco){
+      var _add=window.addProductToCart;
+      window.addProductToCart=function(id,name,price,img,details){ _add(id,name,price,img,details); trackSeen(id); updateMenuRecos(); };
+      window.addProductToCart.__reco=true;
+    }
+    if(window.updateCartUI && !window.updateCartUI.__reco){
+      var _u=window.updateCartUI;
+      window.updateCartUI=function(){ _u(); updateCartRecos(); };
+      window.updateCartUI.__reco=true;
+    }
+    if(window.renderDynamicProducts && !window.renderDynamicProducts.__reco){
+      var _r=window.renderDynamicProducts;
+      window.renderDynamicProducts=function(){ _r(); updateMenuRecos(); };
+      window.renderDynamicProducts.__reco=true;
+    }
+    if(window.openReviewModal && !window.openReviewModal.__reco){
+      var _o=window.openReviewModal;
+      window.openReviewModal=function(pid,pname){ if(pid) trackSeen(pid); _o(pid,pname); if(pid) updateMenuRecos(); };
+      window.openReviewModal.__reco=true;
+    }
+    updateMenuRecos();
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
