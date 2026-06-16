@@ -3040,9 +3040,11 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   }
   function injectContainers(){
     var showcase=document.querySelector('.product-showcase-container');
+    var searchBar=document.querySelector('.search-below-reco');
+    var anchor = searchBar || showcase;  // insert reco BEFORE search if present, else before showcase
     if(showcase && showcase.parentNode && !document.getElementById('menu-reco-for-you')){
       var f=document.createElement('div'); f.id='menu-reco-for-you'; f.className='menu-reco'; f.style.display='none';
-      showcase.parentNode.insertBefore(f, showcase);
+      anchor.parentNode.insertBefore(f, anchor);
     }
     if(showcase && showcase.parentNode && !document.getElementById('menu-similar')){
       var s=document.createElement('div'); s.id='menu-similar'; s.className='menu-reco'; s.style.display='none';
