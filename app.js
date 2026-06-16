@@ -2236,6 +2236,19 @@ async function stepCheckoutNext() {
   }
 }
 
+// Fire order receipt (email + SMS) via edge function — dormant until Resend/Twilio keys added
+async function notifyOrder(orderId) {
+  try {
+    const SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
+    const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
+    await fetch(`${SUPA_URL}/functions/v1/notify-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_ANON}`, 'apikey': SUPA_ANON },
+      body: JSON.stringify({ orderId: orderId })
+    });
+  } catch (e) { console.warn('notify-order failed:', e.message); }
+}
+
 // Gathers totals and pushes order to Supabase table
 async function submitOrderToDatabase(paymentToken) {
   const totals = calculateCartTotals();
@@ -2245,6 +2258,8 @@ async function submitOrderToDatabase(paymentToken) {
   const fullAddress = landmark ? `${address} (Landmark: ${landmark})` : address;
   const postcode = document.getElementById('ship-postcode').value.trim();
   const cardName = document.getElementById('paynuts-cardholder').value.trim() || 'Anonymous Customer';
+  const email = document.getElementById('ship-email') ? document.getElementById('ship-email').value.trim() : '';
+  const orderId = (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('ord-' + Date.now() + Math.random().toString(36).slice(2,8));
 
   const orderItems = cartState.items.map(item => ({
     id: item.id,
@@ -2260,6 +2275,8 @@ async function submitOrderToDatabase(paymentToken) {
   const paynuHost = localStorage.getItem('paynuts_host') || 'https://gateway.tillpayments.com';
 
   const orderData = {
+    id: orderId,
+    customer_email: email || null,
     customer_name: cardName,
     customer_phone: phone,
     delivery_method: cartState.deliveryMethod,
@@ -2307,21 +2324,19 @@ async function submitOrderToDatabase(paymentToken) {
 
   if (supabaseClient) {
     try {
-      const { data, error } = await supabaseClient
+      const { error } = await supabaseClient
         .from('orders')
-        .insert([orderData])
-        .select();
+        .insert([orderData]);
 
       if (error) {
         console.error("Supabase insert error:", error);
         alert(`Order placed! Running in Offline Simulator Mode (Database fallback active).\nPayment Token: ${paymentToken || 'None'}`);
         openSuccessModal('Order Placed!', 'Running in Offline Simulator Mode. Your order is registered locally!');
         runSimulatedOrder();
-      } else if (data && data.length > 0) {
-        const orderId = data[0].id;
-        alert(`Order placed! Your order has been registered in the database.\nLive Tracking ID: ${orderId}\nPayment Token: ${paymentToken || 'None'}`);
-        openSuccessModal('Order Placed!', `Your order has been registered in the database. Live Tracking ID: ${orderId}`);
+      } else {
+        openSuccessModal('Order Placed!', `Your order is in! Live Tracking ID: ${String(orderId).slice(0,8)}`);
         subscribeToOrderTracker(orderId);
+        notifyOrder(orderId);
       }
     } catch (err) {
       console.error("Database connection failed:", err);
