@@ -1945,6 +1945,8 @@ function updateQty(id, delta) {
 
   cartState.items[index].qty += delta;
   if (cartState.items[index].qty <= 0) {
+    // Track as negative signal — user removed it
+    try { if (typeof window.__trackHsNeg === 'function') window.__trackHsNeg(id); } catch(e){}
     cartState.items.splice(index, 1);
   }
   updateCartUI();
@@ -3013,8 +3015,9 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   function recoImg(p){ return (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || p.image_url || ''; }
   function recoCardHTML(p){
     var img=recoImg(p); var safe=(p.name||'').replace(/'/g,"\\'");
+    var reasonBadge = p.__reason ? '<div class="reco-reason">'+esc(p.__reason)+'</div>' : '';
     return '<div class="reco-card" data-id="'+p.id+'">'
-      + '<div class="reco-img" style="background-image:url(\''+img+'\')"></div>'
+      + '<div class="reco-img" style="background-image:url(\''+img+'\')">'+reasonBadge+'</div>'
       + '<button class="reco-add" aria-label="Add '+esc(p.name)+'" onclick="addProductToCart(\''+p.id+'\',\''+safe+'\','+Number(p.price)+',\''+img+'\')">+</button>'
       + '<div class="reco-info"><span class="reco-name">'+esc(p.name)+'</span><span class="reco-price">$'+Number(p.price).toFixed(2)+'</span></div>'
       + '</div>';
@@ -3025,7 +3028,9 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
     box.style.display='';
     box.innerHTML='<h3 class="reco-title">'+esc(title)+'</h3><div class="reco-strip">'+products.map(recoCardHTML).join('')+'</div>';
   }
-  async function rpcRecommend(seedIds,k){ if(typeof supabaseClient==='undefined'||!supabaseClient||!seedIds.length) return []; var r=await supabaseClient.rpc('recommend_for_session',{seed_ids:seedIds,k:k}); if(r.error){console.warn('reco',r.error.message);return[];} return (r.data||[]).map(function(x){return prodById(x.id);}).filter(Boolean); }
+  function getNegatives(){ try{ return JSON.parse(localStorage.getItem('hs_neg')||'[]'); }catch(e){ return []; } }
+  function trackNegative(id){ if(!id) return; try{ var a=getNegatives(); a=[id].concat(a.filter(function(x){return x!==id;})).slice(0,8); localStorage.setItem('hs_neg', JSON.stringify(a)); }catch(e){} }
+  async function rpcRecommend(seedIds,k){ if(typeof supabaseClient==='undefined'||!supabaseClient) return []; var negs=getNegatives(); var hour=new Date().getHours(); var r; if(seedIds && seedIds.length){ r=await supabaseClient.rpc('recommend_enhanced',{p_seed_ids:seedIds,p_negative_ids:negs,p_k:k,p_hour:hour,p_diversify:true}); } else { r=await supabaseClient.rpc('cold_start_picks',{k:k}); } if(r.error){console.warn('reco',r.error.message);return[];} return (r.data||[]).map(function(x){ var p=prodById(x.id); if(p) p.__reason=x.reason; return p; }).filter(Boolean); }
   async function rpcSimilar(pid,k){ if(typeof supabaseClient==='undefined'||!supabaseClient||!pid) return []; var r=await supabaseClient.rpc('similar_products',{p_id:pid,k:k}); if(r.error){console.warn('similar',r.error.message);return[];} return (r.data||[]).map(function(x){return prodById(x.id);}).filter(Boolean); }
   async function popularProducts(k){
     var recs=[];

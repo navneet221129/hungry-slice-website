@@ -3934,3 +3934,5 @@ img.hero-pizza-img{
 .auth-msg { font-size:0.82rem; text-align:center; min-height:18px; margin-top:12px; font-weight:500; }
 .auth-msg.err { color:#ff6b6b; }
 .auth-msg.ok { color:#4cd07d; }
+.reco-reason { position:absolute; bottom:6px; left:6px; right:6px; background:rgba(0,0,0,0.85); color:#fff; font-size:0.65rem; font-weight:600; padding:3px 8px; border-radius:8px; text-align:center; backdrop-filter:blur(4px); border:1px solid rgba(255,85,0,0.5); text-transform:uppercase; letter-spacing:0.3px; }
+.reco-img { position:relative; }
