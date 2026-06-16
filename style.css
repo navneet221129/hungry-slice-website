@@ -1485,6 +1485,7 @@ spline-viewer.hero-pizza-img {
   border-radius: 50%;
   background: var(--bg-marker);
   border: 3px solid var(--border-light);
+  color: var(--text-color);
   display: flex;
   align-items: center;
   justify-content: center;
