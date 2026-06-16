@@ -150,6 +150,7 @@ body { margin:0; padding:0; font-family:'Inter',sans-serif; background:var(--bg)
 
 /* MODAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay[hidden] { display:none !important; }
 .modal-card { background:var(--bg-card); border:1px solid var(--border-strong); border-radius:18px; padding:30px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; position:relative; }
 .modal-close { position:absolute; top:14px; right:18px; background:rgba(255,255,255,0.08); border:1px solid var(--border); width:34px; height:34px; border-radius:50%; color:var(--text); font-size:1.2rem; cursor:pointer; }
 .modal-close:hover { background:rgba(255,85,0,0.2); }
