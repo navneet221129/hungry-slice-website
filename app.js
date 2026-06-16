@@ -3103,3 +3103,73 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+
+/* Auth: email OTP + Google */
+(function(){
+  var _user=null;
+  function el(id){ return document.getElementById(id); }
+  function msg(t, ok){ var m=el('auth-msg'); if(m){ m.textContent=t||''; m.className='auth-msg'+(ok?' ok':(t?' err':'')); } }
+  window.openAuthModal=function(){ var m=el('auth-modal'); if(m){ renderAuthState(); m.classList.add('active'); } };
+  window.closeAuthModal=function(){ var m=el('auth-modal'); if(m) m.classList.remove('active'); };
+  window.onAccountClick=function(){ openAuthModal(); };
+  function renderAuthState(){
+    var out=el('auth-signedout'), inn=el('auth-signedin');
+    if(_user){ if(out)out.style.display='none'; if(inn){ inn.style.display='block'; var e=el('auth-user-email'); if(e) e.textContent=_user.email||'signed in'; } }
+    else { if(out)out.style.display='block'; if(inn)inn.style.display='none'; if(el('auth-otp-step'))el('auth-otp-step').style.display='none'; if(el('auth-email-step'))el('auth-email-step').style.display='block'; }
+    msg('');
+  }
+  window.signInGoogle=async function(){
+    if(typeof supabaseClient==='undefined'||!supabaseClient){ msg('Auth unavailable.'); return; }
+    msg('Redirecting to Google\u2026');
+    var r=await supabaseClient.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } });
+    if(r.error) msg(r.error.message);
+  };
+  window.sendEmailOtp=async function(){
+    if(typeof supabaseClient==='undefined'||!supabaseClient){ msg('Auth unavailable.'); return; }
+    var email=(el('auth-email').value||'').trim();
+    if(!email||email.indexOf('@')<0){ msg('Enter a valid email.'); return; }
+    var btn=el('auth-send-btn'); if(btn){btn.disabled=true; btn.textContent='Sending\u2026';}
+    var r=await supabaseClient.auth.signInWithOtp({ email:email, options:{ shouldCreateUser:true, emailRedirectTo: location.origin + location.pathname } });
+    if(btn){btn.disabled=false; btn.textContent='Email me a code';}
+    if(r.error){ msg(r.error.message); return; }
+    window.__authEmail=email; el('auth-email-step').style.display='none'; el('auth-otp-step').style.display='block';
+    msg('Check your email \u2014 enter the code (or tap the link).', true);
+  };
+  window.verifyEmailOtp=async function(){
+    if(typeof supabaseClient==='undefined'||!supabaseClient){ msg('Auth unavailable.'); return; }
+    var token=(el('auth-otp').value||'').trim();
+    if(token.length<6){ msg('Enter the 6-digit code.'); return; }
+    var btn=el('auth-verify-btn'); if(btn){btn.disabled=true; btn.textContent='Verifying\u2026';}
+    var r=await supabaseClient.auth.verifyOtp({ email: window.__authEmail, token:token, type:'email' });
+    if(btn){btn.disabled=false; btn.textContent='Verify & sign in';}
+    if(r.error){ msg(r.error.message); return; }
+    msg('Signed in!', true); setTimeout(closeAuthModal, 900);
+  };
+  window.signOut=async function(){ if(typeof supabaseClient!=='undefined'&&supabaseClient){ await supabaseClient.auth.signOut(); } };
+  function updateAccountUI(){
+    var b=el('account-btn'); if(!b) return;
+    if(_user){ b.classList.add('signed-in'); b.innerHTML='<span class="acct-initial">'+((_user.email||'?').charAt(0).toUpperCase())+'</span>'; b.setAttribute('aria-label','Account ('+(_user.email||'')+')'); }
+    else { b.classList.remove('signed-in'); b.innerHTML='<i data-lucide="user"></i>'; if(window.lucide) lucide.createIcons(); }
+  }
+  async function syncPrefs(){
+    if(!_user||typeof supabaseClient==='undefined'||!supabaseClient) return;
+    try{
+      var local=[]; try{ local=JSON.parse(localStorage.getItem('hs_seen')||'[]'); }catch(e){}
+      var r=await supabaseClient.from('user_preferences').select('seen').eq('user_id', _user.id).maybeSingle();
+      var dbSeen=(r.data&&r.data.seen)||[];
+      var merged=Array.from(new Set(local.concat(dbSeen))).slice(0,12);
+      localStorage.setItem('hs_seen', JSON.stringify(merged));
+      await supabaseClient.from('user_preferences').upsert({ user_id:_user.id, seen:merged, updated_at:new Date().toISOString() });
+      if(window.renderDynamicProducts) window.renderDynamicProducts();
+    }catch(e){ console.warn('prefs sync', e); }
+  }
+  function init(){
+    if(typeof supabaseClient==='undefined'||!supabaseClient) return;
+    supabaseClient.auth.getSession().then(function(o){ _user=o.data.session?o.data.session.user:null; updateAccountUI(); if(_user) syncPrefs(); });
+    supabaseClient.auth.onAuthStateChange(function(_e, session){ _user=session?session.user:null; updateAccountUI(); renderAuthState(); if(_user) syncPrefs(); });
+    setInterval(function(){ if(_user) syncPrefs(); }, 45000);
+    var ov=el('auth-modal'); if(ov && !ov.dataset.wired){ ov.dataset.wired='1'; ov.addEventListener('click', function(e){ if(e.target===ov) closeAuthModal(); }); }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
