@@ -2253,6 +2253,8 @@ async function notifyOrder(orderId) {
 
 // Gathers totals and pushes order to Supabase table
 async function submitOrderToDatabase(paymentToken) {
+  const SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
+  const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
   const totals = calculateCartTotals();
   const phone = document.getElementById('ship-phone').value.trim();
   const address = document.getElementById('ship-address') ? document.getElementById('ship-address').value.trim() : '';
@@ -2273,8 +2275,54 @@ async function submitOrderToDatabase(paymentToken) {
 
   // Attempt charge via Till Payments gateway (with 3DS/OTP support)
   let chargeRef = null;
+  let chargeData = null;
+  let paymentStatus = 'pending';
   const paynuKey = localStorage.getItem('paynuts_key');
   const paynuHost = localStorage.getItem('paynuts_host') || 'https://gateway.tillpayments.com';
+  const isMockPayment = !paymentToken || paymentToken.startsWith('mock_tok_');
+  const isRealPayment = paymentToken && paynuKey && !isMockPayment;
+
+  if (isRealPayment) {
+    try {
+      const chargeRes = await fetch(`${SUPA_URL}/functions/v1/charge`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPA_ANON}`,
+          'apikey': SUPA_ANON
+        },
+        body: JSON.stringify({
+          token: paymentToken,
+          amount: totals.total,
+          currency: 'NZD',
+          description: 'The Hungry Slice Order #' + String(orderId).slice(0, 8)
+        })
+      });
+      chargeData = await chargeRes.json();
+      console.log('Till charge response:', chargeData);
+      if (chargeData && chargeData.success) {
+        chargeRef = chargeData.chargeRef || chargeData.uuid || 'charged';
+        paymentStatus = 'paid';
+      } else {
+        // HARD GATE: declined or failed real payment — DO NOT save order
+        paymentStatus = 'declined';
+        const reason = (chargeData && (chargeData.error || chargeData.errorMessage)) || 'Card declined by payment gateway';
+        console.error('Till charge DECLINED — order NOT saved:', chargeData);
+        openSuccessModal('Payment Declined', 'Your card was declined: ' + reason + '. Please try another card. No order has been placed.');
+        return;
+      }
+    } catch (err) {
+      // Network / CORS failure on real payment — also hard gate
+      paymentStatus = 'error';
+      console.error('Till charge attempt failed — order NOT saved:', err);
+      openSuccessModal('Payment Error', 'Could not process card payment: ' + err.message + '. Please try again. No order has been placed.');
+      return;
+    }
+  } else if (isMockPayment) {
+    // Mock/demo path — let order through for testing
+    paymentStatus = 'demo';
+    chargeRef = 'mock_' + (paymentToken || 'none');
+  }
 
   const orderData = {
     id: orderId,
@@ -2290,39 +2338,12 @@ async function submitOrderToDatabase(paymentToken) {
     discount: totals.discount,
     total: totals.total,
     status: 'received',
-    payment_token: paymentToken || null
+    payment_token: paymentToken || null,
+    charge_ref: chargeRef,
+    payment_status: paymentStatus,
+    merchant_txn_id: chargeData && (chargeData.merchantTransactionId || chargeData.transactionId) || null,
+    charge_response: chargeData
   };
-
-  if (paymentToken && paynuKey && !paymentToken.startsWith('mock_tok_')) {
-    try {
-      const SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
-      const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
-      const chargeRes = await fetch(`${SUPA_URL}/functions/v1/charge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPA_ANON}`,
-          'apikey': SUPA_ANON
-        },
-        body: JSON.stringify({
-          token: paymentToken,
-          amount: totals.total,
-          currency: 'NZD',
-          description: 'The Hungry Slice Order'
-        })
-      });
-      const chargeData = await chargeRes.json();
-      console.log('Till charge response:', chargeData);
-      if (chargeData.success) {
-        chargeRef = chargeData.chargeRef || 'charged';
-        console.log('Till Payments charge successful:', chargeData);
-      } else {
-        console.warn('Till Payments charge declined/failed:', chargeData.error, chargeData);
-      }
-    } catch (err) {
-      console.warn('Till Payments charge attempt failed (CORS or network):', err.message);
-    }
-  }
 
   if (supabaseClient) {
     try {
