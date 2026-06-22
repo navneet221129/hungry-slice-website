@@ -707,35 +707,55 @@ function renderDynamicProducts() {
   // Track index per category for rotation
   const _catIdx = {};
 
-  track.innerHTML = filtered.map(p => {
-    if (!p.is_available) return '';
+  // Group products by category for section-based bento layout
+  const byCat = {};
+  const catOrder = [];
+  filtered.forEach(p => {
+    if (!p.is_available) return;
+    if (!byCat[p.category]) { byCat[p.category] = []; catOrder.push(p.category); }
+    byCat[p.category].push(p);
+  });
+  const buildCard = (p) => {
     const pool = _imgPools[p.category] || _default;
     _catIdx[p.category] = (_catIdx[p.category] || 0);
     const img = (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || pool[_catIdx[p.category] % pool.length];
     _catIdx[p.category]++;
     const safeName = p.name.replace(/'/g, "\'");
+    const featured = p.category === 'Hungry Special';
     return `
-      <div class="plc" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+      <div class="plc ${featured ? 'plc-featured' : ''}" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
         <div class="plc-img-wrap">
           <div class="plc-veg-badge ${p.is_veg ? 'veg' : 'nonveg'}" title="${p.is_veg ? 'Veg' : 'Non-Veg'}"></div>
           <img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">
-          <span class="plc-cat-tag">${p.category}</span>
-          ${p.category === 'Hungry Special' ? '<span class="plc-flag">★ Top Pick</span>' : ''}
+          ${featured ? '<span class="plc-flag-overlay">★ TOP PICK</span>' : ''}
+          <div class="plc-img-overlay">
+            <div class="plc-stars-overlay" title="Tap to rate" onclick="event.stopPropagation();openReviewModal('${p.id}','${safeName}')">${ratingStarsHTML(p.id)}</div>
+          </div>
+          <button class="plc-quick-add" onclick="addProductToCart('${p.id}','${safeName}',${p.price},'${img}')" aria-label="Add ${p.name}">+</button>
         </div>
         <div class="plc-body">
           <h3 class="plc-name">${p.name}</h3>
           <p class="plc-desc">${p.description || ''}</p>
-          <div class="plc-foot">
-            <div>
-              <div class="plc-stars" title="Tap to rate this item" onclick="openReviewModal('${p.id}','${safeName}')">${ratingStarsHTML(p.id)}</div>
-              <div class="plc-price">$${Number(p.price).toFixed(2)}</div>
-            </div>
+          <div class="plc-foot-clean">
+            <div class="plc-price">$${Number(p.price).toFixed(2)}</div>
             <button class="plc-add-btn" onclick="addProductToCart('${p.id}','${safeName}',${p.price},'${img}')">+ Add</button>
           </div>
         </div>
       </div>
     `;
-  }).join('');
+  };
+  track.innerHTML = catOrder.map(cat => `
+    <div class="menu-cat-section">
+      <div class="menu-cat-header">
+        <span class="menu-cat-accent"></span>
+        <h2 class="menu-cat-title">${cat}</h2>
+        <span class="menu-cat-count">${byCat[cat].length} item${byCat[cat].length===1?'':'s'}</span>
+      </div>
+      <div class="menu-cat-grid">
+        ${byCat[cat].map(buildCard).join('')}
+      </div>
+    </div>
+  `).join('');
   if (typeof syncMenuCardSteppers === 'function') syncMenuCardSteppers();
 }
 
