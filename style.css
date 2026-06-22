@@ -3969,3 +3969,23 @@ body.light-mode .map-frame { filter:none; }
 .step-icon svg { width: 28px !important; height: 28px !important; stroke-width: 2.5; }
 .step-icon { color: var(--accent); }
 .step-node.active .step-icon { color: #ffffff; }
+
+/* Veg/non-veg toggle */
+.veg-mode-bar { display:flex; gap:8px; justify-content:center; margin:0 auto 16px; padding:0 clamp(16px,3vw,24px); flex-wrap:wrap; }
+.veg-pill { display:inline-flex; align-items:center; gap:8px; padding:8px 18px; background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.12); border-radius:50px; color:var(--text-color,#f5f5f5); font-weight:600; font-size:0.85rem; cursor:pointer; font-family:inherit; transition:all .22s ease; }
+.veg-pill:hover { background:rgba(255,255,255,0.1); }
+.veg-pill.active { background:linear-gradient(135deg,var(--accent,#ff5500),#ff7a1a); border-color:transparent; color:#fff; box-shadow:0 6px 16px rgba(255,85,0,0.3); }
+.veg-dot { width:11px; height:11px; border-radius:3px; display:inline-block; position:relative; flex-shrink:0; }
+.veg-dot::before { content:""; width:5px; height:5px; border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
+.veg-dot.veg { border:2px solid #22c55e; }
+.veg-dot.veg::before { background:#22c55e; }
+.veg-dot.nonveg { border:2px solid #ef4444; }
+.veg-dot.nonveg::before { background:#ef4444; }
+.veg-dot.all { background:linear-gradient(45deg,#22c55e 0 50%,#ef4444 50% 100%); border:1.5px solid rgba(255,255,255,0.2); }
+.veg-dot.all::before { display:none; }
+.plc { position:relative; }
+.plc-veg-badge { position:absolute; top:8px; left:8px; width:18px; height:18px; border-radius:4px; z-index:5; pointer-events:none; }
+.plc-veg-badge.veg { border:2px solid #22c55e; background:rgba(255,255,255,0.95); }
+.plc-veg-badge.veg::before { content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:6px; height:6px; border-radius:50%; background:#22c55e; }
+.plc-veg-badge.nonveg { border:2px solid #ef4444; background:rgba(255,255,255,0.95); }
+.plc-veg-badge.nonveg::before { content:""; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:6px; height:6px; border-radius:50%; background:#ef4444; }

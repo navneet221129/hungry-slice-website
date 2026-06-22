@@ -18,6 +18,7 @@ let databaseProducts = [];
 let databaseCategories = [];
 let selectedCategory = 'All';
 let searchQuery = '';
+let vegMode = (typeof localStorage !== 'undefined' ? localStorage.getItem('hs_veg') : null) || 'all';
 
 
 // Day/Night Theme Toggling & Paynuts Sync
@@ -626,6 +627,8 @@ function renderDynamicProducts() {
 
   let filtered = databaseProducts;
   if (selectedCategory !== 'All') filtered = filtered.filter(p => p.category === selectedCategory);
+  if (vegMode === 'veg') filtered = filtered.filter(p => p.is_veg === true);
+  else if (vegMode === 'nonveg') filtered = filtered.filter(p => p.is_veg === false);
   if (searchQuery) filtered = filtered.filter(p =>
     p.name.toLowerCase().includes(searchQuery) ||
     (p.description && p.description.toLowerCase().includes(searchQuery))
@@ -714,6 +717,7 @@ function renderDynamicProducts() {
     return `
       <div class="plc" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
         <div class="plc-img-wrap">
+          <div class="plc-veg-badge ${product.is_veg ? 'veg' : 'nonveg'}" title="${product.is_veg ? 'Veg' : 'Non-Veg'}"></div>
           <img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">
           <span class="plc-cat-tag">${p.category}</span>
           ${p.category === 'Hungry Special' ? '<span class="plc-flag">★ Top Pick</span>' : ''}
@@ -3201,3 +3205,18 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+
+window.setVegMode = function(mode) {
+  vegMode = mode;
+  try { localStorage.setItem('hs_veg', mode); } catch(e) {}
+  document.querySelectorAll('.veg-pill').forEach(b => b.classList.toggle('active', b.dataset.veg === mode));
+  if (typeof renderDynamicProducts === 'function') renderDynamicProducts();
+};
+// Initialize active pill on load
+if (document.readyState !== 'loading') {
+  document.querySelectorAll('.veg-pill').forEach(b => b.classList.toggle('active', b.dataset.veg === vegMode));
+} else {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.veg-pill').forEach(b => b.classList.toggle('active', b.dataset.veg === vegMode));
+  });
+}

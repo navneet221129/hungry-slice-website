@@ -23,7 +23,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1781803700">
+  <link rel="stylesheet" href="style.css?v=1781803800">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
@@ -203,6 +203,11 @@
     <!-- Category Filters & Search Controls -->
     <div class="menu-controls-container">
       <div class="mobile-menu-heading">What would you like? 🍕</div>
+      <div class="veg-mode-bar">
+        <button class="veg-pill active" data-veg="all" onclick="setVegMode('all')"><span class="veg-dot all"></span>All</button>
+        <button class="veg-pill" data-veg="veg" onclick="setVegMode('veg')"><span class="veg-dot veg"></span>Veg</button>
+        <button class="veg-pill" data-veg="nonveg" onclick="setVegMode('nonveg')"><span class="veg-dot nonveg"></span>Non-Veg</button>
+      </div>
       <div class="category-filters-container" id="category-filters">
         <button class="filter-pill active" onclick="filterCategory('All')"><span class="pill-icon">🍽️</span>All</button>
       </div>
@@ -1100,6 +1105,6 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1781803700"></script>
+  <script src="app.js?v=1781803800"></script>
 </body>
 </html>
