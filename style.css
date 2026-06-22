@@ -4175,3 +4175,14 @@ body.light-mode .plc-veg-badge { background: #fff !important; }
 .menu-cat-title { color: #ffffff !important; }
 body.light-mode .menu-cat-title { color: #1a1a1a !important; }
 body.light-mode .menu-cat-count { color: #666 !important; }
+
+
+/* OVERRIDE 4: support [data-theme="light"] theme attribute for menu cards */
+[data-theme="light"] .plc { background: #ffffff !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .plc-name { color: #1a1a1a !important; }
+[data-theme="light"] .plc-desc { color: #555 !important; }
+[data-theme="light"] .plc-price, [data-theme="light"] .plc-foot-clean .plc-price { color: #ff5500 !important; }
+[data-theme="light"] .plc-veg-badge { background: #fff !important; }
+[data-theme="light"] .menu-cat-title { color: #1a1a1a !important; }
+[data-theme="light"] .menu-cat-count { color: #666 !important; }
+[data-theme="light"] .plc-foot-clean .plc-add-btn { color: #ff5500 !important; border-color: rgba(255,85,0,0.4) !important; background: rgba(255,85,0,0.08) !important; }
