@@ -3242,7 +3242,7 @@ if (document.readyState !== 'loading') {
 }
 
 // ===== AI Chat Order Widget =====
-(function initAIChat(){
+function _initAIChat(){
   var SUPABASE_URL = (typeof STAFF_SUPA_URL !== 'undefined') ? STAFF_SUPA_URL :
     (typeof SUPABASE_URL_PUBLIC !== 'undefined') ? SUPABASE_URL_PUBLIC : null;
   var SUPABASE_KEY = (typeof STAFF_SUPA_ANON !== 'undefined') ? STAFF_SUPA_ANON :
@@ -3396,4 +3396,5 @@ if (document.readyState !== 'loading') {
   document.querySelectorAll('.ai-chat-chip').forEach(function(chip){
     chip.addEventListener('click', function(){ sendMessage(chip.getAttribute('data-q') || chip.textContent); });
   });
-})();
+}
+if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _initAIChat); } else { _initAIChat(); }
