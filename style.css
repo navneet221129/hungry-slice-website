@@ -4141,3 +4141,11 @@ body.light-mode .plc-desc { color: #666; }
 @media (min-width: 769px) and (max-width: 1024px) {
   .menu-cat-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 }
+
+
+/* OVERRIDE: kill legacy small-phone tiny-image rule */
+@media (max-width: 768px) {
+  .plc-img-wrap { width: auto !important; height: auto !important; aspect-ratio: 5/4 !important; }
+  .plc-featured .plc-img-wrap { aspect-ratio: 5/4 !important; }
+  .menu-cat-grid .plc { width: auto !important; }
+}
