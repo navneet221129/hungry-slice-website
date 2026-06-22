@@ -718,7 +718,7 @@ function renderDynamicProducts() {
   const buildCard = (p) => {
     const pool = _imgPools[p.category] || _default;
     _catIdx[p.category] = (_catIdx[p.category] || 0);
-    const img = (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || pool[_catIdx[p.category] % pool.length];
+    const img = p.image_url || (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || pool[_catIdx[p.category] % pool.length];
     _catIdx[p.category]++;
     const safeName = p.name.replace(/'/g, "\'");
     const featured = p.category === 'Hungry Special';
@@ -3058,7 +3058,7 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   function getSeen(){ try{ return JSON.parse(localStorage.getItem('hs_seen')||'[]'); }catch(e){ return []; } }
   function trackSeen(id){ if(!id) return; try{ var a=getSeen(); a=[id].concat(a.filter(function(x){return x!==id;})).slice(0,12); localStorage.setItem('hs_seen', JSON.stringify(a)); }catch(e){} }
   function prodById(id){ return (databaseProducts||[]).find(function(p){return p.id===id;}); }
-  function recoImg(p){ return (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || p.image_url || ''; }
+  function recoImg(p){ return p.image_url || (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || ''; }
   function recoCardHTML(p){
     var img=recoImg(p); var safe=(p.name||'').replace(/'/g,"\\'");
     var reasonBadge = p.__reason ? '<div class="reco-reason">'+esc(p.__reason)+'</div>' : '';
