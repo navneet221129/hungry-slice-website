@@ -4519,3 +4519,32 @@ body.light-mode .menu-cat-count { color: #666 !important; }
   50% { opacity: 0.4; transform: scale(0.85); }
 }
 [data-theme="light"] .plc-img.plc-video { background: #f5f1eb; }
+
+/* OVERRIDE 5: mobile menu cards — vertical layout, full-width image on top
+   (fixes invisible images: .plc was flex-direction:row + img-wrap width:auto -> collapsed to 0) */
+@media (max-width: 768px) {
+  .menu-cat-grid .plc {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .menu-cat-grid .plc-img-wrap {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 5/4 !important;
+    order: 0 !important;
+    flex: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+  }
+  .menu-cat-grid .plc-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+  .menu-cat-grid .plc-body {
+    width: 100% !important;
+    order: 1 !important;
+  }
+}
