@@ -3240,3 +3240,160 @@ if (document.readyState !== 'loading') {
     document.querySelectorAll('.veg-pill').forEach(b => b.classList.toggle('active', b.dataset.veg === vegMode));
   });
 }
+
+// ===== AI Chat Order Widget =====
+(function initAIChat(){
+  var SUPABASE_URL = (typeof STAFF_SUPA_URL !== 'undefined') ? STAFF_SUPA_URL :
+    (typeof SUPABASE_URL_PUBLIC !== 'undefined') ? SUPABASE_URL_PUBLIC : null;
+  var SUPABASE_KEY = (typeof STAFF_SUPA_ANON !== 'undefined') ? STAFF_SUPA_ANON :
+    (typeof SUPABASE_ANON_KEY !== 'undefined') ? SUPABASE_ANON_KEY : null;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function mdBold(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+
+  var fab = $('aiChatFab'), drawer = $('aiChatDrawer'), closeBtn = $('aiChatClose'),
+      log = $('aiChatLog'), form = $('aiChatForm'), input = $('aiChatInput'), sendBtn = form ? form.querySelector('.ai-chat-send') : null;
+
+  if (!fab || !drawer) return;
+
+  var opened = false, greeted = false;
+
+  function openDrawer(){
+    drawer.hidden = false;
+    drawer.setAttribute('aria-hidden', 'false');
+    fab.setAttribute('data-state', 'open');
+    opened = true;
+    if (!greeted) { greet(); greeted = true; }
+    setTimeout(function(){ if (input) input.focus(); }, 100);
+  }
+  function closeDrawer(){
+    drawer.hidden = true;
+    drawer.setAttribute('aria-hidden', 'true');
+    fab.setAttribute('data-state', 'closed');
+    opened = false;
+  }
+  fab.addEventListener('click', openDrawer);
+  if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && opened) closeDrawer(); });
+
+  function addBot(html){
+    var div = document.createElement('div');
+    div.className = 'ai-chat-msg bot';
+    div.innerHTML = html;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+  function addUser(text){
+    var div = document.createElement('div');
+    div.className = 'ai-chat-msg user';
+    div.textContent = text;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+  function addTyping(){
+    var div = document.createElement('div');
+    div.className = 'ai-chat-msg bot typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+    return div;
+  }
+
+  function greet(){
+    addBot('Hey! I can help you find your perfect pizza. Try <strong>"spicy chicken under $20"</strong> or tap a suggestion below.');
+  }
+
+  function renderProducts(products){
+    if (!products || !products.length) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'ai-chat-products';
+    products.forEach(function(p){
+      var card = document.createElement('div');
+      card.className = 'ai-chat-product';
+      card.setAttribute('data-pid', p.id);
+      var img = p.image_url || 'assets/hero-pizza.png';
+      var vegCls = p.is_veg ? '' : 'nonveg';
+      var vegLbl = p.is_veg ? 'Veg' : 'Non-veg';
+      card.innerHTML =
+        '<img class="ai-chat-product-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy">' +
+        '<div class="ai-chat-product-body">' +
+          '<div class="ai-chat-product-name">' + esc(p.name) + '</div>' +
+          '<div class="ai-chat-product-meta">' +
+            '<span class="ai-chat-product-veg ' + vegCls + '" title="' + vegLbl + '"></span>' +
+            '<span class="ai-chat-product-price">$' + Number(p.price).toFixed(2) + '</span>' +
+            '<span>&middot; ' + esc(p.category || '') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="ai-chat-product-add">Add</button>';
+      wrap.appendChild(card);
+    });
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+    wrap.querySelectorAll('.ai-chat-product').forEach(function(card){
+      var addBtn = card.querySelector('.ai-chat-product-add');
+      function doAdd(e){
+        if (e) e.stopPropagation();
+        var pid = card.getAttribute('data-pid');
+        addToCartFromChat(pid, addBtn);
+      }
+      addBtn.addEventListener('click', doAdd);
+      card.addEventListener('click', doAdd);
+    });
+  }
+
+  function addToCartFromChat(pid, btn){
+    var added = false;
+    try {
+      if (typeof window.addToCart === 'function') {
+        var prod = (typeof prodById === 'function') ? prodById(pid) : null;
+        if (prod) { window.addToCart(prod); added = true; }
+        else { window.addToCart(pid); added = true; }
+      } else if (typeof window.cart !== 'undefined' && typeof prodById === 'function') {
+        var p2 = prodById(pid);
+        if (p2 && typeof window.cart.add === 'function') { window.cart.add(p2); added = true; }
+      }
+    } catch (err) { console.warn('addToCart failed', err); }
+    if (added && btn) {
+      btn.textContent = 'Added \u2713';
+      btn.classList.add('added');
+      setTimeout(function(){ btn.textContent = 'Add'; btn.classList.remove('added'); }, 1800);
+    } else if (!added) {
+      addBot('Couldn\'t add to cart automatically. Find it on the menu and tap Add.');
+    }
+  }
+
+  async function sendMessage(text){
+    text = String(text || '').trim();
+    if (!text) return;
+    addUser(text);
+    input.value = '';
+    if (sendBtn) sendBtn.disabled = true;
+    var typing = addTyping();
+    try {
+      if (!SUPABASE_URL) throw new Error('Supabase not configured');
+      var res = await fetch(SUPABASE_URL + '/functions/v1/chat-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY || '', 'Authorization': 'Bearer ' + (SUPABASE_KEY || '') },
+        body: JSON.stringify({ message: text }),
+      });
+      var data = await res.json();
+      typing.remove();
+      addBot(mdBold(data.reply || 'Hmm.'));
+      if (data.products && data.products.length) renderProducts(data.products);
+    } catch (err) {
+      typing.remove();
+      addBot('Connection hiccup. Try again in a sec?');
+      console.warn('chat error', err);
+    } finally {
+      if (sendBtn) sendBtn.disabled = false;
+      if (input) input.focus();
+    }
+  }
+
+  form.addEventListener('submit', function(e){ e.preventDefault(); sendMessage(input.value); });
+  document.querySelectorAll('.ai-chat-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){ sendMessage(chip.getAttribute('data-q') || chip.textContent); });
+  });
+})();
