@@ -4477,3 +4477,45 @@ body.light-mode .menu-cat-count { color: #666 !important; }
   .ai-chat-fab { right: 14px; bottom: 14px; padding: 10px 14px 10px 12px; font-size: 13px; }
   .ai-chat-drawer { right: 8px; left: 8px; bottom: 8px; width: auto; max-height: 80vh; border-radius: 18px; }
 }
+
+/* ===== Video product card support ===== */
+.plc-img.plc-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  background: #14110d;
+}
+.plc-img-wrap { position: relative; }
+.plc-video-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 2;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.plc-video-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: plcVideoPulse 1.6s ease-in-out infinite;
+}
+@keyframes plcVideoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+[data-theme="light"] .plc-img.plc-video { background: #f5f1eb; }

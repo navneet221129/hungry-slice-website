@@ -210,6 +210,16 @@
         <label class="field-row"><span>Price *</span><input type="number" step="0.01" id="pf-price" required></label>
         <label class="field-row"><span>Description</span><textarea id="pf-description" rows="3"></textarea></label>
         <label class="field-row"><span>Image URL</span><input type="text" id="pf-image" placeholder="https://…"></label>
+        <label class="field-row"><span>Video URL <small style="opacity:.6">(optional, mp4/webm)</small></span><input type="text" id="pf-video" placeholder="https://… or upload below"></label>
+        <div class="field-row">
+          <span>Upload video</span>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1">
+            <input type="file" id="pf-video-file" accept="video/mp4,video/webm,video/quicktime">
+            <button type="button" id="pf-video-upload-btn" class="ghost-btn" style="align-self:flex-start">Upload &amp; attach</button>
+            <span id="pf-video-status" style="font-size:11px;opacity:.7"></span>
+          </div>
+        </div>
+        <label class="field-row"><span>Video poster <small style="opacity:.6">(thumbnail before play)</small></span><input type="text" id="pf-video-poster" placeholder="https://… (defaults to image URL)"></label>
         <label class="toggle-row"><span>Available</span><input type="checkbox" id="pf-available" checked></label>
         <label class="toggle-row"><span>Out of Stock</span><input type="checkbox" id="pf-oos"></label>
         <div class="modal-actions">
@@ -220,6 +230,6 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1781803900"></script>
+  <script src="admin.js?v=1782146900"></script>
 </body>
 </html>

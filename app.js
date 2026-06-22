@@ -726,7 +726,7 @@ function renderDynamicProducts() {
       <div class="plc ${featured ? 'plc-featured' : ''}" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
         <div class="plc-img-wrap">
           <div class="plc-veg-badge ${p.is_veg ? 'veg' : 'nonveg'}" title="${p.is_veg ? 'Veg' : 'Non-Veg'}"></div>
-          <img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">
+          ${p.video_url ? `<video class="plc-img plc-video" data-src="${p.video_url}" poster="${p.video_poster || img}" muted loop playsinline preload="none" aria-label="${p.name}"></video><span class="plc-video-badge" aria-hidden="true">▶</span>` : `<img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">`}
           ${featured ? '<span class="plc-flag-overlay">★ TOP PICK</span>' : ''}
           <div class="plc-img-overlay">
             <div class="plc-stars-overlay" title="Tap to rate" onclick="event.stopPropagation();openReviewModal('${p.id}','${safeName}')">${ratingStarsHTML(p.id)}</div>
@@ -757,6 +757,7 @@ function renderDynamicProducts() {
     </div>
   `).join('');
   if (typeof syncMenuCardSteppers === 'function') syncMenuCardSteppers();
+  if (typeof initVideoCardObserver === 'function') initVideoCardObserver();
 }
 
 function filterCategory(categoryName) {

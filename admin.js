@@ -211,6 +211,10 @@ window.openProductEditor = function(pid) {
   $('#pf-price').value = currentProduct?.price || '';
   $('#pf-description').value = currentProduct?.description || '';
   $('#pf-image').value = currentProduct?.image_url || '';
+  $('#pf-video').value = currentProduct?.video_url || '';
+  $('#pf-video-poster').value = currentProduct?.video_poster || '';
+  const _vs = $('#pf-video-status'); if (_vs) _vs.textContent = '';
+  const _vf = $('#pf-video-file'); if (_vf) _vf.value = '';
   $('#pf-available').checked = currentProduct ? !!currentProduct.is_available : true;
   $('#pf-oos').checked = currentProduct ? !!currentProduct.out_of_stock : false;
   $('#pf-delete').hidden = !pid;
@@ -225,6 +229,8 @@ async function saveProduct(e) {
     price:Number($('#pf-price').value),
     description:$('#pf-description').value.trim(),
     image_url:$('#pf-image').value.trim(),
+    video_url:$('#pf-video').value.trim() || null,
+    video_poster:$('#pf-video-poster').value.trim() || null,
     is_available:$('#pf-available').checked,
     out_of_stock:$('#pf-oos').checked
   };
@@ -489,3 +495,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   // close modals on overlay click
   $$('.modal-overlay').forEach(m => m.onclick = e => { if (e.target===m) m.hidden=true; });
 });
+
+
+/* ===== Product video upload ===== */
+(function wireVideoUpload(){
+  function attach(){
+    var btn = document.getElementById('pf-video-upload-btn');
+    if (!btn || btn._wired) return;
+    btn._wired = true;
+    btn.addEventListener('click', async function(){
+      var fileEl = document.getElementById('pf-video-file');
+      var statusEl = document.getElementById('pf-video-status');
+      var urlEl = document.getElementById('pf-video');
+      if (!fileEl || !fileEl.files || !fileEl.files[0]) { if (statusEl) statusEl.textContent = 'Pick a file first.'; return; }
+      var file = fileEl.files[0];
+      if (file.size > 20 * 1024 * 1024) { if (statusEl) statusEl.textContent = 'Max 20MB.'; return; }
+      btn.disabled = true;
+      if (statusEl) statusEl.textContent = 'Uploading...';
+      try {
+        var ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+        var safeId = (typeof currentProduct !== 'undefined' && currentProduct && currentProduct.id) ? currentProduct.id : 'new-' + Date.now();
+        var key = 'videos/' + safeId + '-' + Date.now() + '.' + ext;
+        var up = await sb.storage.from('product-media').upload(key, file, { contentType: file.type, upsert: true });
+        if (up.error) throw up.error;
+        var pub = sb.storage.from('product-media').getPublicUrl(key);
+        var publicUrl = pub.data && pub.data.publicUrl;
+        if (!publicUrl) throw new Error('No public URL returned');
+        urlEl.value = publicUrl;
+        if (statusEl) statusEl.textContent = 'Uploaded ✓  ' + (file.size/1024/1024).toFixed(2) + ' MB';
+      } catch (err) {
+        if (statusEl) statusEl.textContent = 'Upload failed: ' + (err.message || err);
+        console.error(err);
+      } finally { btn.disabled = false; }
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+  else attach();
+})();
