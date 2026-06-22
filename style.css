@@ -4048,3 +4048,96 @@ body.light-mode .map-frame { filter:none; }
 body.light-mode .plc { background: linear-gradient(180deg, #ffffff, #fef8f3); border-color: rgba(0,0,0,0.08); }
 body.light-mode .plc-name { color: #1a1a1a; }
 body.light-mode .plc-desc { color: #666; }
+
+
+/* Mobile menu modernization (DoorDash/Uber Eats style) */
+@media (max-width: 768px) {
+  /* Compact category sections with edge-to-edge feel */
+  .product-showcase-track { gap: 32px; padding: 16px 0 100px; }
+  .menu-cat-section { padding: 0; }
+  .menu-cat-header { padding: 0 16px; margin-bottom: 14px; }
+  .menu-cat-title { font-size: 1.5rem; letter-spacing: 0.5px; }
+  .menu-cat-accent { width: 24px; height: 2.5px; }
+  .menu-cat-count { font-size: 0.7rem; letter-spacing: 1px; }
+
+  /* Horizontal swipeable scroll row per category */
+  .menu-cat-grid {
+    display: flex !important;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 16px;
+    padding: 4px 16px 16px;
+    gap: 14px;
+    grid-template-columns: none !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .menu-cat-grid::-webkit-scrollbar { display: none; }
+
+  /* Each card = fixed width 75% viewport, snap-aligned */
+  .menu-cat-grid .plc {
+    flex: 0 0 78%;
+    max-width: 320px;
+    scroll-snap-align: start;
+    border-radius: 22px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  }
+  .menu-cat-grid .plc-featured {
+    flex: 0 0 88%;
+    grid-column: auto;
+  }
+  
+  /* Aspect ratio: portrait-ish on mobile for food porn */
+  .plc-img-wrap { aspect-ratio: 5/4; }
+  .plc-featured .plc-img-wrap { aspect-ratio: 5/4; }
+
+  /* Bigger touch targets */
+  .plc-quick-add { width: 44px; height: 44px; bottom: 10px; right: 10px; font-size: 1.6rem; }
+  .plc-veg-badge { width: 26px; height: 26px; top: 12px; left: 12px; }
+
+  /* Card body */
+  .plc-body { padding: 12px 14px 14px; gap: 4px; }
+  .plc-name { font-size: 1rem; }
+  .plc-featured .plc-name { font-size: 1.15rem; }
+  .plc-desc { font-size: 0.78rem; -webkit-line-clamp: 2; line-clamp: 2; }
+  .plc-foot-clean { padding-top: 6px; }
+  .plc-foot-clean .plc-price { font-size: 1.35rem; }
+  .plc-foot-clean .plc-add-btn { padding: 7px 12px; font-size: 0.75rem; }
+
+  /* Tap feedback */
+  .plc:active { transform: scale(0.98); transition: transform 0.1s ease; }
+  .plc-quick-add:active { transform: scale(0.92); }
+
+  /* Subtle scroll hint indicator */
+  .menu-cat-section::after {
+    content: '← swipe →';
+    display: block;
+    text-align: center;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.25);
+    margin-top: 6px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Image overlay tighter */
+  .plc-img-overlay { padding: 22px 10px 8px; }
+  .plc-stars-overlay { font-size: 0.78rem; padding: 3px 7px; }
+
+  /* Top Pick pill smaller */
+  .plc-flag-overlay { font-size: 0.6rem; padding: 3px 8px; top: 10px; right: 10px; }
+}
+
+/* Even smaller phones */
+@media (max-width: 380px) {
+  .menu-cat-grid .plc { flex: 0 0 84%; }
+  .menu-cat-grid .plc-featured { flex: 0 0 94%; }
+}
+
+/* Tablet sweet spot */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .menu-cat-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+}
