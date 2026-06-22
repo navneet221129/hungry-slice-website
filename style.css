@@ -4149,3 +4149,11 @@ body.light-mode .plc-desc { color: #666; }
   .plc-featured .plc-img-wrap { aspect-ratio: 5/4 !important; }
   .menu-cat-grid .plc { width: auto !important; }
 }
+
+
+/* OVERRIDE 2: kill legacy mobile order/reorder rules */
+@media (max-width: 768px) {
+  .plc-img-wrap { order: 0 !important; margin-left: 0 !important; border-radius: 0 !important; }
+  .plc-img { border-radius: 0 !important; }
+  .plc-body { order: 0 !important; min-height: 0 !important; padding: 12px 14px 14px !important; }
+}
