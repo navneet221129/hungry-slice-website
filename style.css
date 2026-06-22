@@ -4473,9 +4473,14 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 [data-theme="light"] .ai-chat-form { background: #fff; border-top-color: rgba(0,0,0,0.06); }
 
 /* Mobile */
+/* Lift chat FAB + drawer above the 62px Zomato bottom-nav so it never covers nav tabs / card buttons */
+@media (max-width: 768px) {
+  .ai-chat-fab { bottom: 78px; }
+  .ai-chat-drawer { bottom: 78px; max-height: calc(100vh - 96px); }
+}
 @media (max-width: 480px) {
-  .ai-chat-fab { right: 14px; bottom: 14px; padding: 10px 14px 10px 12px; font-size: 13px; }
-  .ai-chat-drawer { right: 8px; left: 8px; bottom: 8px; width: auto; max-height: 80vh; border-radius: 18px; }
+  .ai-chat-fab { right: 14px; bottom: 78px; padding: 10px 14px 10px 12px; font-size: 13px; }
+  .ai-chat-drawer { right: 8px; left: 8px; bottom: 78px; width: auto; max-height: calc(100vh - 96px); border-radius: 18px; }
 }
 
 /* ===== Video product card support ===== */
