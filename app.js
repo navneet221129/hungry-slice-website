@@ -3250,7 +3250,16 @@ function _initAIChat(){
 
   function $(id){ return document.getElementById(id); }
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
-  function mdBold(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+  function mdRender(s){
+    var t = esc(s);
+    t = t.replace(/\[([^\]]+)\]\(((?:https?:\/\/|#|mailto:)[^)]+)\)/g, function(_, label, url){
+      var safeUrl = url.replace(/"/g, '&quot;');
+      return '<a href="' + safeUrl + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+    });
+    t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/\n/g, '<br>');
+    return t;
+  }
 
   var fab = $('aiChatFab'), drawer = $('aiChatDrawer'), closeBtn = $('aiChatClose'),
       log = $('aiChatLog'), form = $('aiChatForm'), input = $('aiChatInput'), sendBtn = form ? form.querySelector('.ai-chat-send') : null;
@@ -3380,7 +3389,7 @@ function _initAIChat(){
       });
       var data = await res.json();
       typing.remove();
-      addBot(mdBold(data.reply || 'Hmm.'));
+      addBot(mdRender(data.reply || 'Hmm.'));
       if (data.products && data.products.length) renderProducts(data.products);
     } catch (err) {
       typing.remove();
