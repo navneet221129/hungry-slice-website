@@ -41,6 +41,10 @@ function statusKey(s) { return s==='preparing'?'preparing':s==='oven'?'oven':s==
 function filterOrders() {
   if (currentFilter==='all') return allOrders;
   if (currentFilter==='active') return allOrders.filter(o => !['delivered','cancelled'].includes(o.status));
+  if (currentFilter==='recent') {
+    const cutoff = Date.now() - 24*60*60*1000;
+    return allOrders.filter(o => new Date(o.created_at).getTime() >= cutoff);
+  }
   return allOrders.filter(o => statusKey(o.status)===currentFilter);
 }
 function renderOrders() {
