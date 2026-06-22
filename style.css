@@ -4157,3 +4157,21 @@ body.light-mode .plc-desc { color: #666; }
   .plc-img { border-radius: 0 !important; }
   .plc-body { order: 0 !important; min-height: 0 !important; padding: 12px 14px 14px !important; }
 }
+
+
+/* OVERRIDE 3: card contrast — solid bg + high-contrast text */
+.plc { background: #1a1a1f !important; }
+.plc-name { color: #ffffff !important; }
+.plc-desc { color: #b8b8b8 !important; opacity: 1 !important; }
+.plc-price, .plc-foot-clean .plc-price { color: #ff7a1a !important; }
+
+body.light-mode .plc { background: #ffffff !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; }
+body.light-mode .plc-name { color: #1a1a1a !important; }
+body.light-mode .plc-desc { color: #555 !important; }
+body.light-mode .plc-price, body.light-mode .plc-foot-clean .plc-price { color: #ff5500 !important; }
+body.light-mode .plc-veg-badge { background: #fff !important; }
+
+/* Section header readable too */
+.menu-cat-title { color: #ffffff !important; }
+body.light-mode .menu-cat-title { color: #1a1a1a !important; }
+body.light-mode .menu-cat-count { color: #666 !important; }
