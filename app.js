@@ -717,7 +717,7 @@ function renderDynamicProducts() {
     return `
       <div class="plc" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
         <div class="plc-img-wrap">
-          <div class="plc-veg-badge ${product.is_veg ? 'veg' : 'nonveg'}" title="${product.is_veg ? 'Veg' : 'Non-Veg'}"></div>
+          <div class="plc-veg-badge ${p.is_veg ? 'veg' : 'nonveg'}" title="${p.is_veg ? 'Veg' : 'Non-Veg'}"></div>
           <img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">
           <span class="plc-cat-tag">${p.category}</span>
           ${p.category === 'Hungry Special' ? '<span class="plc-flag">★ Top Pick</span>' : ''}
