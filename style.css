@@ -4553,3 +4553,100 @@ body.light-mode .menu-cat-count { color: #666 !important; }
     order: 1 !important;
   }
 }
+
+
+/* ===== PIZZA LAB realistic upgrade ===== */
+.bp-stage {
+  position: relative;
+  display: inline-block;
+  perspective: 1100px;
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+}
+/* Wooden serving board behind the pizza */
+.bp-board {
+  position: absolute; top: 50%; left: 50%;
+  width: 128%; height: 128%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,0.05) 0deg 4deg, rgba(255,255,255,0.025) 4deg 8deg),
+    radial-gradient(circle at 38% 30%, #7a5733 0%, #5e4126 45%, #45301c 78%, #2c1d10 100%);
+  box-shadow: 0 46px 90px rgba(0,0,0,0.55), inset 0 0 70px rgba(0,0,0,0.45), inset 0 4px 10px rgba(255,255,255,0.06);
+  z-index: 0;
+}
+/* Warm oven glow */
+.bp-glow {
+  position: absolute; top: 50%; left: 50%;
+  width: 150%; height: 150%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,140,40,0.28) 0%, rgba(255,90,0,0.10) 40%, transparent 65%);
+  filter: blur(22px);
+  animation: bpGlow 4.5s ease-in-out infinite;
+  z-index: 0; pointer-events: none;
+}
+@keyframes bpGlow { 0%,100% { opacity:.55; transform:translate(-50%,-50%) scale(1);} 50% { opacity:1; transform:translate(-50%,-50%) scale(1.06);} }
+/* Contact shadow under the pizza */
+.bp-shadow {
+  position: absolute; bottom: 1%; left: 50%;
+  width: 78%; height: 38px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, transparent 72%);
+  filter: blur(9px); z-index: 0; pointer-events: none;
+}
+/* Rising steam wisps */
+.bp-steam { position: absolute; top: -10%; left: 0; width: 100%; height: 70%; z-index: 3; pointer-events: none; }
+.bp-steam span {
+  position: absolute; bottom: 0;
+  width: 16px; height: 70px;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.55), transparent 70%);
+  border-radius: 50%; filter: blur(7px); opacity: 0;
+  animation: bpSteam 4.6s ease-in infinite;
+}
+.bp-steam span:nth-child(1){ left: 26%; animation-delay: 0s; }
+.bp-steam span:nth-child(2){ left: 42%; animation-delay: 1.1s; }
+.bp-steam span:nth-child(3){ left: 56%; animation-delay: 0.6s; }
+.bp-steam span:nth-child(4){ left: 68%; animation-delay: 1.8s; }
+.bp-steam span:nth-child(5){ left: 36%; animation-delay: 2.5s; }
+@keyframes bpSteam { 0% { opacity:0; transform: translateY(10px) scaleX(1);} 18% { opacity:.55;} 100% { opacity:0; transform: translateY(-130px) scaleX(2.6);} }
+/* The pizza itself floats gently */
+.pizza-builder-view {
+  position: relative; z-index: 1;
+  transform-style: preserve-3d;
+  animation: bpFloat 6.5s ease-in-out infinite;
+  box-shadow: 0 26px 60px rgba(0,0,0,0.4), 0 6px 18px rgba(255,85,0,0.18) !important;
+}
+@keyframes bpFloat { 0%,100% { transform: translateY(0) rotate(0deg);} 50% { transform: translateY(-9px) rotate(1.4deg);} }
+/* Melted cheese highlight sweep */
+.bp-cheese-sheen {
+  position: absolute; inset: 0; border-radius: 50%; z-index: 4; pointer-events: none;
+  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.22) 47%, rgba(255,255,255,0.05) 55%, transparent 64%);
+  background-size: 260% 260%;
+  mix-blend-mode: screen;
+  animation: bpSheen 5.5s ease-in-out infinite;
+}
+@keyframes bpSheen { 0% { background-position: 130% 0;} 55% { background-position: -30% 0;} 100% { background-position: 130% 0;} }
+/* Charred leopard-spot crust + bake marks */
+.bp-char {
+  position: absolute; inset: 0; border-radius: 50%; z-index: 5; pointer-events: none;
+  mix-blend-mode: multiply; opacity: 0.55;
+  background:
+    radial-gradient(circle at 18% 26%, rgba(50,24,6,0.7) 0 3px, transparent 5px),
+    radial-gradient(circle at 80% 22%, rgba(50,24,6,0.6) 0 4px, transparent 6px),
+    radial-gradient(circle at 86% 64%, rgba(50,24,6,0.6) 0 3px, transparent 5px),
+    radial-gradient(circle at 24% 78%, rgba(50,24,6,0.55) 0 4px, transparent 6px),
+    radial-gradient(circle at 50% 12%, rgba(50,24,6,0.5) 0 3px, transparent 5px),
+    radial-gradient(circle at 12% 52%, rgba(50,24,6,0.5) 0 3px, transparent 5px),
+    radial-gradient(circle at 64% 86%, rgba(50,24,6,0.5) 0 3px, transparent 5px),
+    radial-gradient(circle at 50% 50%, transparent 60%, rgba(80,40,12,0.35) 78%, rgba(40,20,6,0.5) 100%);
+}
+/* Toppings above char + sheen */
+.toppings-rendered-container { z-index: 6 !important; }
+.bp-gloss { z-index: 11 !important; }
+.rendered-topping .rt-inner { filter: drop-shadow(0 3px 4px rgba(0,0,0,0.5)) drop-shadow(0 0 1px rgba(0,0,0,0.3)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-glow, .bp-steam span, .pizza-builder-view, .bp-cheese-sheen { animation: none; }
+}

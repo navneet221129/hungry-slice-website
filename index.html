@@ -23,7 +23,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1782151900">
+  <link rel="stylesheet" href="style.css?v=1782156000">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
@@ -422,17 +422,27 @@
       
       <!-- Interactive Builder Visual Screen -->
       <div class="builder-canvas-box glass-card">
-        <div class="pizza-builder-view">
-          <!-- Real pizza base photo -->
-          <img src="assets/hero-pizza.png" class="bp-base" alt="Pizza base">
-          <!-- Sauce overlay -->
-          <div class="builder-layer layer-sauce" id="p-sauce"></div>
-          <!-- Cheese overlay -->
-          <div class="builder-layer layer-cheese" id="p-cheese"></div>
-          <!-- Toppings container -->
-          <div class="toppings-rendered-container" id="rendered-toppings"></div>
-          <!-- Gloss ring -->
-          <div class="bp-gloss"></div>
+        <div class="bp-stage" id="bpStage">
+          <div class="bp-glow"></div>
+          <div class="bp-board"></div>
+          <div class="bp-shadow"></div>
+          <div class="bp-steam"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="pizza-builder-view">
+            <!-- Real pizza base photo -->
+            <img src="assets/hero-pizza.png" class="bp-base" alt="Pizza base">
+            <!-- Sauce overlay -->
+            <div class="builder-layer layer-sauce" id="p-sauce"></div>
+            <!-- Cheese overlay -->
+            <div class="builder-layer layer-cheese" id="p-cheese"></div>
+            <!-- Melted cheese sheen sweep -->
+            <div class="bp-cheese-sheen"></div>
+            <!-- Charred leopard crust spots -->
+            <div class="bp-char"></div>
+            <!-- Toppings container -->
+            <div class="toppings-rendered-container" id="rendered-toppings"></div>
+            <!-- Gloss ring -->
+            <div class="bp-gloss"></div>
+          </div>
         </div>
       </div>
 
@@ -1105,7 +1115,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1782151900"></script>
+  <script src="app.js?v=1782156000"></script>
   <!-- AI Chat Order Widget -->
   <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">
     <span class="ai-chat-fab-icon" aria-hidden="true">

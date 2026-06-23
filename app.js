@@ -3408,3 +3408,30 @@ function _initAIChat(){
   });
 }
 if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _initAIChat); } else { _initAIChat(); }
+
+
+// ===== Pizza Lab 3D tilt parallax =====
+(function initPizzaLabTilt(){
+  function attach(){
+    var stage = document.getElementById('bpStage');
+    if (!stage || stage._tilt) return;
+    stage._tilt = true;
+    var box = stage.closest('.builder-canvas-box') || stage;
+    var raf = null, tx = 0, ty = 0;
+    box.addEventListener('pointermove', function(e){
+      var r = stage.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width - 0.5;
+      var py = (e.clientY - r.top) / r.height - 0.5;
+      tx = px * 16; ty = -py * 16;
+      if (!raf) raf = requestAnimationFrame(function(){
+        stage.style.transform = 'rotateY(' + tx + 'deg) rotateX(' + ty + 'deg)';
+        raf = null;
+      });
+    });
+    box.addEventListener('pointerleave', function(){
+      stage.style.transform = 'rotateY(0deg) rotateX(0deg)';
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+  else attach();
+})();
