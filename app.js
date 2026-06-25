@@ -1928,8 +1928,44 @@ const cartState = {
   deliveryMethod: 'delivery', // 'delivery' or 'pickup'
   couponDiscount: 0, // fraction (e.g. 0.3)
   freeDelivery: false,
-  checkoutStep: 1
+  checkoutStep: 1,
+  pickupTiming: 'asap', // 'asap' or 'schedule'
+  pickupTime: null // ISO string when pickupTiming === 'schedule'
 };
+
+let storeHours = { open_hour: 11, close_hour: 22, prep_time_minutes: 20 };
+let storeHoursLoaded = false;
+
+async function loadStoreHours() {
+  if (storeHoursLoaded || !supabaseClient) return;
+  try {
+    const { data } = await supabaseClient.from('store_settings').select('open_hour,close_hour,prep_time_minutes').eq('id', 1).single();
+    if (data) storeHours = data;
+    storeHoursLoaded = true;
+  } catch (e) {
+    console.warn('Using default store hours', e);
+  }
+}
+
+function generatePickupSlots() {
+  const now = new Date();
+  const earliest = new Date(now.getTime() + storeHours.prep_time_minutes * 60000);
+  const close = new Date(now);
+  close.setHours(storeHours.close_hour, 0, 0, 0);
+  const lastSlot = new Date(close.getTime() - 15 * 60000);
+
+  let slot = new Date(earliest);
+  slot.setSeconds(0, 0);
+  const remainder = slot.getMinutes() % 15;
+  if (remainder !== 0) slot.setMinutes(slot.getMinutes() + (15 - remainder));
+
+  const slots = [];
+  while (slot <= lastSlot) {
+    slots.push(new Date(slot));
+    slot = new Date(slot.getTime() + 15 * 60000);
+  }
+  return slots;
+}
 
 function toggleCartDrawer(forceShow = false) {
   const drawer = document.getElementById('cart-drawer');
@@ -2075,20 +2111,61 @@ function setDeliveryMethod(method) {
   const pickBtn = document.getElementById('m-pickup');
   const addressBox = document.getElementById('address-field-box');
   const landmarkBox = document.getElementById('landmark-field-box');
+  const pickupTimeBox = document.getElementById('pickup-time-box');
 
   if (method === 'delivery') {
     if (delBtn) delBtn.classList.add('active');
     if (pickBtn) pickBtn.classList.remove('active');
     if (addressBox) addressBox.style.display = 'flex';
     if (landmarkBox) landmarkBox.style.display = 'flex';
+    if (pickupTimeBox) pickupTimeBox.style.display = 'none';
   } else {
     if (delBtn) delBtn.classList.remove('active');
     if (pickBtn) pickBtn.classList.add('active');
     if (addressBox) addressBox.style.display = 'none';
     if (landmarkBox) landmarkBox.style.display = 'none';
+    if (pickupTimeBox) pickupTimeBox.style.display = 'flex';
+    setPickupTiming('asap');
   }
 
   updateCartUI();
+}
+
+async function setPickupTiming(requestedMode) {
+  await loadStoreHours();
+  const select = document.getElementById('pickup-time-select');
+  const note = document.getElementById('pickup-time-note');
+  const asapBtn = document.getElementById('pt-asap');
+  const scheduleBtn = document.getElementById('pt-schedule');
+
+  let mode = requestedMode;
+  let slots = [];
+  let noSlotsToday = false;
+
+  if (mode === 'schedule') {
+    slots = generatePickupSlots();
+    if (!slots.length) { mode = 'asap'; noSlotsToday = true; }
+  }
+
+  cartState.pickupTiming = mode;
+  if (asapBtn) asapBtn.classList.toggle('active', mode === 'asap');
+  if (scheduleBtn) scheduleBtn.classList.toggle('active', mode === 'schedule');
+
+  if (mode === 'schedule') {
+    cartState.pickupTime = slots[0].toISOString();
+    if (select) {
+      select.innerHTML = slots.map(s => `<option value="${s.toISOString()}">${s.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</option>`).join('');
+      select.style.display = 'block';
+      select.onchange = () => { cartState.pickupTime = select.value; };
+    }
+    if (note) note.textContent = '';
+  } else {
+    cartState.pickupTime = null;
+    if (select) select.style.display = 'none';
+    if (note) note.textContent = noSlotsToday
+      ? 'No more pickup slots today — order will be ASAP.'
+      : `Ready in ~${storeHours.prep_time_minutes} min`;
+  }
 }
 
 function applyCouponCode(code) {
@@ -2356,6 +2433,7 @@ async function submitOrderToDatabase(paymentToken) {
     customer_phone: phone,
     delivery_method: cartState.deliveryMethod,
     delivery_address: cartState.deliveryMethod === 'delivery' ? fullAddress : 'Pickup',
+    pickup_time: cartState.deliveryMethod === 'pickup' ? cartState.pickupTime : null,
     postcode: postcode,
     items: orderItems,
     subtotal: totals.subtotal,

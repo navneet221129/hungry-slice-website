@@ -67,10 +67,14 @@ function kanbanCardHTML(o) {
   const items = (o.items||[]).slice(0,3).map(i => `${i.qty}× ${esc(i.name)}`).join(', ');
   const more = (o.items||[]).length>3 ? ` +${o.items.length-3} more` : '';
   const t = new Date(o.created_at);
+  const pickupBadge = o.delivery_method==='pickup' && o.pickup_time
+    ? `<div class="kc-pickup">Pickup ${new Date(o.pickup_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`
+    : '';
   return `<div class="kanban-card" draggable="true" data-oid="${o.id}" onclick="openOrderModal('${o.id}')">
     <div class="kc-id">#${sid(o.id)}</div>
     <div class="kc-name">${esc(o.customer_name||'Anonymous')}</div>
     <div class="kc-items">${esc(items)}${more}</div>
+    ${pickupBadge}
     <div class="kc-meta"><span>${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span class="kc-total">${fmt(o.total)}</span></div>
   </div>`;
 }
@@ -131,7 +135,7 @@ window.openOrderModal = async function(oid) {
       Email: ${esc(o.customer_email||'—')}
     </div>
     <div class="om-section"><strong>${o.delivery_method==='pickup'?'Pickup':'Delivery'}</strong>
-      ${o.delivery_method==='delivery' ? esc(o.delivery_address||'—')+'<br>Postcode: '+esc(o.postcode||'—') : 'Customer collects in-store'}
+      ${o.delivery_method==='delivery' ? esc(o.delivery_address||'—')+'<br>Postcode: '+esc(o.postcode||'—') : 'Customer collects in-store — ' + (o.pickup_time ? 'Scheduled for ' + new Date(o.pickup_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'ASAP')}
     </div>
     <div class="om-section"><strong>Items</strong>
       <ul class="om-items">${items}</ul>

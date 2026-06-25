@@ -844,6 +844,15 @@
                 <button class="method-btn" id="m-pickup" onclick="setDeliveryMethod('pickup')">Pickup</button>
               </div>
             </div>
+            <div class="form-row" id="pickup-time-box" style="display:none;">
+              <label>Pickup Time</label>
+              <div class="method-toggle">
+                <button class="method-btn active" id="pt-asap" onclick="setPickupTiming('asap')">ASAP</button>
+                <button class="method-btn" id="pt-schedule" onclick="setPickupTiming('schedule')">Schedule</button>
+              </div>
+              <select id="pickup-time-select" style="display:none; margin-top:10px;"></select>
+              <small id="pickup-time-note" style="color:var(--text-muted); margin-top:6px; display:block;"></small>
+            </div>
             <div class="form-row" id="address-field-box">
               <label>Street Address</label>
               <input type="text" id="ship-address" placeholder="e.g. 15 Grey Street, Hamilton East">
@@ -1115,7 +1124,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1782156000"></script>
+  <script src="app.js?v=1782421472"></script>
   <!-- AI Chat Order Widget -->
   <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">
     <span class="ai-chat-fab-icon" aria-hidden="true">
