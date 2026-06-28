@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /3ds-return.html
+Disallow: /test-pay.html
+
+Sitemap: https://thehungryslice.co.nz/sitemap.xml
