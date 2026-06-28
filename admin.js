@@ -33,10 +33,32 @@ async function logActivity(action, target_type, target_id, details) {
 /* ============ ORDERS ============ */
 async function loadOrders() {
   const { data, error } = await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(200);
-  if (error) { console.warn(error); return; }
+  if (error) { console.warn(error); }
   allOrders = data || [];
   renderOrders();
   renderStats();
+  // Expired session on a device returns 0 rows silently (RLS). Detect + tell the user.
+  if (!error && allOrders.length === 0) {
+    try {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) showSessionExpired(); else hideSessionExpired();
+    } catch (_) { showSessionExpired(); }
+  } else {
+    hideSessionExpired();
+  }
+}
+function showSessionExpired() {
+  if (document.getElementById('session-expired-banner')) return;
+  const b = document.createElement('div');
+  b.id = 'session-expired-banner';
+  b.style.cssText = 'background:#7f1d1d;color:#fff;padding:12px 16px;text-align:center;font-weight:600;font-size:0.9rem;';
+  b.innerHTML = 'Your sign-in expired on this device — orders can\'t load. <button onclick="logout()" style="margin-left:10px;padding:6px 12px;border:0;border-radius:8px;background:#fff;color:#7f1d1d;font-weight:700;cursor:pointer;">Sign out & sign in again</button>';
+  const dash = document.getElementById('dash-view');
+  if (dash) dash.insertBefore(b, dash.firstChild);
+}
+function hideSessionExpired() {
+  const b = document.getElementById('session-expired-banner');
+  if (b) b.remove();
 }
 function statusKey(s) { return s==='preparing'?'preparing':s==='oven'?'oven':s==='delivery'?'delivery':s==='delivered'?'delivered':s==='cancelled'?'cancelled':'received'; }
 function filterOrders() {
