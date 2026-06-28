@@ -37,27 +37,41 @@ async function loadOrders() {
   allOrders = data || [];
   renderOrders();
   renderStats();
-  // Expired session on a device returns 0 rows silently (RLS). Detect + tell the user.
+  // 0 rows can mean: expired session, OR signed in as a non-admin (e.g. customer) account.
+  // RLS hides orders from non-admins silently. Tell the user which it is.
   if (!error && allOrders.length === 0) {
     try {
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) showSessionExpired(); else hideSessionExpired();
-    } catch (_) { showSessionExpired(); }
+      if (!user) {
+        showOrdersBanner('Your sign-in expired on this device — orders can\'t load.');
+      } else {
+        showOrdersBanner('Signed in as ' + (user.email || 'this account') + ' — it can\'t see orders. Sign out and sign in with your admin account.');
+      }
+    } catch (_) {
+      showOrdersBanner('Your sign-in expired — please sign out and sign in again.');
+    }
   } else {
-    hideSessionExpired();
+    hideOrdersBanner();
   }
 }
-function showSessionExpired() {
-  if (document.getElementById('session-expired-banner')) return;
-  const b = document.createElement('div');
-  b.id = 'session-expired-banner';
-  b.style.cssText = 'background:#7f1d1d;color:#fff;padding:12px 16px;text-align:center;font-weight:600;font-size:0.9rem;';
-  b.innerHTML = 'Your sign-in expired on this device — orders can\'t load. <button onclick="logout()" style="margin-left:10px;padding:6px 12px;border:0;border-radius:8px;background:#fff;color:#7f1d1d;font-weight:700;cursor:pointer;">Sign out & sign in again</button>';
-  const dash = document.getElementById('dash-view');
-  if (dash) dash.insertBefore(b, dash.firstChild);
+function showOrdersBanner(msg) {
+  let b = document.getElementById('orders-banner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'orders-banner';
+    b.style.cssText = 'background:#7f1d1d;color:#fff;padding:12px 16px;text-align:center;font-weight:600;font-size:0.9rem;line-height:1.5;';
+    const dash = document.getElementById('dash-view');
+    if (dash) dash.insertBefore(b, dash.firstChild);
+  }
+  b.textContent = msg + '  ';
+  const btn = document.createElement('button');
+  btn.textContent = 'Sign out';
+  btn.style.cssText = 'margin-left:10px;padding:6px 12px;border:0;border-radius:8px;background:#fff;color:#7f1d1d;font-weight:700;cursor:pointer;';
+  btn.onclick = logout;
+  b.appendChild(btn);
 }
-function hideSessionExpired() {
-  const b = document.getElementById('session-expired-banner');
+function hideOrdersBanner() {
+  const b = document.getElementById('orders-banner');
   if (b) b.remove();
 }
 function statusKey(s) { return s==='preparing'?'preparing':s==='oven'?'oven':s==='delivery'?'delivery':s==='delivered'?'delivered':s==='cancelled'?'cancelled':'received'; }
