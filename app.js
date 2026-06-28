@@ -1947,22 +1947,39 @@ async function loadStoreHours() {
   }
 }
 
+const STORE_TZ = 'Pacific/Auckland'; // store hours are NZ wall-clock, not customer device time
+
+// current NZ wall-clock parts + the NZ->UTC offset for now
+function nzNow() {
+  const d = new Date();
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: STORE_TZ, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  const p = {};
+  for (const part of f.formatToParts(d)) p[part.type] = part.value;
+  const y=+p.year, mo=+p.month, dd=+p.day, h=+p.hour, mi=+p.minute, s=+(p.second||0);
+  const asUTC = Date.UTC(y, mo-1, dd, h, mi, s);
+  const offsetMs = asUTC - Math.floor(d.getTime()/1000)*1000; // NZ offset from UTC (handles DST)
+  return { y, mo, d: dd, h, mi, offsetMs };
+}
+// NZ wall-clock (today) at h:mi -> absolute Date instant
+function nzWallToInstant(y, mo, d, h, mi, offsetMs) {
+  return new Date(Date.UTC(y, mo-1, d, h, mi, 0) - offsetMs);
+}
+// format an instant as NZ local time label, regardless of device TZ
+function fmtNZTime(date) {
+  return new Intl.DateTimeFormat('en-NZ', { timeZone: STORE_TZ, hour:'2-digit', minute:'2-digit', hour12:true }).format(date);
+}
+
 function generatePickupSlots() {
-  const now = new Date();
-  const earliest = new Date(now.getTime() + storeHours.prep_time_minutes * 60000);
-  const close = new Date(now);
-  close.setHours(storeHours.close_hour, 0, 0, 0);
-  const lastSlot = new Date(close.getTime() - 15 * 60000);
-
-  let slot = new Date(earliest);
-  slot.setSeconds(0, 0);
-  const remainder = slot.getMinutes() % 15;
-  if (remainder !== 0) slot.setMinutes(slot.getMinutes() + (15 - remainder));
-
+  const nz = nzNow();
+  let startMin = nz.h*60 + nz.mi + storeHours.prep_time_minutes; // earliest = now + prep (NZ)
+  if (startMin % 15 !== 0) startMin += (15 - startMin % 15);      // round up to next 15
+  const openMin = storeHours.open_hour*60;                       // don't offer slots before opening
+  if (startMin < openMin) startMin = openMin;
+  const lastMin = storeHours.close_hour*60 - 15;                 // last slot 15 min before close
   const slots = [];
-  while (slot <= lastSlot) {
-    slots.push(new Date(slot));
-    slot = new Date(slot.getTime() + 15 * 60000);
+  for (let m = startMin; m <= lastMin; m += 15) {
+    const inst = nzWallToInstant(nz.y, nz.mo, nz.d, Math.floor(m/60), m%60, nz.offsetMs);
+    slots.push({ iso: inst.toISOString(), label: fmtNZTime(inst) });
   }
   return slots;
 }
@@ -2152,9 +2169,9 @@ async function setPickupTiming(requestedMode) {
   if (scheduleBtn) scheduleBtn.classList.toggle('active', mode === 'schedule');
 
   if (mode === 'schedule') {
-    cartState.pickupTime = slots[0].toISOString();
+    cartState.pickupTime = slots[0].iso;
     if (select) {
-      select.innerHTML = slots.map(s => `<option value="${s.toISOString()}">${s.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</option>`).join('');
+      select.innerHTML = slots.map(s => `<option value="${s.iso}">${s.label}</option>`).join('');
       select.style.display = 'block';
       select.onchange = () => { cartState.pickupTime = select.value; };
     }

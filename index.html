@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Hungry Slice | Big Bites. Bold Flavours.</title>
+  <link rel="icon" type="image/png" href="assets/cheese-slice.png">
+  <link rel="apple-touch-icon" href="assets/hero-pizza.png">
   <meta name="description" content="Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand. Wood-fired pizza engineered for perfect delivery.">
 
   <link rel="canonical" href="https://thehungryslice.co.nz/">
@@ -102,7 +104,7 @@
           <i data-lucide="sun" class="sun-icon"></i>
           <i data-lucide="moon" class="moon-icon"></i>
         </button>
-        <button class="cart-btn" onclick="toggleCartDrawer()">
+        <button class="cart-btn" onclick="toggleCartDrawer()" aria-label="Open cart">
           <i data-lucide="shopping-bag"></i>
           <span class="cart-badge">0</span>
         </button>
@@ -195,27 +197,27 @@
       <!-- Interactive Parallax Pizza Container -->
       <div class="hero-visual-container">
         <div class="hero-pizza-wrapper">
-          <img id="hero-pizza-real" src="assets/hero-pizza.png" class="hero-pizza-img" alt="Fresh artisan pizza" draggable="false">
+          <img id="hero-pizza-real" src="assets/hero-pizza.png" class="hero-pizza-img" alt="Fresh artisan pizza" draggable="false" fetchpriority="high" decoding="async">
           
           <!-- Floating Ingredients (Real Food Photos) -->
           <div class="floating-ingredient layer-1" data-speed="1.2" style="top: 8%; left: 2%;">
-            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=140&q=85&fit=crop&crop=entropy" alt="Pepperoni">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=140&q=85&fit=crop&crop=entropy" alt="Pepperoni">
             <span class="ing-label">Pepperoni</span>
           </div>
           <div class="floating-ingredient layer-2" data-speed="2.5" style="top: 20%; right: 0%;">
-            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=140&q=85&fit=crop&crop=entropy" alt="Gourmet">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=140&q=85&fit=crop&crop=entropy" alt="Gourmet">
             <span class="ing-label">Fresh Basil</span>
           </div>
           <div class="floating-ingredient layer-3" data-speed="1.8" style="bottom: 12%; left: 6%;">
-            <img src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=140&q=85&fit=crop&crop=entropy" alt="Jalapeño">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=140&q=85&fit=crop&crop=entropy" alt="Jalapeño">
             <span class="ing-label">Jalapeño</span>
           </div>
           <div class="floating-ingredient layer-4" data-speed="3" style="bottom: 22%; right: 2%;">
-            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=140&q=85&fit=crop&crop=entropy" alt="Mozzarella">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=140&q=85&fit=crop&crop=entropy" alt="Mozzarella">
             <span class="ing-label">Mozzarella</span>
           </div>
           <div class="floating-ingredient layer-5" data-speed="1.4" style="top: 48%; left: -2%;">
-            <img src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=140&q=85&fit=crop&crop=entropy" alt="Oregano">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=140&q=85&fit=crop&crop=entropy" alt="Oregano">
             <span class="ing-label">Oregano</span>
           </div>
         </div>
@@ -265,7 +267,7 @@
         <div class="pizza-launch-card glass-card" data-pizza-id="truffle-truce" data-name="The Truffle Truce" data-price="26.00">
           <div class="pizza-badge">BEST SELLER</div>
           <div class="pizza-card-image-box">
-            <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=420&q=80" alt="The Truffle Truce" class="card-pizza-img">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=420&q=80" alt="The Truffle Truce" class="card-pizza-img">
           </div>
           <div class="pizza-card-content">
             <div class="pizza-card-header">
@@ -309,7 +311,7 @@
         <div class="pizza-launch-card glass-card" data-pizza-id="smoked-inferno" data-name="The Smoked Inferno" data-price="27.50">
           <div class="pizza-badge alert-badge">SPICY</div>
           <div class="pizza-card-image-box">
-            <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=420&q=80" alt="The Smoked Inferno" class="card-pizza-img rotate-offset">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=420&q=80" alt="The Smoked Inferno" class="card-pizza-img rotate-offset">
           </div>
           <div class="pizza-card-content">
             <div class="pizza-card-header">
@@ -353,7 +355,7 @@
         <div class="pizza-launch-card glass-card" data-pizza-id="green-garden" data-name="Green Garden Gold" data-price="25.00">
           <div class="pizza-badge veg-badge">VEGETARIAN</div>
           <div class="pizza-card-image-box">
-            <img src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=420&q=80" alt="Green Garden Gold" class="card-pizza-img">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=420&q=80" alt="Green Garden Gold" class="card-pizza-img">
           </div>
           <div class="pizza-card-content">
             <div class="pizza-card-header">
@@ -397,7 +399,7 @@
         <div class="pizza-launch-card glass-card" data-pizza-id="hamilton-hero" data-name="The Hamilton Hero" data-price="28.00">
           <div class="pizza-badge kiwi-badge">NZ CLASSIC</div>
           <div class="pizza-card-image-box">
-            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=420&q=80" alt="The Hamilton Hero" class="card-pizza-img rotate-offset-large">
+            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=420&q=80" alt="The Hamilton Hero" class="card-pizza-img rotate-offset-large">
           </div>
           <div class="pizza-card-content">
             <div class="pizza-card-header">
@@ -541,27 +543,27 @@
           <h3>4. Premium Toppings (+$2.00 each)</h3>
           <div class="toppings-selection-grid">
             <button class="topping-btn" data-topping="pepperoni">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?w=80&q=80&fit=crop&crop=center" alt="Pepperoni"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1628840042765-356cda07504e?w=80&q=80&fit=crop&crop=center" alt="Pepperoni"></div>
               <span>Pepperoni</span>
             </button>
             <button class="topping-btn" data-topping="basil">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=80&q=80&fit=crop&crop=center" alt="Fresh Basil"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=80&q=80&fit=crop&crop=center" alt="Fresh Basil"></div>
               <span>Fresh Basil</span>
             </button>
             <button class="topping-btn" data-topping="jalapeno">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1588169770080-c33b4e39cf44?w=80&q=80&fit=crop&crop=center" alt="Jalapeño"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1588169770080-c33b4e39cf44?w=80&q=80&fit=crop&crop=center" alt="Jalapeño"></div>
               <span>Jalapeño</span>
             </button>
             <button class="topping-btn" data-topping="mushrooms">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=80&fit=crop&crop=center" alt="Mushrooms"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=80&fit=crop&crop=center" alt="Mushrooms"></div>
               <span>Mushrooms</span>
             </button>
             <button class="topping-btn" data-topping="chicken">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=80&q=80&fit=crop&crop=center" alt="Shredded Chicken"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=80&q=80&fit=crop&crop=center" alt="Shredded Chicken"></div>
               <span>Shredded Chicken</span>
             </button>
             <button class="topping-btn" data-topping="onions">
-              <div class="topping-thumb"><img src="https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=80&q=80&fit=crop&crop=center" alt="Red Onion"></div>
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=80&q=80&fit=crop&crop=center" alt="Red Onion"></div>
               <span>Red Onion</span>
             </button>
           </div>
@@ -827,7 +829,7 @@
     <div class="cart-drawer glass-card">
       <div class="cart-header">
         <h2>Your Flight Bag</h2>
-        <button class="close-drawer-btn" onclick="toggleCartDrawer()"><i data-lucide="x"></i></button>
+        <button class="close-drawer-btn" onclick="toggleCartDrawer()" aria-label="Close cart"><i data-lucide="x"></i></button>
       </div>
 
       <!-- Steps indicator -->
@@ -1155,7 +1157,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1782421472"></script>
+  <script src="app.js?v=1782672598"></script>
   <!-- AI Chat Order Widget -->
   <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">
     <span class="ai-chat-fab-icon" aria-hidden="true">

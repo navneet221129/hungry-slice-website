@@ -11,6 +11,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 const fmt = n => '$'+Number(n||0).toFixed(2);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sid = id => String(id).slice(0,8);
+const fmtNZTime = d => new Intl.DateTimeFormat('en-NZ',{timeZone:'Pacific/Auckland',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d)); // store TZ, not admin device
 
 /* ============ AUTH ============ */
 async function login(email, password) {
@@ -68,7 +69,7 @@ function kanbanCardHTML(o) {
   const more = (o.items||[]).length>3 ? ` +${o.items.length-3} more` : '';
   const t = new Date(o.created_at);
   const pickupBadge = o.delivery_method==='pickup' && o.pickup_time
-    ? `<div class="kc-pickup">Pickup ${new Date(o.pickup_time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`
+    ? `<div class="kc-pickup">Pickup ${fmtNZTime(o.pickup_time)}</div>`
     : '';
   return `<div class="kanban-card" draggable="true" data-oid="${o.id}" onclick="openOrderModal('${o.id}')">
     <div class="kc-id">#${sid(o.id)}</div>
@@ -135,7 +136,7 @@ window.openOrderModal = async function(oid) {
       Email: ${esc(o.customer_email||'—')}
     </div>
     <div class="om-section"><strong>${o.delivery_method==='pickup'?'Pickup':'Delivery'}</strong>
-      ${o.delivery_method==='delivery' ? esc(o.delivery_address||'—')+'<br>Postcode: '+esc(o.postcode||'—') : 'Customer collects in-store — ' + (o.pickup_time ? 'Scheduled for ' + new Date(o.pickup_time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'ASAP')}
+      ${o.delivery_method==='delivery' ? esc(o.delivery_address||'—')+'<br>Postcode: '+esc(o.postcode||'—') : 'Customer collects in-store — ' + (o.pickup_time ? 'Scheduled for ' + fmtNZTime(o.pickup_time) : 'ASAP')}
     </div>
     <div class="om-section"><strong>Items</strong>
       <ul class="om-items">${items}</ul>
