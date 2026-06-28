@@ -12,6 +12,8 @@ const fmt = n => '$'+Number(n||0).toFixed(2);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sid = id => String(id).slice(0,8);
 const fmtNZTime = d => new Intl.DateTimeFormat('en-NZ',{timeZone:'Pacific/Auckland',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d)); // store TZ, not admin device
+// items may arrive as an array (jsonb) or a JSON string; normalize so detail view never silently blanks
+function parseItems(o){ let it=o&&o.items; if(typeof it==='string'){ try{ it=JSON.parse(it); }catch(_){ it=[]; } } return Array.isArray(it)?it:[]; }
 
 /* ============ AUTH ============ */
 async function login(email, password) {
@@ -101,8 +103,9 @@ function renderKanban() {
   wireKanbanDrag();
 }
 function kanbanCardHTML(o) {
-  const items = (o.items||[]).slice(0,3).map(i => `${i.qty}× ${esc(i.name)}`).join(', ');
-  const more = (o.items||[]).length>3 ? ` +${o.items.length-3} more` : '';
+  const arr = parseItems(o);
+  const items = arr.slice(0,3).map(i => `${i.qty}× ${esc(i.name)}`).join(', ');
+  const more = arr.length>3 ? ` +${arr.length-3} more` : '';
   const t = new Date(o.created_at);
   const pickupBadge = o.delivery_method==='pickup' && o.pickup_time
     ? `<div class="kc-pickup">Pickup ${fmtNZTime(o.pickup_time)}</div>`
@@ -159,7 +162,8 @@ window.openOrderModal = async function(oid) {
   currentOrderId = oid;
   const o = allOrders.find(x => x.id===oid);
   if (!o) return;
-  const items = (o.items||[]).map(i => `<li><span>${i.qty}× ${esc(i.name)}</span><span>${fmt(i.price*i.qty)}</span></li>`).join('');
+  const _items = parseItems(o);
+  const items = _items.length ? _items.map(i => `<li><span>${i.qty}× ${esc(i.name)}</span><span>${fmt(i.price*i.qty)}</span></li>`).join('') : '<li style="color:#888;">No items recorded for this order</li>';
   const t = new Date(o.created_at);
   const statusBtns = ['received','preparing','oven','delivery','delivered'].map(s =>
     `<button class="om-status-btn ${statusKey(o.status)===s?'active':''}" onclick="setOrderStatus('${oid}','${s}')">${s}</button>`
