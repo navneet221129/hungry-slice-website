@@ -176,13 +176,24 @@ body { margin:0; padding:0; font-family:'Inter',sans-serif; background:var(--bg)
   .tab-pane { padding:14px; }
 }
 
-/* Phone: compact stats + collapse empty kanban columns so orders aren't buried */
+/* Phone: shrink header/stats/toolbar so orders surface near the top */
 @media (max-width:600px){
-  .stats-row { grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-  .stat { padding:12px; border-radius:12px; }
-  .stat-num { font-size:1.5rem; }
-  .stat-lbl { font-size:0.62rem; margin-top:3px; }
-  .orders-toolbar { margin-bottom:14px; }
+  /* sticky header was ~180px (wrapped 3-4 rows) — compact it */
+  .dash-head { padding:10px 14px; gap:8px 10px; }
+  .dash-brand { font-size:1.05rem; }
+  .dash-page { display:none; }
+  .dash-head-right { gap:8px; }
+  .dash-head-right button, .status-pill { font-size:0.72rem; padding:6px 10px; }
+  /* stats: compact 2x2 */
+  .stats-row { grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .stat { padding:10px 12px; border-radius:12px; }
+  .stat-num { font-size:1.35rem; }
+  .stat-lbl { font-size:0.6rem; margin-top:2px; }
+  /* filter pills: one horizontal-scroll row instead of wrapping into 4 rows */
+  .orders-toolbar { flex-direction:column; align-items:stretch; gap:10px; margin-bottom:12px; }
+  .filter-tabs { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
+  .ftab { flex:0 0 auto; white-space:nowrap; }
+  /* collapse empty kanban columns */
   .kanban-board { gap:10px; }
   .kanban-col { min-height:auto; padding:12px; }
   .kanban-cards { min-height:0; }
