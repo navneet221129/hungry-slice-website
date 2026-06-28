@@ -176,5 +176,17 @@ body { margin:0; padding:0; font-family:'Inter',sans-serif; background:var(--bg)
   .tab-pane { padding:14px; }
 }
 
+/* Phone: compact stats + collapse empty kanban columns so orders aren't buried */
+@media (max-width:600px){
+  .stats-row { grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .stat { padding:12px; border-radius:12px; }
+  .stat-num { font-size:1.5rem; }
+  .stat-lbl { font-size:0.62rem; margin-top:3px; }
+  .orders-toolbar { margin-bottom:14px; }
+  .kanban-board { gap:10px; }
+  .kanban-col { min-height:auto; padding:12px; }
+  .kanban-cards { min-height:0; }
+}
+
 [hidden] { display:none !important; }
 
