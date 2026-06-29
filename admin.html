@@ -7,7 +7,7 @@
   <script>(function(){try{if(localStorage.getItem('hs_admin_theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Anton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=1782731498">
+  <link rel="stylesheet" href="admin.css?v=1782732439">
   <script src="assets/supabase-js.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -53,6 +53,7 @@
       <button class="ptab" data-tab="reviews">⭐ Reviews</button>
       <button class="ptab" data-tab="settings">⚙️ Settings</button>
       <button class="ptab" data-tab="activity">📝 Activity Log</button>
+      <button class="ptab" data-tab="campaigns">📣 Campaigns</button>
     </nav>
 
     <!-- ===== ORDERS TAB ===== -->
@@ -195,6 +196,25 @@
       <div class="activity-list" id="activity-list"><div class="empty-state">Loading…</div></div>
     </section>
 
+    <section class="tab-pane" id="tab-campaigns">
+      <div class="camp-wrap">
+        <h2 class="camp-title">📣 Email an Offer to Subscribers</h2>
+        <p class="camp-sub"><strong id="camp-count">…</strong> opted-in subscriber(s)</p>
+        <div class="camp-form">
+          <label>Subject line</label>
+          <input type="text" id="camp-subject" placeholder="🔥 This weekend only — 30% off all pizzas!">
+          <label>Message</label>
+          <textarea id="camp-message" rows="8" placeholder="Write your offer here… an unsubscribe link is added automatically."></textarea>
+          <div class="camp-actions">
+            <button class="ghost-btn" id="camp-test">Send test to me</button>
+            <button class="camp-send-btn" id="camp-send">Send to all subscribers</button>
+          </div>
+          <div id="camp-result" class="camp-result"></div>
+        </div>
+        <p class="camp-note">Every email includes your store name + an unsubscribe link (legally required). Sending needs a Resend API key set as a Supabase secret — until then it runs in preview/dormant mode.</p>
+      </div>
+    </section>
+
   </div>
 
   <!-- ORDER DETAIL MODAL -->
@@ -237,6 +257,6 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1782731414"></script>
+  <script src="admin.js?v=1782732439"></script>
 </body>
 </html>

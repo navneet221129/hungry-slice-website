@@ -1872,19 +1872,33 @@ function updateTrackerUI(stepKey) {
 
 // Simulation starts only when user scrolls to tracker section (not on load)
 let simulationStarted = false;
+function _trackerResume(attempt){
+  attempt = attempt || 0;
+  let saved=null; try{ saved=localStorage.getItem('hs_active_order'); }catch(e){}
+  if(!saved) return false;
+  if(supabaseClient){ subscribeToOrderTracker(saved); const h=document.getElementById('track-hint'); if(h) h.textContent='Tracking your latest order — live, in sync with the kitchen.'; }
+  else if(attempt < 12){ setTimeout(function(){ _trackerResume(attempt+1); }, 600); }
+  return true;
+}
+window.trackByInput = function(){
+  const inp = document.getElementById('track-order-input');
+  const hint = document.getElementById('track-hint');
+  const v = inp ? inp.value.trim() : '';
+  if(!/^[0-9a-fA-F-]{8,}$/.test(v)){ if(hint){ hint.textContent='Please paste a valid order ID.'; hint.classList.add('track-hint-err'); } return; }
+  try{ localStorage.setItem('hs_active_order', v); }catch(e){}
+  if(hint){ hint.textContent='Tracking your order — live, in sync with the kitchen.'; hint.classList.remove('track-hint-err'); }
+  subscribeToOrderTracker(v);
+};
 document.addEventListener('DOMContentLoaded', () => {
   const trackerSection = document.getElementById('tracker');
-  if (trackerSection && 'IntersectionObserver' in window) {
-    const trackerObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !simulationStarted && !realOrderActive) {
-          simulationStarted = true;
-          setTimeout(runSimulatedOrder, 500);
-        }
-      });
-    }, { threshold: 0.3 });
-    trackerObserver.observe(trackerSection);
-  }
+  if (!trackerSection) return;
+  // resume a real saved order (polls get_order_status — matches admin status live)
+  if (_trackerResume()) return;
+  // no active order: neutral empty state (no misleading auto-demo)
+  const titleEl=document.getElementById('tracker-status-title');
+  const descEl=document.getElementById('tracker-status-desc');
+  if(titleEl) titleEl.innerText='No active order';
+  if(descEl) descEl.innerText='Paste your order ID above, or place an order — it’ll track here live.';
 });
 // setTimeout(runSimulatedOrder, 2000); — disabled to prevent auto-confetti
 
@@ -2509,6 +2523,11 @@ async function submitOrderToDatabase(paymentToken) {
       } else {
         openSuccessModal('Order Placed!', `Your order is in! Live Tracking ID: ${String(orderId).slice(0,8)}`);
         subscribeToOrderTracker(orderId);
+        try { localStorage.setItem('hs_active_order', orderId); } catch(e){}
+        try {
+          const _optin = document.getElementById('ship-offers-optin');
+          if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' });
+        } catch (e) {}
         notifyOrder(orderId);
       }
     } catch (err) {
@@ -2588,7 +2607,7 @@ function subscribeToOrderTracker(orderId) {
       const { data, error } = await supabaseClient.rpc('get_order_status', { p_id: orderId });
       if (!error && data) {
         updateTrackerUI(_statusMap[data] || data);
-        if (data === 'delivered') { _trackStopped = true; return; }
+        if (data === 'delivered') { _trackStopped = true; try{ localStorage.removeItem('hs_active_order'); }catch(e){} return; }
       }
     } catch (e) { /* transient network — keep polling */ }
     setTimeout(pollStatus, 8000);

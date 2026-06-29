@@ -56,11 +56,21 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1782156000">
+  <link rel="stylesheet" href="style.css?v=1782732357">
   <link rel="stylesheet" href="effects.css?v=1782723757">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
+  <style>
+    .seo-h1 { margin:80px auto 4px !important; }
+    #tracker.tracker-section { padding-top:20px; }
+    .track-lookup { display:flex; gap:10px; max-width:520px; margin:0 auto 8px; }
+    .track-lookup input { flex:1; min-width:0; padding:13px 16px; border-radius:12px; border:1px solid var(--border-color,rgba(255,255,255,.15)); background:rgba(255,255,255,.05); color:var(--text-color,#eee); font-size:.95rem; }
+    .track-lookup input:focus { outline:none; border-color:var(--accent,#ff5500); }
+    .track-lookup-btn { background:linear-gradient(135deg,var(--accent,#ff5500),#ff7a1a); color:#fff; border:0; border-radius:12px; padding:0 24px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .track-hint { text-align:center; color:var(--text-muted,#9aa); font-size:.85rem; margin:0 0 18px; }
+    .track-hint-err { color:#ef4444; }
+  </style>
 </head>
 <body>
 
@@ -146,6 +156,11 @@
     </div>
 
     <div class="tracker-container glass-card">
+      <div class="track-lookup">
+        <input type="text" id="track-order-input" placeholder="Paste your order ID to track" aria-label="Order ID">
+        <button class="track-lookup-btn" onclick="trackByInput()">Track</button>
+      </div>
+      <p class="track-hint" id="track-hint">Just ordered? Your order tracks here automatically. Or paste your order ID above.</p>
       <div class="tracker-stepper">
         <div class="step-progress-track">
           <div class="step-progress-fill" id="track-fill"></div>
@@ -196,8 +211,8 @@
       
       <!-- Simulation Controls -->
       <div class="tracker-simulation-banner">
-        <span>💡 <i>Simulated Tracker Speed:</i></span>
-        <button class="simulation-btn" onclick="runSimulatedOrder()">Speed Up Cycle</button>
+        <span>💡 <i>No order yet?</i></span>
+        <button class="simulation-btn" onclick="runSimulatedOrder()">See a demo</button>
       </div>
     </div>
   </section>
@@ -334,6 +349,9 @@
             <div class="form-row">
               <label>Email <span class="opt-tag">for your receipt</span></label>
               <input type="email" id="ship-email" placeholder="you@email.com" autocomplete="email">
+            </div>
+            <div class="form-row offers-optin">
+              <label class="optin-check"><input type="checkbox" id="ship-offers-optin"> Email me deals &amp; offers <span class="opt-tag">(optional)</span></label>
             </div>
           </div>
         </div>
@@ -586,7 +604,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1782723108"></script>
+  <script src="app.js?v=1782746766"></script>
   <script src="effects.js?v=1782723757"></script>
   <!-- AI Chat Order Widget -->
   <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">

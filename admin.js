@@ -574,6 +574,34 @@ function switchTab(tab) {
   if (tab==='reviews') loadReviews();
   if (tab==='settings') loadSettings();
   if (tab==='activity') loadActivity();
+  if (tab==='campaigns') loadCampaigns();
+}
+
+/* ============ CAMPAIGNS ============ */
+async function loadCampaigns(){
+  try {
+    const { count } = await sb.from('email_subscribers').select('*',{count:'exact',head:true}).eq('subscribed',true);
+    const el=$('#camp-count'); if(el) el.textContent = (count!=null?count:'0');
+  } catch(e){ const el=$('#camp-count'); if(el) el.textContent='0'; }
+}
+async function sendCampaign(testOnly){
+  const subject=($('#camp-subject').value||'').trim();
+  const message=($('#camp-message').value||'').trim();
+  const res=$('#camp-result');
+  if(!subject||!message){ res.textContent='Add a subject and a message first.'; res.className='camp-result err'; return; }
+  if(!testOnly && !confirm('Send this offer to ALL opted-in subscribers?')) return;
+  res.textContent='Sending…'; res.className='camp-result';
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    const token = (session && session.access_token) || SUPA_ANON;
+    const body = { subject, message };
+    if(testOnly){ const { data:{ user } } = await sb.auth.getUser(); if(!user||!user.email){ res.textContent='No admin email available for a test send.'; res.className='camp-result err'; return; } body.test_to=user.email; }
+    const r = await fetch(`${SUPA_URL}/functions/v1/send-campaign`, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token, 'apikey':SUPA_ANON }, body: JSON.stringify(body) });
+    const d = await r.json();
+    if(d.dormant){ res.innerHTML='⚠️ '+esc(d.reason)+'<br><small>'+d.recipients+' subscriber(s) would receive it once the key is set.</small>'; res.className='camp-result warn'; }
+    else if(d.ok){ res.textContent='✅ '+(testOnly?('Test sent to you.'):('Sent to '+(d.sent||0)+' of '+d.total+(d.failed?(' — '+d.failed+' failed'):'')+'.')); res.className='camp-result ok'; try{ await logActivity(testOnly?'campaign_test':'campaign_send','campaign',null,{subject,sent:d.sent}); }catch(e){} }
+    else { res.textContent='Error: '+(d.error||'send failed'); res.className='camp-result err'; }
+  }catch(e){ res.textContent='Error: '+(e.message||e); res.className='camp-result err'; }
 }
 
 /* ============ REALTIME + SOUND ============ */
@@ -650,6 +678,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#product-form').onsubmit = saveProduct;
   $('#pf-delete').onclick = deleteProduct;
   $('#save-settings').onclick = saveSettings;
+  if ($('#camp-send')) $('#camp-send').onclick = () => sendCampaign(false);
+  if ($('#camp-test')) $('#camp-test').onclick = () => sendCampaign(true);
   // close modals on overlay click
   $$('.modal-overlay').forEach(m => m.onclick = e => { if (e.target===m) m.hidden=true; });
 });

@@ -4650,3 +4650,7 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 @media (prefers-reduced-motion: reduce) {
   .bp-glow, .bp-steam span, .pizza-builder-view, .bp-cheese-sheen { animation: none; }
 }
+
+/* offers opt-in checkbox */
+.offers-optin .optin-check { display:flex; align-items:center; gap:8px; font-weight:500; font-size:0.9rem; color:var(--text-color,#ddd); cursor:pointer; }
+.offers-optin .optin-check input { width:auto; accent-color:var(--accent,#ff5500); transform:scale(1.15); }

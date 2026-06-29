@@ -277,3 +277,18 @@ html[data-theme="light"] .om-status-btn.active { color:#fff; background:linear-g
 html[data-theme="light"] .kanban-card:hover { background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
 /* modal backdrop a touch lighter */
 html[data-theme="light"] .modal-overlay { background:rgba(0,0,0,0.45); }
+
+/* ---- Campaigns ---- */
+.camp-wrap { max-width:640px; }
+.camp-title { font-family:'Anton',sans-serif; margin:0 0 4px; }
+.camp-sub { color:var(--text-muted); margin:0 0 18px; }
+.camp-sub strong { color:var(--accent); }
+.camp-form label { display:block; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:var(--text-muted); margin:14px 0 6px; }
+.camp-form input, .camp-form textarea { width:100%; box-sizing:border-box; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-family:inherit; font-size:.95rem; }
+.camp-form input:focus, .camp-form textarea:focus { outline:none; border-color:var(--accent); }
+.camp-actions { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+.camp-send-btn { background:linear-gradient(135deg,var(--accent),#ff7a1a); color:#fff; border:none; border-radius:10px; padding:12px 22px; font-weight:700; cursor:pointer; }
+.camp-result { margin-top:14px; font-weight:600; min-height:20px; }
+.camp-result.ok { color:var(--ok); } .camp-result.err { color:var(--err); } .camp-result.warn { color:var(--warn); }
+.camp-note { color:var(--text-muted); font-size:.78rem; margin-top:18px; line-height:1.5; }
+html[data-theme="light"] .camp-form input, html[data-theme="light"] .camp-form textarea { background:rgba(0,0,0,0.04); }
