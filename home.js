@@ -146,7 +146,7 @@
       : '<div class="bv-media" style="background:url(\'' + esc(BRAND_POSTER) + '\') center/cover;"></div>';
     sec.innerHTML =
       '<div class="bv-frame">' + media +
-      (hasVid ? '' : '<span class="bv-soon">Ad video coming soon</span>') +
+      '' +
       '<div class="bv-overlay">' +
         '<div class="bv-tag">Hamilton\'s Cloud Kitchen</div>' +
         '<h2 class="bv-name">THE HUNGRY <span class="bv-accent">SLICE</span></h2>' +
