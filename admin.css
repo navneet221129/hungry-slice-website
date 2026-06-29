@@ -204,3 +204,76 @@ body { margin:0; padding:0; font-family:'Inter',sans-serif; background:var(--bg)
 
 [hidden] { display:none !important; }
 
+
+/* ---- Scheduled pickups ---- */
+.sched-card { border-left:3px solid #3b82f6; }
+.sched-card.sched-due { border-left-color:var(--accent,#ff5500); animation:schedPulse 1.4s ease-in-out infinite; }
+@keyframes schedPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(255,85,0,.0);} 50%{ box-shadow:0 0 0 4px rgba(255,85,0,.25);} }
+.sched-row { display:flex; flex-wrap:wrap; gap:6px; justify-content:space-between; margin-top:8px; font-size:.78rem; }
+.sched-pickup { color:#60a5fa; font-weight:700; }
+.sched-due .sched-pickup { color:var(--accent,#ff5500); }
+.sched-start { color:var(--text-muted,#9aa); font-weight:600; }
+.sched-due .sched-start { color:var(--accent,#ff5500); font-weight:800; }
+.sched-toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,40px); z-index:9999; background:var(--accent,#ff5500); color:#fff; font-weight:700; padding:14px 22px; border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s ease; max-width:90vw; text-align:center; }
+.sched-toast.show { opacity:1; transform:translate(-50%,0); }
+
+/* ---- SLA timers ---- */
+.kc-sla { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:50px; font-size:.7rem; font-weight:800; }
+.kc-sla.sla-ok { background:rgba(34,197,94,.18); color:#34d399; }
+.kc-sla.sla-warn { background:rgba(245,158,11,.2); color:#fbbf24; }
+.kc-sla.sla-late { background:rgba(239,68,68,.22); color:#f87171; }
+/* ---- Order tools (search + csv) ---- */
+.order-tools { display:flex; gap:8px; align-items:center; }
+.order-tools input[type=search] { background:rgba(255,255,255,.05); border:1px solid var(--border,rgba(255,255,255,.12)); color:var(--text,#eee); border-radius:10px; padding:8px 12px; font-size:.85rem; min-width:170px; }
+.order-tools input[type=search]:focus { outline:none; border-color:var(--accent,#ff5500); }
+.order-tools .ghost-btn { white-space:nowrap; }
+/* ---- Kitchen ticket print ---- */
+#print-area { display:none; }
+@media print {
+  body * { visibility:hidden !important; }
+  #print-area, #print-area * { visibility:visible !important; }
+  #print-area { display:block; position:absolute; left:0; top:0; width:100%; color:#000; }
+  .tk { font-family:'Courier New',monospace; max-width:300px; margin:0 auto; padding:8px; }
+  .tk h2 { text-align:center; margin:0; font-size:18px; letter-spacing:1px; }
+  .tk-sub { text-align:center; font-size:11px; margin-bottom:8px; border-bottom:1px dashed #000; padding-bottom:6px; }
+  .tk-row { display:flex; justify-content:space-between; font-size:12px; margin:2px 0; }
+  .tk-method { font-weight:bold; margin:8px 0; font-size:13px; border-top:1px dashed #000; border-bottom:1px dashed #000; padding:6px 0; }
+  .tk-items { width:100%; font-size:13px; border-collapse:collapse; }
+  .tk-items td { padding:3px 4px; vertical-align:top; }
+  .tk-items td:first-child { font-weight:bold; white-space:nowrap; }
+  .tk-total { margin-top:8px; border-top:2px solid #000; padding-top:6px; font-weight:bold; font-size:14px; text-align:right; }
+}
+
+/* ===================== DAY / LIGHT MODE ===================== */
+html[data-theme="light"] {
+  --bg:#f4f5f8; --bg-card:#ffffff; --bg-card-hover:#eef0f4;
+  --border:rgba(0,0,0,0.10); --border-strong:rgba(0,0,0,0.16);
+  --text:#16161d; --text-muted:#5a5a67;
+}
+html[data-theme="light"] body { background:var(--bg); color:var(--text); }
+html[data-theme="light"] .login-wrap { background:radial-gradient(circle at 50% 30%, rgba(255,85,0,0.12), transparent 60%), var(--bg); }
+html[data-theme="light"] .login-card { box-shadow:0 20px 60px rgba(0,0,0,0.12); }
+/* dark structural bars -> light (so dark text stays visible) */
+html[data-theme="light"] .dash-head { background:rgba(255,255,255,0.92); }
+html[data-theme="light"] .primary-tabs { background:rgba(0,0,0,0.03); }
+/* translucent-white control fills -> translucent-black so they show on light */
+html[data-theme="light"] .ptab,
+html[data-theme="light"] .ftab,
+html[data-theme="light"] .vt-btn,
+html[data-theme="light"] .ghost-btn,
+html[data-theme="light"] .om-status-btn,
+html[data-theme="light"] .login-card input,
+html[data-theme="light"] .order-tools input[type=search],
+html[data-theme="light"] .om-section { background:rgba(0,0,0,0.04); }
+html[data-theme="light"] .ptab:hover,
+html[data-theme="light"] .ftab:hover,
+html[data-theme="light"] .ghost-btn:hover { background:rgba(0,0,0,0.08); color:var(--text); }
+/* keep white text on accent/active controls */
+html[data-theme="light"] .ptab.active,
+html[data-theme="light"] .ftab.active,
+html[data-theme="light"] .vt-btn.active,
+html[data-theme="light"] .om-status-btn.active { color:#fff; background:linear-gradient(135deg,var(--accent),#ff7a1a); border-color:transparent; }
+/* card hover stays crisp */
+html[data-theme="light"] .kanban-card:hover { background:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.12); }
+/* modal backdrop a touch lighter */
+html[data-theme="light"] .modal-overlay { background:rgba(0,0,0,0.45); }

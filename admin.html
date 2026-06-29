@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hungry Slice — Admin Console</title>
+  <script>(function(){try{if(localStorage.getItem('hs_admin_theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=Anton&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="admin.css?v=1782721709">
+  <link rel="stylesheet" href="admin.css?v=1782731498">
   <script src="assets/supabase-js.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -38,6 +39,7 @@
         <span id="store-status-pill" class="status-pill open">● OPEN</span>
         <span id="busy-pill" class="status-pill" hidden>BUSY MODE</span>
         <span id="live-dot" class="live-dot" title="Realtime connection">LIVE</span>
+        <button id="theme-toggle-admin" class="ghost-btn" title="Toggle day / night">🌙 Night</button>
         <button id="sound-toggle" class="ghost-btn" title="Toggle new-order sound">🔔 Sound: On</button>
         <button id="logout-btn" class="ghost-btn">Sign Out</button>
       </div>
@@ -65,6 +67,7 @@
       <div class="orders-toolbar">
         <div class="filter-tabs" id="filter-tabs">
           <button class="ftab active" data-f="active">Active</button>
+          <button class="ftab" data-f="scheduled">⏰ Scheduled</button>
           <button class="ftab" data-f="recent">Recent (24h)</button>
           <button class="ftab" data-f="all">All</button>
           <button class="ftab" data-f="received">Received</button>
@@ -73,6 +76,10 @@
           <button class="ftab" data-f="delivery">Out for Delivery</button>
           <button class="ftab" data-f="delivered">Delivered</button>
           <button class="ftab" data-f="cancelled">Cancelled</button>
+        </div>
+        <div class="order-tools">
+          <input type="search" id="order-search" placeholder="Search # / name / phone" aria-label="Search orders">
+          <button class="ghost-btn" id="export-csv" title="Export current view to CSV">⬇ CSV</button>
         </div>
         <div class="view-toggle">
           <button class="vt-btn active" data-view="kanban">📊 Kanban</button>
@@ -230,6 +237,6 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1782721709"></script>
+  <script src="admin.js?v=1782731414"></script>
 </body>
 </html>

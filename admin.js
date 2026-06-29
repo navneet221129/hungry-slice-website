@@ -6,6 +6,9 @@ window.sb = sb;
 
 let allOrders=[], allProducts=[], allCustomers={}, soundOn=true, currentFilter='active', currentView='kanban';
 let currentTab='orders', currentOrderId=null, currentProduct=null;
+let prepDefault = 20;            // store prep minutes (set from settings)
+let scheduledAlerted = new Set(); // order ids already alerted as 'due'
+let orderQuery = '';            // order search text
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const fmt = n => '$'+Number(n||0).toFixed(2);
@@ -77,17 +80,77 @@ function hideOrdersBanner() {
   if (b) b.remove();
 }
 function statusKey(s) { return s==='preparing'?'preparing':s==='oven'?'oven':s==='delivery'?'delivery':s==='delivered'?'delivered':s==='cancelled'?'cancelled':'received'; }
+// ---- Scheduled pickup helpers ----
+function orderPrepMin(o){ return Number(o.prep_time_override || prepDefault || 20); }
+function prepStartMs(o){ return o.pickup_time ? new Date(o.pickup_time).getTime() - orderPrepMin(o)*60000 : null; }
+// pickup order scheduled for later, not yet time to start cooking
+function isSchedPending(o){
+  if (o.delivery_method!=='pickup' || !o.pickup_time) return false;
+  if (o.status!=='received') return false; // already being made = active
+  const ps = prepStartMs(o);
+  return ps!=null && Date.now() < ps;
+}
+function fmtCountdown(ms){ if(ms<=0) return 'now'; const m=Math.round(ms/60000); if(m<60) return 'in '+m+'m'; return 'in '+Math.floor(m/60)+'h '+(m%60)+'m'; }
 function filterOrders() {
-  if (currentFilter==='all') return allOrders;
-  if (currentFilter==='active') return allOrders.filter(o => !['delivered','cancelled'].includes(o.status));
-  if (currentFilter==='recent') {
-    const cutoff = Date.now() - 24*60*60*1000;
-    return allOrders.filter(o => new Date(o.created_at).getTime() >= cutoff);
-  }
-  return allOrders.filter(o => statusKey(o.status)===currentFilter);
+  let res;
+  if (currentFilter==='all') res = allOrders;
+  else if (currentFilter==='scheduled') res = allOrders.filter(isSchedPending).sort((a,b)=> new Date(a.pickup_time)-new Date(b.pickup_time));
+  else if (currentFilter==='active') res = allOrders.filter(o => !['delivered','cancelled'].includes(o.status) && !isSchedPending(o));
+  else if (currentFilter==='recent') { const cutoff = Date.now() - 24*60*60*1000; res = allOrders.filter(o => new Date(o.created_at).getTime() >= cutoff); }
+  else res = allOrders.filter(o => statusKey(o.status)===currentFilter);
+  if (orderQuery) res = res.filter(o => ((o.customer_name||'')+' '+(o.customer_phone||'')+' '+(o.customer_email||'')+' '+sid(o.id)+' '+o.id).toLowerCase().includes(orderQuery));
+  return res;
 }
 function renderOrders() {
+  updateSchedTabCount();
+  checkDueAlerts();
+  if (currentFilter==='scheduled') { renderScheduledList(); return; }
   if (currentView==='kanban') renderKanban(); else renderList();
+}
+function renderScheduledList() {
+  $('#kanban-board').style.display='none';
+  $('#orders-list').hidden=false;
+  const list = filterOrders();
+  $('#orders-list').innerHTML = list.length ? list.map(schedCardHTML).join('') : '<div class="empty-state">No upcoming scheduled pickups 🎉</div>';
+}
+function schedCardHTML(o) {
+  const arr = parseItems(o);
+  const items = arr.map(i => `${i.qty}× ${esc(i.name)}`).join(', ') || '—';
+  const ps = prepStartMs(o); const left = ps - Date.now(); const due = left <= 0;
+  return `<div class="kanban-card sched-card ${due?'sched-due':''}" data-oid="${o.id}" onclick="openOrderModal('${o.id}')">
+    <div class="kc-id">#${sid(o.id)} <span class="kc-method">🏬 Pickup</span></div>
+    <div class="kc-name">${esc(o.customer_name||'Anonymous')}</div>
+    <div class="kc-items">${esc(items)}</div>
+    <div class="sched-row">
+      <span class="sched-pickup">Pickup ${fmtNZTime(o.pickup_time)}</span>
+      <span class="sched-start">${due ? '⏰ START NOW' : 'Start prep '+fmtNZTime(ps)+' · '+fmtCountdown(left)}</span>
+    </div>
+    <div class="kc-meta"><span></span><span class="kc-total">${fmt(o.total)}</span></div>
+  </div>`;
+}
+function updateSchedTabCount() {
+  const n = allOrders.filter(isSchedPending).length;
+  const tab = document.querySelector('.ftab[data-f="scheduled"]');
+  if (tab) tab.textContent = '⏰ Scheduled' + (n ? ' ('+n+')' : '');
+}
+function checkDueAlerts() {
+  const now = Date.now();
+  allOrders.forEach(o => {
+    if (o.delivery_method!=='pickup' || !o.pickup_time || o.status!=='received') return;
+    const ps = prepStartMs(o);
+    if (ps!=null && now>=ps && (now-ps) < 5*60000 && !scheduledAlerted.has(o.id)) {
+      scheduledAlerted.add(o.id);
+      try { playBeep(); } catch(e){}
+      schedToast('⏰ Start now: #'+sid(o.id)+' — '+fmtNZTime(o.pickup_time)+' pickup');
+      if (window.Notification && Notification.permission==='granted') { try { new Notification('Pickup due now', { body: '#'+sid(o.id)+' for '+fmtNZTime(o.pickup_time) }); } catch(e){} }
+    }
+  });
+}
+function schedToast(msg) {
+  let t = document.getElementById('sched-toast');
+  if (!t) { t = document.createElement('div'); t.id='sched-toast'; t.className='sched-toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.classList.remove('show'); }, 9000);
 }
 function renderKanban() {
   $('#kanban-board').style.display='grid';
@@ -113,12 +176,15 @@ function kanbanCardHTML(o) {
     ? `<div class="kc-pickup">Pickup ${fmtNZTime(o.pickup_time)}</div>`
     : '';
   const methodBadge = `<span class="kc-method">${o.delivery_method==='pickup'?'🏬 Pickup':'🛵 Delivery'}</span>`;
+  const _mins = Math.floor((Date.now()-new Date(o.created_at).getTime())/60000);
+  const _active = !['delivered','cancelled'].includes(o.status);
+  const slaBadge = _active ? `<span class="kc-sla ${_mins>=20?'sla-late':_mins>=10?'sla-warn':'sla-ok'}" title="Time since received">${_mins}m</span>` : '';
   return `<div class="kanban-card" draggable="true" data-oid="${o.id}" onclick="openOrderModal('${o.id}')">
     <div class="kc-id">#${sid(o.id)} ${methodBadge}</div>
     <div class="kc-name">${esc(o.customer_name||'Anonymous')}</div>
     <div class="kc-items">${itemsHtml}</div>
     ${pickupBadge}
-    <div class="kc-meta"><span>${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span class="kc-total">${fmt(o.total)}</span></div>
+    <div class="kc-meta"><span>${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} ${slaBadge}</span><span class="kc-total">${fmt(o.total)}</span></div>
   </div>`;
 }
 function renderList() {
@@ -198,6 +264,7 @@ window.openOrderModal = async function(oid) {
     ${o.cancellation_reason?`<div class="om-section" style="background:rgba(239,68,68,0.1);"><strong>Cancelled</strong>${esc(o.cancellation_reason)}</div>`:''}
     <div class="modal-actions">
       ${o.status!=='cancelled'?`<button class="om-danger-btn" onclick="cancelOrder('${oid}')">Cancel Order</button>`:''}
+      <button class="ghost-btn" onclick="printTicket('${oid}')">🖨 Print</button>
       <button class="ghost-btn" onclick="notifyOrderCustomer('${oid}')">Resend Receipt</button>
     </div>
   `;
@@ -219,6 +286,36 @@ window.notifyOrderCustomer = async (oid) => {
   const d = await r.json();
   alert('Email: '+d.email+'\nSMS: '+d.sms);
   await logActivity('resend_receipt','order',oid,d);
+};
+
+/* ============ PRINT TICKET + CSV ============ */
+window.printTicket = function(oid){
+  const o = allOrders.find(x=>x.id===oid); if(!o) return;
+  const arr = parseItems(o);
+  const when = o.delivery_method==='pickup' ? ('PICKUP — ' + (o.pickup_time ? fmtNZTime(o.pickup_time) : 'ASAP')) : ('DELIVERY — ' + esc(o.delivery_address||'-'));
+  let pa = document.getElementById('print-area');
+  if(!pa){ pa=document.createElement('div'); pa.id='print-area'; document.body.appendChild(pa); }
+  pa.innerHTML = `<div class="tk">
+    <h2>THE HUNGRY SLICE</h2>
+    <div class="tk-sub">Kitchen Ticket</div>
+    <div class="tk-row"><b>#${sid(oid)}</b><span>${new Date(o.created_at).toLocaleString()}</span></div>
+    <div class="tk-row"><span>${esc(o.customer_name||'Anonymous')}</span><span>${esc(o.customer_phone||'')}</span></div>
+    <div class="tk-method">${when}</div>
+    <table class="tk-items">${arr.map(i=>`<tr><td>${i.qty}&times;</td><td>${esc(i.name)}${i.details?'<br><small>'+esc(i.details)+'</small>':''}</td></tr>`).join('')||'<tr><td>-</td><td>No items</td></tr>'}</table>
+    <div class="tk-total">TOTAL: ${fmt(o.total)}</div>
+  </div>`;
+  window.print();
+};
+window.exportOrdersCSV = function(){
+  const rows = [['order','created_at','name','phone','email','method','pickup_time','status','total','items']];
+  filterOrders().forEach(o=>{
+    const items = parseItems(o).map(i=>i.qty+'x '+i.name).join('; ');
+    rows.push([sid(o.id), o.created_at, o.customer_name||'', o.customer_phone||'', o.customer_email||'', o.delivery_method||'', o.pickup_time||'', o.status||'', o.total||0, items]);
+  });
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='hungry-slice-orders-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
 };
 
 /* ============ MENU CRUD ============ */
@@ -424,6 +521,7 @@ async function loadSettings() {
   $('#set-isopen').checked = data.is_open;
   $('#set-busy').checked = data.busy_mode;
   $('#set-prep').value = data.prep_time_minutes;
+  prepDefault = Number(data.prep_time_minutes) || 20;
   $('#set-open').value = data.open_hour;
   $('#set-close').value = data.close_hour;
   $('#set-msg').value = data.store_message || '';
@@ -510,6 +608,7 @@ async function showDash() {
   await loadSettings();
   startRealtime();
   setInterval(loadOrders, 30000);
+  setInterval(function(){ updateSchedTabCount(); checkDueAlerts(); if (currentFilter==='scheduled') renderScheduledList(); }, 20000);
 }
 document.addEventListener('DOMContentLoaded', async () => {
   const { data:{session} } = await sb.auth.getSession();
@@ -534,6 +633,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentView = b.dataset.view; renderOrders();
   });
   $('#menu-search').oninput = renderProducts;
+  if ($('#order-search')) $('#order-search').oninput = e => { orderQuery = e.target.value.toLowerCase().trim(); renderOrders(); };
+  if ($('#export-csv')) $('#export-csv').onclick = exportOrdersCSV;
+  const _tb = $('#theme-toggle-admin');
+  function _applyThemeLabel(){ const lt = document.documentElement.getAttribute('data-theme')==='light'; if(_tb) _tb.textContent = lt ? '☀️ Day' : '🌙 Night'; }
+  if (_tb) _tb.onclick = () => {
+    const lt = document.documentElement.getAttribute('data-theme')==='light';
+    if (lt) { document.documentElement.removeAttribute('data-theme'); try{localStorage.setItem('hs_admin_theme','dark');}catch(e){} }
+    else { document.documentElement.setAttribute('data-theme','light'); try{localStorage.setItem('hs_admin_theme','light');}catch(e){} }
+    _applyThemeLabel();
+  };
+  _applyThemeLabel();
   $('#menu-cat-filter').onchange = renderProducts;
   $('#cust-search').oninput = renderCustomers;
   $('#rev-filter').onchange = loadReviews;
