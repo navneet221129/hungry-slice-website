@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Hungry Slice | Big Bites. Bold Flavours.</title>
+  <title>Build Your Own Pizza | The Hungry Slice Hamilton</title>
   <link rel="icon" type="image/png" href="assets/cheese-slice.png">
   <link rel="apple-touch-icon" href="assets/hero-pizza.png">
-  <meta name="description" content="Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand. Wood-fired pizza engineered for perfect delivery.">
+  <meta name="description" content="Create your perfect custom pizza at The Hungry Slice — pick your base, sauce and toppings, see live pricing, delivered across Hamilton, NZ.">
 
-  <link rel="canonical" href="https://thehungryslice.co.nz/">
+  <link rel="canonical" href="https://thehungryslice.co.nz/build.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="The Hungry Slice">
-  <meta property="og:title" content="The Hungry Slice | Big Bites. Bold Flavours.">
-  <meta property="og:description" content="Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand. Wood-fired pizza engineered for perfect delivery.">
-  <meta property="og:url" content="https://thehungryslice.co.nz/">
+  <meta property="og:title" content="Build Your Own Pizza | The Hungry Slice Hamilton">
+  <meta property="og:description" content="Create your perfect custom pizza at The Hungry Slice — pick your base, sauce and toppings, see live pricing, delivered across Hamilton, NZ.">
+  <meta property="og:url" content="https://thehungryslice.co.nz/build.html">
   <meta property="og:image" content="https://thehungryslice.co.nz/assets/hero-pizza.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="The Hungry Slice | Big Bites. Bold Flavours.">
+  <meta name="twitter:title" content="Build Your Own Pizza | The Hungry Slice Hamilton">
   <meta name="twitter:description" content="Premium pizza delivery & takeaway in Hamilton, NZ.">
   <meta name="twitter:image" content="https://thehungryslice.co.nz/assets/hero-pizza.png">
   <script type="application/ld+json">
@@ -133,149 +133,149 @@
     </nav>
   </div>
 
-  <!-- Hero Section -->
-  <!-- Order Method Bar -->
-  <div class="order-method-bar" id="order-method-bar">
-    <div class="ombar-inner">
-      <span class="ombar-label">Start Your Order:</span>
-      <div class="ombar-toggle">
-        <button class="ombar-btn active" id="ombar-delivery" onclick="setHeroOrderMethod('delivery')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="display:inline-block;vertical-align:middle"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg> Delivery
-        </button>
-        <button class="ombar-btn" id="ombar-pickup" onclick="setHeroOrderMethod('pickup')">
-          <i data-lucide="store"></i> Pickup
-        </button>
-      </div>
-      <div class="ombar-eta">
-        <i data-lucide="clock-3"></i>
-        <span id="ombar-eta-text">~28 min • Hamilton</span>
-      </div>
-      <span class="ombar-badge">📍 Open Now</span>
-    </div>
-  </div>
+  <main>
+  <h1 class="seo-h1" style="max-width:1240px;margin:90px auto 0;padding:0 20px;font-family:'Anton',sans-serif;font-size:clamp(1.6rem,4vw,2.4rem);">Build Your Own Pizza</h1>
 
-  <section class="hero-section">
-    <div class="hero-bg-accent"></div>
-    <video class="hero-video" id="hero-video" autoplay muted loop playsinline preload="auto" poster="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1600&q=80&fit=crop">
-      <source src="assets/hero-pizza.mp4" type="video/mp4">
-      <source src="https://assets.mixkit.co/videos/44001/44001-720.mp4" type="video/mp4">
-    </video>
-    <div class="hero-video-scrim"></div>
-    <div class="hero-container">
-      <div class="hero-text-content">
-        <div class="tagline-badge">Hamilton, New Zealand</div>
-        <h1 class="hero-title">Big Bites.<br><span class="text-gradient">Bold Flavours.</span></h1>
-        <p class="hero-subtitle">Artisanal cloud-kitchen pizzas delivered scorching hot across Hamilton in under 28 minutes.</p>
-        <div class="hero-cta-group">
-          <button class="btn btn-primary" onclick="location.href='menu.html'">
-            Order Now <i data-lucide="arrow-right"></i>
-          </button>
-          <button class="btn btn-secondary" onclick="location.href='build.html'">
-            Build Custom Pizza
-          </button>
-        </div>
-
-        <!-- Live Social Proof -->
-        <div class="hero-social-proof">
-          <div class="proof-item">
-            <span class="proof-number" id="live-order-count">142</span>
-            <span class="proof-label">orders today</span>
-          </div>
-          <div class="proof-divider"></div>
-          <div class="proof-item">
-            <span class="proof-number">4.9★</span>
-            <span class="proof-label">avg rating</span>
-          </div>
-          <div class="proof-divider"></div>
-          <div class="proof-item">
-            <span class="proof-number">&lt;28m</span>
-            <span class="proof-label">avg delivery</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Interactive Parallax Pizza Container -->
-      <div class="hero-visual-container">
-        <div class="hero-pizza-wrapper">
-          <img id="hero-pizza-real" src="assets/hero-pizza.png" class="hero-pizza-img" alt="Fresh artisan pizza" draggable="false" fetchpriority="high" decoding="async">
-          
-          <!-- Floating Ingredients (Real Food Photos) -->
-          <div class="floating-ingredient layer-1" data-speed="1.2" style="top: 8%; left: 2%;">
-            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=140&q=85&fit=crop&crop=entropy" alt="Pepperoni">
-            <span class="ing-label">Pepperoni</span>
-          </div>
-          <div class="floating-ingredient layer-2" data-speed="2.5" style="top: 20%; right: 0%;">
-            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=140&q=85&fit=crop&crop=entropy" alt="Gourmet">
-            <span class="ing-label">Fresh Basil</span>
-          </div>
-          <div class="floating-ingredient layer-3" data-speed="1.8" style="bottom: 12%; left: 6%;">
-            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1552539618-7eec9b4d1796?w=140&q=85&fit=crop&crop=entropy" alt="Jalapeño">
-            <span class="ing-label">Jalapeño</span>
-          </div>
-          <div class="floating-ingredient layer-4" data-speed="3" style="bottom: 22%; right: 2%;">
-            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=140&q=85&fit=crop&crop=entropy" alt="Mozzarella">
-            <span class="ing-label">Mozzarella</span>
-          </div>
-          <div class="floating-ingredient layer-5" data-speed="1.4" style="top: 48%; left: -2%;">
-            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=140&q=85&fit=crop&crop=entropy" alt="Oregano">
-            <span class="ing-label">Oregano</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Netflix Style Testimonials -->
-  <section class="reviews-section">
+  <!-- Build Your Own Pizza (Interactive Creator) -->
+  <section class="builder-section" id="builder">
     <div class="section-header">
-      <span class="sub-heading">CRITIC BUZZ</span>
-      <h2 class="section-title">Netflix food documentary reviews</h2>
-      <p class="section-subtitle">Real feedback from local Hamilton food lovers and culinary tech specialists.</p>
-      <button class="btn btn-primary review-cta-btn" onclick="openReviewModal()">★ Leave a Review</button>
+      <span class="sub-heading">PIZZA LAB</span>
+      <h2 class="section-title">Build Your Custom Masterpiece</h2>
+      <p class="section-subtitle">Real-time modular construction. Tweak the layers, add toppings, track pricing instantly.</p>
     </div>
 
-    <div class="testimonials-slider">
-      <div class="testimonials-track">
-        <!-- Review 1 -->
-        <div class="review-card glass-card">
-          <div class="review-rating">⭐⭐⭐⭐•</div>
-          <p>"The Hamilton Hero arrives so fast the cheese stretch is still structural. This is food delivery at Tesla-level efficiency."</p>
-          <div class="reviewer-meta">
-            <div class="reviewer-avatar">S</div>
-            <div>
-              <h4>Sarah Connor</h4>
-              <span>Hillcrest, Hamilton</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 2 -->
-        <div class="review-card glass-card">
-          <div class="review-rating">⭐⭐⭐⭐⭐</div>
-          <p>"Truffle White pizza is absolute perfection. Crust has those beautiful woodfire charcoal bubbles. Incredible food tech platform!"</p>
-          <div class="reviewer-meta">
-            <div class="reviewer-avatar">L</div>
-            <div>
-              <h4>Liam Miller</h4>
-              <span>Rototuna, Hamilton</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 3 -->
-        <div class="review-card glass-card">
-          <div class="review-rating">⭐⭐⭐⭐⭐</div>
-          <p>"Customizing toppings with instant pricing was amazing. The order was on my table in 22 minutes. Outstanding."</p>
-          <div class="reviewer-meta">
-            <div class="reviewer-avatar">E</div>
-            <div>
-              <h4>Emma Watson</h4>
-              <span>Ruakura, Hamilton</span>
-            </div>
+    <div class="builder-container">
+      
+      <!-- Interactive Builder Visual Screen -->
+      <div class="builder-canvas-box glass-card">
+        <div class="bp-stage" id="bpStage">
+          <div class="bp-glow"></div>
+          <div class="bp-board"></div>
+          <div class="bp-shadow"></div>
+          <div class="bp-steam"><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="pizza-builder-view">
+            <!-- Real pizza base photo -->
+            <img src="assets/hero-pizza.png" class="bp-base" alt="Pizza base">
+            <!-- Sauce overlay -->
+            <div class="builder-layer layer-sauce" id="p-sauce"></div>
+            <!-- Cheese overlay -->
+            <div class="builder-layer layer-cheese" id="p-cheese"></div>
+            <!-- Melted cheese sheen sweep -->
+            <div class="bp-cheese-sheen"></div>
+            <!-- Charred leopard crust spots -->
+            <div class="bp-char"></div>
+            <!-- Toppings container -->
+            <div class="toppings-rendered-container" id="rendered-toppings"></div>
+            <!-- Gloss ring -->
+            <div class="bp-gloss"></div>
           </div>
         </div>
       </div>
+
+      <!-- Controls Side Card -->
+      <div class="builder-controls glass-card">
+        <div class="control-group">
+          <h3>1. Choose Your Crust</h3>
+          <div class="options-grid">
+            <button class="option-btn active" data-type="crust" data-val="neapolitan" data-price="0">
+              <h4>Neapolitan</h4>
+              <span>Traditional bubbly crust</span>
+            </button>
+            <button class="option-btn" data-type="crust" data-val="thin-crispy" data-price="1.00">
+              <h4>Thin & Crispy</h4>
+              <span>Crisp woodfired style (+$1.00)</span>
+            </button>
+            <button class="option-btn" data-type="crust" data-val="gluten-free" data-price="3.00">
+              <h4>Gluten Free</h4>
+              <span>Coeliac safe (+$3.00)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>2. Base Sauce</h3>
+          <div class="options-grid">
+            <button class="option-btn active" data-type="sauce" data-val="tomato" data-price="0">
+              <h4>San Marzano Tomato</h4>
+              <span>Rich tomato sauce</span>
+            </button>
+            <button class="option-btn" data-type="sauce" data-val="truffle" data-price="2.00">
+              <h4>Garlic Truffle Paste</h4>
+              <span>Creamy rich garlic (+$2.00)</span>
+            </button>
+            <button class="option-btn" data-type="sauce" data-val="bbq" data-price="0">
+              <h4>Smokey BBQ</h4>
+              <span>Bold sweet sauce</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>3. Cheese Factor</h3>
+          <div class="options-grid">
+            <button class="option-btn" data-type="cheese" data-val="light" data-price="-0.50">
+              <h4>Light Mozzarella</h4>
+              <span>Subtle sprinkle (-$0.50)</span>
+            </button>
+            <button class="option-btn active" data-type="cheese" data-val="normal" data-price="0">
+              <h4>Standard Blend</h4>
+              <span>Rich creamy melt</span>
+            </button>
+            <button class="option-btn" data-type="cheese" data-val="double" data-price="2.50">
+              <h4>Double Mozzarella</h4>
+              <span>Indulgent stretch (+$2.50)</span>
+            </button>
+            <button class="option-btn" data-type="cheese" data-val="vegan" data-price="2.00">
+              <h4>Vegan Cheese</h4>
+              <span>Plant-based melt (+$2.00)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <h3>4. Premium Toppings (+$2.00 each)</h3>
+          <div class="toppings-selection-grid">
+            <button class="topping-btn" data-topping="pepperoni">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1628840042765-356cda07504e?w=80&q=80&fit=crop&crop=center" alt="Pepperoni"></div>
+              <span>Pepperoni</span>
+            </button>
+            <button class="topping-btn" data-topping="basil">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=80&q=80&fit=crop&crop=center" alt="Fresh Basil"></div>
+              <span>Fresh Basil</span>
+            </button>
+            <button class="topping-btn" data-topping="jalapeno">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1588169770080-c33b4e39cf44?w=80&q=80&fit=crop&crop=center" alt="Jalapeño"></div>
+              <span>Jalapeño</span>
+            </button>
+            <button class="topping-btn" data-topping="mushrooms">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=80&fit=crop&crop=center" alt="Mushrooms"></div>
+              <span>Mushrooms</span>
+            </button>
+            <button class="topping-btn" data-topping="chicken">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=80&q=80&fit=crop&crop=center" alt="Shredded Chicken"></div>
+              <span>Shredded Chicken</span>
+            </button>
+            <button class="topping-btn" data-topping="onions">
+              <div class="topping-thumb"><img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=80&q=80&fit=crop&crop=center" alt="Red Onion"></div>
+              <span>Red Onion</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="builder-summary-card">
+          <div class="price-box">
+            <span class="price-lbl">TOTAL PRICE:</span>
+            <span class="price-amount" id="builder-price">$18.00</span>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="addCustomPizzaToCart()">
+            Add Custom Pizza to Cart <i data-lucide="shopping-cart"></i>
+          </button>
+        </div>
+      </div>
+
     </div>
   </section>
+  </main>
 
   <!-- Sign-in Modal -->
   <div class="auth-modal-overlay" id="auth-modal">

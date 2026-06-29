@@ -1933,6 +1933,35 @@ const cartState = {
   pickupTime: null // ISO string when pickupTiming === 'schedule'
 };
 
+// --- Cart persistence: survive page navigation (multi-page site) ---
+const HS_CART_KEY = 'hs_cart_v1';
+function saveCart() {
+  try {
+    localStorage.setItem(HS_CART_KEY, JSON.stringify({
+      items: cartState.items,
+      deliveryMethod: cartState.deliveryMethod,
+      couponDiscount: cartState.couponDiscount,
+      freeDelivery: cartState.freeDelivery,
+      pickupTiming: cartState.pickupTiming,
+      pickupTime: cartState.pickupTime
+    }));
+  } catch (_) {}
+}
+function loadCart() {
+  try {
+    const raw = localStorage.getItem(HS_CART_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (Array.isArray(s.items)) cartState.items = s.items;
+    if (s.deliveryMethod) cartState.deliveryMethod = s.deliveryMethod;
+    if (typeof s.couponDiscount === 'number') cartState.couponDiscount = s.couponDiscount;
+    if (typeof s.freeDelivery === 'boolean') cartState.freeDelivery = s.freeDelivery;
+    if (s.pickupTiming) cartState.pickupTiming = s.pickupTiming;
+    if (s.pickupTime) cartState.pickupTime = s.pickupTime;
+  } catch (_) {}
+}
+loadCart();
+
 let storeHours = { open_hour: 11, close_hour: 22, prep_time_minutes: 20 };
 let storeHoursLoaded = false;
 
@@ -2050,6 +2079,7 @@ function calculateCartTotals() {
 }
 
 function updateCartUI() {
+  saveCart(); // persist on every cart change so it survives page navigation
   const listContainer = document.getElementById('cart-items-list');
   const cartBadge = document.querySelector('.cart-badge');
   const stickyItems = document.querySelector('.mb-items');
