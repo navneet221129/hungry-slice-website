@@ -104,16 +104,19 @@ function renderKanban() {
 }
 function kanbanCardHTML(o) {
   const arr = parseItems(o);
-  const items = arr.slice(0,3).map(i => `${i.qty}× ${esc(i.name)}`).join(', ');
-  const more = arr.length>3 ? ` +${arr.length-3} more` : '';
+  // show the FULL order on the card itself (kitchen reads it without opening)
+  const itemsHtml = arr.length
+    ? arr.map(i => `<div class="kc-line">${i.qty}× ${esc(i.name)}${i.details ? ` <span class="kc-detail">${esc(i.details)}</span>` : ''}</div>`).join('')
+    : '<div class="kc-line" style="color:#666;">No items recorded</div>';
   const t = new Date(o.created_at);
   const pickupBadge = o.delivery_method==='pickup' && o.pickup_time
     ? `<div class="kc-pickup">Pickup ${fmtNZTime(o.pickup_time)}</div>`
     : '';
+  const methodBadge = `<span class="kc-method">${o.delivery_method==='pickup'?'🏬 Pickup':'🛵 Delivery'}</span>`;
   return `<div class="kanban-card" draggable="true" data-oid="${o.id}" onclick="openOrderModal('${o.id}')">
-    <div class="kc-id">#${sid(o.id)}</div>
+    <div class="kc-id">#${sid(o.id)} ${methodBadge}</div>
     <div class="kc-name">${esc(o.customer_name||'Anonymous')}</div>
-    <div class="kc-items">${esc(items)}${more}</div>
+    <div class="kc-items">${itemsHtml}</div>
     ${pickupBadge}
     <div class="kc-meta"><span>${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span class="kc-total">${fmt(o.total)}</span></div>
   </div>`;
