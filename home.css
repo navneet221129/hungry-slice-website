@@ -27,15 +27,14 @@
 @media(hover:hover){ .ad-slider:hover .ad-arrow{ display:block; } }
 
 /* ---- Category rail (auto-scroll marquee) ---- */
-.cat-rail-mask { overflow:hidden; -webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); }
-.cat-rail { display:flex; gap:16px; width:max-content; animation:catScroll 38s linear infinite; }
+.cat-rail-mask { overflow:hidden; }
+.cat-rail { display:flex; gap:16px; width:max-content; padding:2px; animation:catScroll 32s linear infinite; will-change:transform; }
 .cat-rail:hover { animation-play-state:paused; }
-@keyframes catScroll { from{transform:translateX(0);} to{transform:translateX(-50%);} }
+@keyframes catScroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 .cat-tile { width:150px; flex:0 0 auto; text-decoration:none; text-align:center; }
 .cat-tile-img { width:150px; height:110px; border-radius:18px; background-size:cover; background-position:center; border:1px solid var(--border-glass,rgba(255,255,255,.1)); transition:transform .25s ease, box-shadow .25s ease; }
-.cat-tile:hover .cat-tile-img { transform:translateY(-4px) scale(1.03); box-shadow:0 14px 30px rgba(0,0,0,.4); }
+.cat-tile:active .cat-tile-img, .cat-tile:hover .cat-tile-img { transform:translateY(-4px) scale(1.03); box-shadow:0 14px 30px rgba(0,0,0,.4); }
 .cat-tile-name { display:block; margin-top:8px; font-weight:600; font-size:.86rem; color:var(--text-color,#eee); }
-@media(prefers-reduced-motion:reduce){ .cat-rail{ animation:none; } }
 
 /* ---- Dishes carousel (paged, multi visible) ---- */
 .dish-carousel { position:relative; }

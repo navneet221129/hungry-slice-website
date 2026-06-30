@@ -69,7 +69,7 @@
     if (!list.length) return null;
     var sec = document.createElement('section'); sec.className = 'home-section';
     var tiles = list.map(function (c) {
-      return '<a class="cat-tile" href="menu.html"><span class="cat-tile-img" style="background-image:url(\'' + esc(cats[c]) + '\')"></span><span class="cat-tile-name">' + esc(c) + '</span></a>';
+      return '<a class="cat-tile" href="menu.html?cat=' + encodeURIComponent(c) + '"><span class="cat-tile-img" style="background-image:url(\'' + esc(cats[c]) + '\')"></span><span class="cat-tile-name">' + esc(c) + '</span></a>';
     }).join('');
     sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">Explore</div><h2 class="home-title">Browse by Category</h2></div>' +
       '<div class="cat-rail-mask"><div class="cat-rail">' + tiles + tiles + '</div></div>';

@@ -775,6 +775,22 @@ function filterCategory(categoryName) {
   renderDynamicProducts();
 }
 
+function applyCategoryFromUrl(tries){
+  tries = tries || 0;
+  var cat = null;
+  try { cat = new URLSearchParams(location.search).get('cat'); } catch(e){}
+  if (!cat) return;
+  var pills = document.querySelectorAll('#category-filters .filter-pill');
+  if (pills.length && typeof filterCategory === 'function') {
+    filterCategory(cat);
+    var sec = document.getElementById('featured');
+    if (sec) sec.scrollIntoView({ behavior:'smooth', block:'start' });
+  } else if (tries < 40) {
+    setTimeout(function(){ applyCategoryFromUrl(tries+1); }, 250);
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){ applyCategoryFromUrl(); });
+
 // Search handlers
 window.handleSearch = function(event) {
   searchQuery = event.target.value.toLowerCase().trim();
@@ -2121,7 +2137,9 @@ function updateCartUI() {
     if (mt) mt.textContent = `$${total.toFixed(2)}`;
     const _drawer = document.getElementById('cart-drawer');
     const _drawerOpen = _drawer && _drawer.classList.contains('active');
-    mcart.style.display = (totalItems > 0 && !_drawerOpen) ? 'flex' : 'none';
+    const _showMcart = (totalItems > 0 && !_drawerOpen);
+    mcart.style.display = _showMcart ? 'flex' : 'none';
+    document.body.classList.toggle('mcart-visible', _showMcart);
   }
   if (typeof syncMenuCardSteppers === 'function') syncMenuCardSteppers();
 

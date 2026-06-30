@@ -4657,3 +4657,9 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 /* offers opt-in checkbox */
 .offers-optin .optin-check { display:flex; align-items:center; gap:8px; font-weight:500; font-size:0.9rem; color:var(--text-color,#ddd); cursor:pointer; }
 .offers-optin .optin-check input { width:auto; accent-color:var(--accent,#ff5500); transform:scale(1.15); }
+
+/* Fix bottom overlap: lift Ask-AI FAB + pad content when the mobile cart bar is showing */
+@media (max-width:768px){
+  body.mcart-visible { padding-bottom: 150px; }
+  body.mcart-visible .ai-chat-fab { bottom: 140px; }
+}

@@ -2,24 +2,140 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Our Story — The Hungry Slice</title>
-  <link rel="stylesheet" href="style.css?v=1782797054">
-  <link rel="stylesheet" href="effects.css?v=1782723757">
-  <link rel="stylesheet" href="story.css?v=1781802000">
+  <link rel="icon" type="image/png" href="assets/cheese-slice.png">
+  <link rel="apple-touch-icon" href="assets/hero-pizza.png">
+  <meta name="description" content="The story behind The Hungry Slice — Hamilton's food-tech cloud kitchen. Wood-fired pizza, engineered for perfect delivery.">
+
+  <link rel="canonical" href="https://thehungryslice.co.nz/story.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Hungry Slice">
+  <meta property="og:title" content="Our Story — The Hungry Slice">
+  <meta property="og:description" content="The story behind The Hungry Slice — Hamilton's food-tech cloud kitchen. Wood-fired pizza, engineered for perfect delivery.">
+  <meta property="og:url" content="https://thehungryslice.co.nz/story.html">
+  <meta property="og:image" content="https://thehungryslice.co.nz/assets/hero-pizza.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Our Story — The Hungry Slice">
+  <meta name="twitter:description" content="Premium pizza delivery & takeaway in Hamilton, NZ.">
+  <meta name="twitter:image" content="https://thehungryslice.co.nz/assets/hero-pizza.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "The Hungry Slice",
+    "description": "Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand.",
+    "url": "https://thehungryslice.co.nz/",
+    "image": "https://thehungryslice.co.nz/assets/hero-pizza.png",
+    "servesCuisine": ["Pizza", "Burgers"],
+    "priceRange": "$$",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Hamilton",
+      "addressRegion": "Waikato",
+      "addressCountry": "NZ"
+    },
+    "areaServed": "Hamilton, New Zealand"
+  }
+  </script>
+  
+  <!-- Inline theme loader to prevent visual flash -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
+  <!-- Premium Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&family=Anton&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="assets/lucide.min.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=1782800175">
+  <link rel="stylesheet" href="effects.css?v=1782723757">
+  <link rel="stylesheet" href="story.css?v=1782800367">
+  
+  <!-- Spline Viewer module -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
 </head>
-<body class="story-page">
-  <header class="story-header" id="story-header">
+<body>
+
+  <!-- Background Aurora Blur Blobs -->
+  <div class="aurora-blob blob-1"></div>
+  <div class="aurora-blob blob-2"></div>
+  <div class="aurora-blob blob-3"></div>
+
+  <!-- Canvas for Confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Promo Announcement Bar -->
+  <div class="promo-bar" id="promo-bar">
+    <div class="promo-bar-track" id="promo-bar-track">
+      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
+      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
+      <span>🍕 New: Bollywood Range — Spiced to perfection!</span>
+      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
+      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
+    </div>
+    <button class="promo-bar-close" onclick="closePromoBar()" aria-label="Close promo">×</button>
+  </div>
+  <div id="nav-spacer" style="height:116px;transition:height 0.3s ease;pointer-events:none"></div>
+
+  <!-- Premium Blended Header -->
+  <header class="main-header">
     <div class="header-container">
-      <a href="index.html" class="logo-link">THE HUNGRY SLICE</a>
-      <a href="index.html" class="back-btn"><i data-lucide="arrow-left"></i> Back</a>
+      <a href="index.html" class="logo">
+        <span class="logo-accent">THE</span> HUNGRY SLICE
+      </a>
+      <nav class="nav-links">
+        <a href="story.html">Our Story</a>
+        <a href="menu.html">Featured</a>
+        <a href="build.html">Pizza Builder</a>
+        <a href="delivery.html">Delivery</a>
+        <a href="track.html">Order Tracker</a>
+        <a href="offers.html">Offers</a>
+      </nav>
+      <div class="header-actions">
+        <!-- Day/Night Theme Switcher Button -->
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" id="theme-toggle">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+        <button class="cart-btn" onclick="toggleCartDrawer()" aria-label="Open cart">
+          <i data-lucide="shopping-bag"></i>
+          <span class="cart-badge">0</span>
+        </button>
+        <button class="account-btn" onclick="onAccountClick()" aria-label="Account" id="account-btn"><i data-lucide="user"></i></button>
+        <button class="order-now-btn" onclick="location.href='menu.html'">Order Now</button>
+        <button class="hamburger-btn" onclick="toggleMobileNav()" aria-label="Open Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
   </header>
 
+  <!-- Mobile Nav Overlay -->
+  <div class="mobile-nav-overlay" id="mobile-nav-overlay">
+    <button class="mobile-nav-close" onclick="toggleMobileNav()" aria-label="Close Menu">
+      <i data-lucide="x"></i>
+    </button>
+    <nav class="mobile-nav-links">
+      <a href="story.html">Our Story</a>
+      <a href="menu.html" onclick="toggleMobileNav()">Featured</a>
+      <a href="build.html" onclick="toggleMobileNav()">Pizza Builder</a>
+      <a href="delivery.html" onclick="toggleMobileNav()">Delivery</a>
+      <a href="track.html" onclick="toggleMobileNav()">Order Tracker</a>
+      <a href="offers.html" onclick="toggleMobileNav()">Offers</a>
+      <a href="#" onclick="toggleMobileNav(); onAccountClick(); return false;">Sign In / Account</a>
+    </nav>
+  </div>
+
+  <main class="story-page">
   <section class="story-hero">
     <div class="hero-bg"></div>
     <div class="hero-overlay"></div>
@@ -127,15 +243,434 @@
   </section>
 
   <script>
-    lucide.createIcons();
-    const header = document.getElementById('story-header');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 40) header.classList.add('scrolled'); else header.classList.remove('scrolled');
-    }, { passive: true });
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); io.unobserve(e.target); } });
-    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+    if (window.lucide && lucide.createIcons) lucide.createIcons();
+    var _storyIO = new IntersectionObserver(function(entries){ entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in-view'); _storyIO.unobserve(e.target); } }); }, { threshold:0.15, rootMargin:'0px 0px -10% 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ _storyIO.observe(el); });
   </script>
+  </main>
+
+
+  <!-- Sign-in Modal -->
+  <div class="auth-modal-overlay" id="auth-modal">
+    <div class="auth-modal-card glass-card">
+      <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">&times;</button>
+      <div class="auth-logo"><span>WELCOME TO</span>THE HUNGRY SLICE</div>
+      <div id="auth-signedout">
+        <div class="auth-sub">Sign in to save your taste &amp; track orders</div>
+        <button class="auth-google-btn" onclick="signInGoogle()"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C39.9 36.3 44 31 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg> Continue with Google</button>
+        <div class="auth-divider"><span>or</span></div>
+        <div id="auth-email-step">
+          <input type="email" id="auth-email" placeholder="you@email.com" autocomplete="email">
+          <button class="btn btn-primary btn-full" id="auth-send-btn" onclick="sendEmailOtp()">Email me a code</button>
+        </div>
+        <div id="auth-otp-step" style="display:none;">
+          <input type="text" id="auth-otp" placeholder="6-digit code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+          <button class="btn btn-primary btn-full" id="auth-verify-btn" onclick="verifyEmailOtp()">Verify &amp; sign in</button>
+        </div>
+      </div>
+      <div id="auth-signedin" style="display:none;">
+        <div class="auth-sub">Signed in as <strong id="auth-user-email"></strong></div>
+        <button class="btn btn-secondary btn-full" onclick="signOut()">Sign out</button>
+      </div>
+      <div id="auth-msg" class="auth-msg"></div>
+    </div>
+  </div>
+
+  <!-- Review Submit Modal -->
+  <div class="review-modal-overlay" id="review-modal">
+    <div class="review-modal-card glass-card">
+      <button class="review-modal-close" onclick="closeReviewModal()" aria-label="Close">&times;</button>
+      <div class="review-modal-logo"><span>RATE</span> THE HUNGRY SLICE</div>
+      <div class="review-modal-sub">Tap the stars &amp; tell Hamilton what you think</div>
+      <div id="rm-context" class="rm-context" style="display:none;"></div>
+      <form id="review-form" autocomplete="on">
+        <div class="rm-stars" id="rm-stars" role="radiogroup" aria-label="Your rating">
+          <button type="button" class="rm-star" data-v="1" aria-label="1 star">&#9733;</button>
+          <button type="button" class="rm-star" data-v="2" aria-label="2 stars">&#9733;</button>
+          <button type="button" class="rm-star" data-v="3" aria-label="3 stars">&#9733;</button>
+          <button type="button" class="rm-star" data-v="4" aria-label="4 stars">&#9733;</button>
+          <button type="button" class="rm-star" data-v="5" aria-label="5 stars">&#9733;</button>
+        </div>
+        <input type="text" id="rm-name" maxlength="80" placeholder="Your name" required>
+        <input type="text" id="rm-hood" maxlength="60" placeholder="Your suburb (e.g. Rototuna)">
+        <textarea id="rm-comment" maxlength="600" rows="3" placeholder="How was your order?" required></textarea>
+        <button type="submit" id="rm-submit" class="btn btn-primary btn-full">Post Review</button>
+        <div id="rm-msg" class="rm-msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cart-drawer">
+    <div class="cart-drawer glass-card">
+      <div class="cart-header">
+        <h2>Your Flight Bag</h2>
+        <button class="close-drawer-btn" onclick="toggleCartDrawer()" aria-label="Close cart"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- Steps indicator -->
+      <div class="checkout-steps-bar">
+        <div class="c-step active" id="c-step-1">1. Bag</div>
+        <div class="c-step" id="c-step-2">2. Route</div>
+        <div class="c-step" id="c-step-3">3. Pay</div>
+      </div>
+
+      <div class="drawer-scrollable">
+        <!-- Step 1 View: Cart Items -->
+        <div class="checkout-view active" id="checkout-view-1">
+          <div class="cart-items-container" id="cart-items-list">
+            <!-- Dynamic Cart Items -->
+            <div class="cart-empty-message">
+              <i data-lucide="shopping-cart"></i>
+              <p>Your bag is empty. Start adding pizzas!</p>
+            </div>
+          </div>
+          <!-- Free Delivery Progress Bar -->
+          <div class="free-delivery-progress" id="free-delivery-bar">
+            <div class="fdp-text">
+              <span class="fdp-icon">🚚</span>
+              <span id="fdp-message">Add <strong id="fdp-remaining">$45.00</strong> more for <strong>free delivery!</strong></span>
+            </div>
+            <div class="fdp-track">
+              <div class="fdp-fill" id="fdp-fill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="coupon-input-box">
+            <input type="text" id="coupon-entry" placeholder="Coupon Code">
+            <button onclick="submitCoupon()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Step 2 View: Shipping Address / Delivery details -->
+        <div class="checkout-view" id="checkout-view-2">
+          <h3>Delivery Details</h3>
+          <div class="checkout-form">
+            <div class="form-row">
+              <label>Delivery Method</label>
+              <div class="method-toggle">
+                <button class="method-btn active" id="m-delivery" onclick="setDeliveryMethod('delivery')">Delivery</button>
+                <button class="method-btn" id="m-pickup" onclick="setDeliveryMethod('pickup')">Pickup</button>
+              </div>
+            </div>
+            <div class="form-row" id="pickup-time-box" style="display:none;">
+              <label>Pickup Time</label>
+              <div class="method-toggle">
+                <button class="method-btn active" id="pt-asap" onclick="setPickupTiming('asap')">ASAP</button>
+                <button class="method-btn" id="pt-schedule" onclick="setPickupTiming('schedule')">Schedule</button>
+              </div>
+              <select id="pickup-time-select" style="display:none; margin-top:10px;"></select>
+              <small id="pickup-time-note" style="color:var(--text-muted); margin-top:6px; display:block;"></small>
+            </div>
+            <div class="form-row" id="address-field-box">
+              <label>Street Address</label>
+              <input type="text" id="ship-address" placeholder="e.g. 15 Grey Street, Hamilton East">
+            </div>
+            <div class="form-row" id="landmark-field-box">
+              <label>Landmark / Nearby Reference <span class="opt-tag">optional</span></label>
+              <input type="text" id="ship-landmark" placeholder="e.g. opposite Z petrol station, near Westfield mall">
+            </div>
+            <div class="form-row">
+              <label>Postcode</label>
+              <input type="text" id="ship-postcode" placeholder="3204" maxlength="4">
+            </div>
+            <div class="form-row">
+              <label>Contact Phone</label>
+              <input type="text" id="ship-phone" placeholder="021 XXX XXX">
+            </div>
+            <div class="form-row">
+              <label>Email <span class="opt-tag">for your receipt</span></label>
+              <input type="email" id="ship-email" placeholder="you@email.com" autocomplete="email">
+            </div>
+            <div class="form-row offers-optin">
+              <label class="optin-check"><input type="checkbox" id="ship-offers-optin"> Email me deals &amp; offers <span class="opt-tag">(optional)</span></label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 View: Mock Card Payments -->
+        <div class="checkout-view" id="checkout-view-3">
+          <h3>Confirm &amp; Pay</h3>
+          <div class="payment-summary-box">
+            <div class="summary-line"><span>Subtotal:</span><span id="p-subtotal">$0.00</span></div>
+            <div class="summary-line"><span>Delivery Fee:</span><span id="p-delivery-fee">$5.00</span></div>
+            <div class="summary-line" id="summary-discount-line" style="display:none;"><span>Coupon Discount:</span><span id="p-discount">-$0.00</span></div>
+            <hr>
+            <div class="summary-line total-line"><span>Total Balance:</span><span id="p-total">$0.00</span></div>
+          </div>
+
+          <div class="pay-secure-head">
+            <span class="pay-lock"><i data-lucide="lock"></i> Secure checkout</span>
+            <span class="pay-brands">
+              <span class="brand-chip brand-visa">VISA</span>
+              <span class="brand-chip brand-mc"><b></b><b></b></span>
+              <span class="brand-chip brand-amex">AMEX</span>
+            </span>
+          </div>
+
+          <div class="pay-card-panel">
+          <div class="checkout-form" id="checkout-payment-form">
+            <div class="form-row">
+              <label>Cardholder Name</label>
+              <input type="text" id="paynuts-cardholder" placeholder="Cardholder Name">
+            </div>
+            
+            <!-- Secure Paynuts iframe elements (hidden by default unless configured) -->
+            <div class="paynuts-fields" id="paynuts-payment-fields" style="display: none;">
+              <div class="form-row">
+                <label>Card Number</label>
+                <div id="paynuts-card-number" class="secure-input-container"></div>
+              </div>
+              <div class="form-row flex-row">
+                <div style="flex: 1; margin-right: 10px;">
+                  <label>Expiry Date</label>
+                  <div class="expiry-row flex-row" style="display: flex;">
+                    <input type="text" id="paynuts-expiry-month" placeholder="MM" maxlength="2" style="width: 60px; text-align: center; margin-right: 10px;">
+                    <input type="text" id="paynuts-expiry-year" placeholder="YY" maxlength="2" style="width: 60px; text-align: center;">
+                  </div>
+                </div>
+                <div style="flex: 1;">
+                  <label>CVC</label>
+                  <div id="paynuts-cvc" class="secure-input-container"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Standard static mock fields (visible by default) -->
+            <div class="mock-fields" id="mock-payment-fields">
+              <div class="form-row">
+                <label>Card Number</label>
+                <div class="card-input-wrap">
+                  <input type="text" inputmode="numeric" autocomplete="cc-number" id="mock-card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+                  <i data-lucide="credit-card" class="card-input-icon"></i>
+                </div>
+              </div>
+              <div class="form-row flex-row">
+                <div>
+                  <label>Expiry Date</label>
+                  <input type="text" inputmode="numeric" autocomplete="cc-exp" id="mock-expiry" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div>
+                  <label>CVC</label>
+                  <input type="text" inputmode="numeric" autocomplete="cc-csc" id="mock-cvc" placeholder="123" maxlength="4">
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          <p class="pay-trust-note"><i data-lucide="shield-check"></i> Encrypted &amp; secure. We never store your full card details.</p>
+        </div>
+      </div>
+
+      <!-- Fixed Checkout Drawer Footer -->
+      <div class="cart-footer">
+        <div class="cart-total-bar">
+          <span>Amount due:</span>
+          <span class="cart-grand-total" id="drawer-price-total">$0.00</span>
+        </div>
+        <div class="drawer-action-row">
+          <button class="btn btn-secondary" id="back-checkout-btn" style="display:none;" onclick="stepCheckoutBack()">Back</button>
+          <button class="btn btn-primary btn-grow" id="next-checkout-btn" onclick="stepCheckoutNext()">Proceed to Route <i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky bottom mobile order bar -->
+  <div class="sticky-order-bar-mobile">
+    <div class="mobile-bar-container">
+      <div class="mobile-bar-info">
+        <span class="mb-items">0 items</span>
+        <span class="mb-price">$0.00</span>
+      </div>
+      <button class="btn btn-primary" onclick="toggleCartDrawer()">
+        View Cart <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Zomato-style Mobile Bottom Navigation -->
+  <!-- Mobile sticky cart CTA (appears when items in cart) -->
+  <button class="mcart-cta" id="mcart-cta" onclick="toggleCartDrawer(true)" aria-label="View cart and checkout">
+    <span class="mcart-left"><span class="mcart-count" id="mcart-count">0</span><span class="mcart-lbl">items in bag</span></span>
+    <span class="mcart-right"><span class="mcart-total" id="mcart-total">$0.00</span><span class="mcart-go">View Cart &rarr;</span></span>
+  </button>
+  <nav class="zom-bottom-nav" id="zom-bottom-nav">
+    <button class="zom-nav-tab active" onclick="location.href='index.html'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="zom-nav-tab" onclick="location.href='menu.html'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>Menu</span>
+    </button>
+    <button class="zom-nav-tab zom-cart-tab" onclick="toggleCartDrawer();zomSetActive(this)">
+      <div class="zom-cart-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="zom-cart-badge" id="zom-cart-count" style="display:none">0</span>
+      </div>
+      <span>Cart</span>
+    </button>
+    <button class="zom-nav-tab" onclick="location.href='delivery.html'">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span>Delivery</span>
+    </button>
+  </nav>
+
+  <!-- Developer Settings Panel for Supabase & Paynuts -->
+  <div class="developer-panel glass-card collapsed" id="developer-panel">
+    <div class="dev-panel-header" onclick="toggleDevPanel()">
+      <div class="dev-panel-title">
+        <i data-lucide="database" class="dev-icon"></i>
+        <span>CONNECTION & GATEWAY LAB</span>
+      </div>
+      <i data-lucide="chevron-up" class="dev-chevron" id="dev-chevron"></i>
+    </div>
+    <div class="dev-panel-content">
+      <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary);">1. Supabase Database Link</h4>
+      <p class="dev-panel-desc">Configure database credentials to persist live orders and tracking states. Falls back to offline mock state if keys are empty.</p>
+      <div class="dev-form-row">
+        <label>Supabase URL</label>
+        <input type="text" id="dev-supabase-url" placeholder="https://your-project.supabase.co">
+      </div>
+      <div class="dev-form-row">
+        <label>Supabase Anon Key</label>
+        <input type="password" id="dev-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+      </div>
+      
+      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+      
+      <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--primary);">2. Paynuts Payment Gateway</h4>
+      <p class="dev-panel-desc">Configure Paynuts secure tokenization settings. Card fields will transition to secure iframes if keys are provided.</p>
+      <div class="dev-form-row">
+        <label>Paynuts Gateway Host</label>
+        <input type="text" id="dev-paynuts-host" placeholder="https://gateway.paynuts.com.au">
+      </div>
+      <div class="dev-form-row">
+        <label>Paynuts Public Integration Key</label>
+        <input type="password" id="dev-paynuts-key" placeholder="Public Integration Key">
+      </div>
+      <div class="dev-form-row">
+        <label>Paynuts Merchant ID</label>
+        <input type="text" id="dev-paynuts-mid" placeholder="e.g. 548941070001848">
+      </div>
+      
+      <div class="dev-actions" style="margin-top: 15px;">
+        <button class="dev-btn btn-primary" onclick="saveDevSettings()">Apply Settings</button>
+        <button class="dev-btn btn-secondary" onclick="clearDevSettings()">Reset to Defaults</button>
+      </div>
+      <div class="dev-status-row" id="dev-status">
+        <span class="status-dot offline"></span>
+        <span class="status-text">OFFLINE MOCK DB ACTIVE</span>
+      </div>
+      <div class="dev-status-row" id="dev-paynuts-status" style="margin-top: 5px;">
+        <span class="status-dot offline"></span>
+        <span class="status-text">PAYNUTS GATEWAY INACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>
+        <h4>THE HUNGRY SLICE</h4>
+        <p>Hamilton, New Zealand. Fast culinary delivery ops.</p>
+      </div>
+      <div>
+        <h4>Open Hours</h4>
+        <p>Daily 11:00 AM - 10:00 PM</p>
+      </div>
+      <div>
+        <h4>Connect</h4>
+        <p><a href="https://www.facebook.com/share/18ksGR4uxJ/?mibextid=wwXIfr" target="_blank" rel="noopener" class="footer-social-link"><i data-lucide="facebook"></i> Facebook</a></p>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <p>&copy; 2026 The Hungry Slice. All rights reserved.</p>
+        <p><a href="#" class="footer-staff-link" onclick="openStaffLogin(event)">Staff Login</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Coupon Success & Order Placed Lottie Modal -->
+  <div class="lottie-modal-overlay" id="success-modal">
+    <div class="lottie-modal-card glass-card">
+      <div class="success-lottie-container">
+        <lottie-player id="success-lottie" src="https://assets3.lottiefiles.com/packages/lf20_UJNc2t.json" background="transparent" speed="1" style="width: 150px; height: 150px;" loop autoplay></lottie-player>
+      </div>
+      <h2 id="success-modal-title">Success!</h2>
+      <p id="success-modal-desc">Your coupon code has been applied successfully.</p>
+      <button class="btn btn-primary" onclick="closeSuccessModal()">Awesome</button>
+    </div>
+  </div>
+
+  <!-- Staff (Admin) Login Modal -->
+  <div class="staff-modal-overlay" id="staff-modal">
+    <div class="staff-modal-card">
+      <button class="staff-modal-close" onclick="closeStaffLogin()" aria-label="Close">&times;</button>
+      <div class="staff-modal-logo"><span>THE</span> HUNGRY SLICE</div>
+      <div class="staff-modal-sub">Staff &mdash; Order Console Login</div>
+      <form id="staff-login-form" autocomplete="on">
+        <label for="staff-email">Email</label>
+        <input type="email" id="staff-email" autocomplete="username" required placeholder="you@hungryslice.nz">
+        <label for="staff-password">Password</label>
+        <input type="password" id="staff-password" autocomplete="current-password" required placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+        <button type="submit" id="staff-login-btn">Sign In</button>
+        <div id="staff-login-error" class="staff-login-error"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Animation & 3D CDN Libraries -->
+  <!-- Motion (Vanilla Framer Motion) -->
+  <script src="https://cdn.jsdelivr.net/npm/motion@11.11.17/dist/motion.js"></script>
+  <!-- GSAP & ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Lottie Player -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <!-- Supabase CDN Client and Fallback Data -->
+  <script src="assets/supabase-js.js"></script>
+  <script src="menu-data.js"></script>
+  <script src="app.js?v=1782800175"></script>
+  <script src="effects.js?v=1782723757"></script>
+  <!-- AI Chat Order Widget -->
+  <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">
+    <span class="ai-chat-fab-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+    </span>
+    <span class="ai-chat-fab-label">Ask AI</span>
+    <span class="ai-chat-fab-pulse" aria-hidden="true"></span>
+  </button>
+  <div id="aiChatDrawer" class="ai-chat-drawer" role="dialog" aria-label="AI order assistant" aria-hidden="true" hidden>
+    <header class="ai-chat-head">
+      <div class="ai-chat-head-info">
+        <span class="ai-chat-head-dot"></span>
+        <div>
+          <div class="ai-chat-head-title">Hungry Slice AI</div>
+          <div class="ai-chat-head-sub">Tell me what you crave</div>
+        </div>
+      </div>
+      <button type="button" class="ai-chat-close" id="aiChatClose" aria-label="Close chat">&times;</button>
+    </header>
+    <div id="aiChatLog" class="ai-chat-log" aria-live="polite"></div>
+    <div class="ai-chat-suggest" id="aiChatSuggest">
+      <button type="button" class="ai-chat-chip" data-q="Spicy chicken pizza under $20">Spicy chicken &lt;$20</button>
+      <button type="button" class="ai-chat-chip" data-q="Best veg pizza for two">Veg for two</button>
+      <button type="button" class="ai-chat-chip" data-q="Cheesy and creamy">Cheesy &amp; creamy</button>
+      <button type="button" class="ai-chat-chip" data-q="Something with bacon">With bacon</button>
+    </div>
+    <form id="aiChatForm" class="ai-chat-form" autocomplete="off">
+      <input type="text" id="aiChatInput" class="ai-chat-input" placeholder="What are you craving?" maxlength="500" aria-label="Type your craving">
+      <button type="submit" class="ai-chat-send" aria-label="Send">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </form>
+  </div>
+
 </body>
 </html>
