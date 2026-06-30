@@ -2526,7 +2526,7 @@ async function submitOrderToDatabase(paymentToken) {
         try { localStorage.setItem('hs_active_order', orderId); } catch(e){}
         try {
           const _optin = document.getElementById('ship-offers-optin');
-          if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' });
+          if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' }).then(function(){}, function(){});
         } catch (e) {}
         notifyOrder(orderId);
       }
