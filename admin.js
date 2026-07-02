@@ -646,8 +646,8 @@ function playBeep() {
 }
 function notify(o) {
   playBeep();
-  if (Notification && Notification.permission==='granted') {
-    new Notification('New Order #'+sid(o.id), { body: (o.customer_name||'') + ' • ' + fmt(o.total) });
+  if (window.Notification && Notification.permission==='granted') {
+    try { new Notification('New Order #'+sid(o.id), { body: (o.customer_name||'') + ' • ' + fmt(o.total) }); } catch(e){}
   }
 }
 function startRealtime() {
@@ -660,7 +660,7 @@ function startRealtime() {
 async function showDash() {
   $('#login-view').hidden = true;
   $('#dash-view').hidden = false;
-  if (Notification && Notification.permission==='default') Notification.requestPermission();
+  if (window.Notification && Notification.permission==='default') { try { Notification.requestPermission(); } catch(e){} }
   await loadOrders();
   await loadSettings();
   startRealtime();
