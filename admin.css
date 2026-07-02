@@ -292,3 +292,8 @@ html[data-theme="light"] .modal-overlay { background:rgba(0,0,0,0.45); }
 .camp-result.ok { color:var(--ok); } .camp-result.err { color:var(--err); } .camp-result.warn { color:var(--warn); }
 .camp-note { color:var(--text-muted); font-size:.78rem; margin-top:18px; line-height:1.5; }
 html[data-theme="light"] .camp-form input, html[data-theme="light"] .camp-form textarea { background:rgba(0,0,0,0.04); }
+
+/* ---- Empty-filter hint ---- */
+.filter-hint { background:rgba(255,85,0,.12); border:1px solid rgba(255,85,0,.35); color:var(--text,#eee); border-radius:12px; padding:12px 14px; margin-bottom:12px; font-size:.9rem; font-weight:600; line-height:1.5; }
+.filter-hint button { margin-left:8px; padding:7px 14px; border:0; border-radius:9px; background:var(--accent,#ff5500); color:#fff; font-weight:700; font-family:inherit; cursor:pointer; }
+html[data-theme="light"] .filter-hint { background:rgba(255,85,0,.08); color:#16161d; }

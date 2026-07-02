@@ -104,8 +104,37 @@ function filterOrders() {
 function renderOrders() {
   updateSchedTabCount();
   checkDueAlerts();
-  if (currentFilter==='scheduled') { renderScheduledList(); return; }
+  if (currentFilter==='scheduled') { renderScheduledList(); updateFilterHint(); return; }
   if (currentView==='kanban') renderKanban(); else renderList();
+  updateFilterHint();
+}
+// When the current filter hides every order (e.g. "Active" after everything is
+// delivered), phones show a wall of empty columns that reads as "no orders".
+// Surface a one-tap way out instead.
+function updateFilterHint() {
+  let h = document.getElementById('filter-hint');
+  const shown = filterOrders().length;
+  const need = shown === 0 && allOrders.length > 0 && currentFilter !== 'all';
+  if (!need) { if (h) h.remove(); return; }
+  if (!h) {
+    h = document.createElement('div');
+    h.id = 'filter-hint';
+    h.className = 'filter-hint';
+    const board = document.getElementById('kanban-board');
+    if (board && board.parentNode) board.parentNode.insertBefore(h, board);
+  }
+  const label = document.querySelector('.ftab.active') ? document.querySelector('.ftab.active').textContent.trim() : currentFilter;
+  h.innerHTML = '';
+  h.appendChild(document.createTextNode('No orders in \u201C' + label + '\u201D right now \u2014 you have ' + allOrders.length + ' total. '));
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'View all orders';
+  btn.onclick = function(){
+    currentFilter = 'all';
+    document.querySelectorAll('.ftab').forEach(function(x){ x.classList.toggle('active', x.dataset.f==='all'); });
+    renderOrders();
+  };
+  h.appendChild(btn);
 }
 function renderScheduledList() {
   $('#kanban-board').style.display='none';
