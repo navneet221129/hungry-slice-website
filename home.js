@@ -194,3 +194,61 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
+/* ===== CINEMATIC HERO (2026-07-03): word-stagger headline + scroll parallax + shine ===== */
+(function(){
+  var hero = document.querySelector('.hero-section');
+  if (!hero) return;
+
+  // word-stagger headline entrance
+  var h1 = hero.querySelector('.hero-title');
+  if (h1 && !h1.dataset.stagger) {
+    h1.dataset.stagger = '1';
+    (function wrap(node){
+      Array.prototype.slice.call(node.childNodes).forEach(function(ch){
+        if (ch.nodeType === 3) {
+          var frag = document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(function(w){
+            if (!w) return;
+            if (/^\s+$/.test(w)) { frag.appendChild(document.createTextNode(w)); return; }
+            var s = document.createElement('span');
+            s.className = 'hw'; s.textContent = w;
+            frag.appendChild(s);
+          });
+          node.replaceChild(frag, ch);
+        } else if (ch.nodeType === 1 && ch.tagName !== 'BR') wrap(ch);
+      });
+    })(h1);
+    var i = 0;
+    h1.querySelectorAll('.hw').forEach(function(s){ s.style.animationDelay = (0.09 * i++) + 's'; });
+    h1.classList.add('hw-go');
+  }
+
+  // scroll parallax: video drifts slow + zooms, text lifts + fades, pizza floats
+  var vid = hero.querySelector('.hero-video');
+  var txt = hero.querySelector('.hero-text-content');
+  var vis = hero.querySelector('.hero-visual-container');
+  var tick = false;
+  function upd(){
+    tick = false;
+    var y = window.scrollY, h = hero.offsetHeight || 1;
+    if (y > h) return;
+    var k = y / h;
+    if (vid) vid.style.transform = 'translateY(' + (y * 0.35) + 'px) scale(' + (1 + k * 0.08) + ')';
+    if (txt) { txt.style.transform = 'translateY(' + (y * 0.18) + 'px)'; txt.style.opacity = String(Math.max(0, 1 - k * 1.15)); }
+    if (vis) vis.style.transform = 'translateY(' + (y * 0.10) + 'px)';
+  }
+  window.addEventListener('scroll', function(){ if (!tick) { tick = true; requestAnimationFrame(upd); } }, {passive:true});
+
+  // periodic shine sweep across the hero pizza
+  var pz = document.getElementById('hero-pizza-real');
+  var host = pz && pz.closest('.hero-pizza-wrapper');
+  if (host) {
+    host.classList.add('shine-host');
+    setInterval(function(){
+      host.classList.remove('shine-run');
+      void host.offsetWidth;
+      host.classList.add('shine-run');
+    }, 6000);
+  }
+})();

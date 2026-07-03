@@ -4663,3 +4663,31 @@ body.light-mode .menu-cat-count { color: #666 !important; }
   body.mcart-visible { padding-bottom: 150px; }
   body.mcart-visible .ai-chat-fab { bottom: 140px; }
 }
+
+/* ===== UI WOW PASS (2026-07-03) ===== */
+/* --- glass shrinking header --- */
+.main-header.hdr-shrink { height:62px; background:rgba(250,250,250,.82); backdrop-filter:blur(26px) saturate(1.6); -webkit-backdrop-filter:blur(26px) saturate(1.6); box-shadow:0 10px 40px rgba(0,0,0,.14); }
+[data-theme="dark"] .main-header.hdr-shrink { background:rgba(10,10,13,.78); box-shadow:0 10px 40px rgba(0,0,0,.45); border-bottom-color:rgba(255,255,255,.09); }
+.main-header.hdr-shrink .logo { font-size:1.2rem; }
+
+/* --- MPA cross-page transitions (progressive; ignored where unsupported) --- */
+@view-transition { navigation: auto; }
+@keyframes vtOut { to { opacity:0; transform:translateY(-8px); } }
+@keyframes vtIn { from { opacity:0; transform:translateY(10px); } }
+::view-transition-old(root) { animation:vtOut .18s ease both; }
+::view-transition-new(root) { animation:vtIn .26s ease both; }
+
+/* --- fly-to-cart --- */
+.fly-img { position:fixed; z-index:9999; border-radius:50%; object-fit:cover; pointer-events:none; box-shadow:0 12px 30px rgba(0,0,0,.45); will-change:transform,opacity; }
+.cart-badge.badge-pop { animation:badgePop .45s cubic-bezier(.34,1.56,.64,1); }
+@keyframes badgePop { 0%{transform:scale(1);} 40%{transform:scale(1.6);} 100%{transform:scale(1);} }
+
+/* --- cart drawer v2 --- */
+.cart-drawer { transition:transform .55s cubic-bezier(.30,1.25,.40,1); }
+.free-del { padding:14px 32px 0; }
+.free-del-label { font-size:.8rem; font-weight:600; display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.free-del-label b { color:var(--accent,#ff5500); white-space:nowrap; }
+.free-del-track { height:8px; border-radius:50px; background:rgba(128,128,128,.22); overflow:hidden; }
+.free-del-fill { height:100%; width:0%; border-radius:50px; background:linear-gradient(90deg,#ff5500,#ffb347); transition:width .6s cubic-bezier(.22,1,.36,1); }
+.free-del.unlocked .free-del-fill { background:linear-gradient(90deg,#22c55e,#84e29b); }
+@media (max-width:600px){ .free-del { padding:12px 20px 0; } }

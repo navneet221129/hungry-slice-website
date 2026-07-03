@@ -77,3 +77,17 @@
 .bv-cta { display:inline-block; background:linear-gradient(135deg,var(--accent,#ff5500),#ff7a1a); color:#fff; font-weight:700; padding:14px 34px; border-radius:50px; text-decoration:none; box-shadow:0 12px 32px rgba(255,85,0,.45); transition:transform .18s ease, box-shadow .25s ease; }
 .bv-cta:hover { transform:translateY(-2px) scale(1.04); box-shadow:0 16px 40px rgba(255,85,0,.55); }
 .bv-soon { position:absolute; top:14px; left:14px; z-index:3; background:rgba(0,0,0,.55); color:#fff; font-size:.7rem; padding:5px 10px; border-radius:50px; letter-spacing:1px; }
+
+/* ===== CINEMATIC HERO (2026-07-03) ===== */
+.hero-title .hw { display:inline-block; opacity:0; transform:translateY(26px) rotate(2deg); }
+/* background-clip:text doesn't reach inline-block children — repaint gradient on each word */
+.hero-title .text-gradient .hw { background:linear-gradient(135deg, var(--accent) 0%, var(--accent-gold) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.hero-title.hw-go .hw { animation:hwUp .7s cubic-bezier(.22,1,.36,1) both; animation-delay:inherit; }
+@keyframes hwUp { to { opacity:1; transform:none; } }
+.hero-bg-accent { animation:heroGlow 9s ease-in-out infinite alternate; }
+@keyframes heroGlow { from { transform:scale(1); opacity:.85; } to { transform:scale(1.18) translate(-4%,3%); opacity:1; } }
+.shine-host { position:relative; }
+.shine-host::after { content:''; position:absolute; inset:0; border-radius:50%; background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,.18) 50%,transparent 58%); opacity:0; pointer-events:none; }
+.shine-host.shine-run::after { animation:shineSweep 1.2s ease; }
+@keyframes shineSweep { 0%{opacity:0; transform:translateX(-55%);} 30%{opacity:1;} 100%{opacity:0; transform:translateX(55%);} }
+.hero-video, .hero-text-content, .hero-visual-container { will-change:transform; }
