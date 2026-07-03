@@ -91,3 +91,37 @@
 .shine-host.shine-run::after { animation:shineSweep 1.2s ease; }
 @keyframes shineSweep { 0%{opacity:0; transform:translateX(-55%);} 30%{opacity:1;} 100%{opacity:0; transform:translateX(55%);} }
 .hero-video, .hero-text-content, .hero-visual-container { will-change:transform; }
+
+/* ===== PRO POLISH: display font swap ===== */
+.home-title, .ad-slide-h, .cta-h, .bv-name { font-family:'Outfit',sans-serif; font-weight:800; letter-spacing:-1px; }
+.bv-name { letter-spacing:-2.5px; }
+
+/* ===== HOMEPAGE RICHNESS (2026-07-03): craft band + gallery + steps ===== */
+.craft-band { max-width:1240px; margin:70px auto; padding:0 24px; display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:center; }
+.craft-media { position:relative; border-radius:24px; overflow:hidden; aspect-ratio:4/3; }
+.craft-media img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .8s cubic-bezier(.22,1,.36,1); }
+.craft-band:hover .craft-media img { transform:scale(1.05); }
+.craft-chip { position:absolute; background:rgba(16,16,20,.82); color:#fff; font-size:.78rem; font-weight:600; padding:8px 14px; border-radius:50px; backdrop-filter:blur(8px); }
+.craft-chip.c1 { top:18px; left:18px; }
+.craft-chip.c2 { bottom:18px; right:18px; }
+.craft-copy p { color:var(--text-secondary,#9a9aa5); line-height:1.75; margin:16px 0 24px; font-size:1.02rem; max-width:46ch; }
+.craft-copy .bv-cta { display:inline-block; }
+@media (max-width:860px){ .craft-band { grid-template-columns:1fr; gap:26px; margin:48px auto; } }
+
+.gal-rail { display:grid; grid-auto-flow:column; grid-auto-columns:min(320px,72vw); gap:18px; overflow-x:auto; scroll-snap-type:x mandatory; padding:6px 2px 18px; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.gal-rail::-webkit-scrollbar { display:none; }
+.gal-card { position:relative; border-radius:20px; overflow:hidden; aspect-ratio:4/5; scroll-snap-align:start; text-decoration:none; }
+.gal-card img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .7s cubic-bezier(.22,1,.36,1); }
+.gal-card:hover img { transform:scale(1.07); }
+.gal-card::after { content:''; position:absolute; inset:0; background:linear-gradient(to top, rgba(8,8,10,.72) 0%, transparent 45%); }
+.gal-meta { position:absolute; left:16px; right:16px; bottom:14px; z-index:2; display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.gal-meta b { color:#fff; font-size:.98rem; font-weight:700; line-height:1.25; }
+.gal-meta i { font-style:normal; color:#ffb347; font-weight:800; font-size:.92rem; white-space:nowrap; }
+
+.steps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.step-card { position:relative; border:1px solid var(--border-light,rgba(128,128,128,.18)); border-radius:20px; padding:28px 24px; overflow:hidden; }
+.step-card .step-n { position:absolute; top:14px; right:18px; font-size:2.4rem; font-weight:800; opacity:.08; letter-spacing:-2px; }
+.step-card svg { width:30px; height:30px; color:var(--accent,#ff5500); margin-bottom:14px; }
+.step-card h3 { margin:0 0 8px; font-size:1.08rem; font-weight:700; }
+.step-card p { margin:0; color:var(--text-secondary,#9a9aa5); font-size:.9rem; line-height:1.6; }
+@media (max-width:768px){ .steps-grid { grid-template-columns:1fr; } }

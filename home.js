@@ -29,7 +29,7 @@
   function buildAds(products) {
     var slides = [
       { tag: 'First Order', h: '30% OFF Your First Bite', p: 'New here? Use code', code: 'BOOST30', cta: 'Order Now', href: 'menu.html', img: imgFor(products, 'traditional') },
-      { tag: 'Free Delivery', h: 'Free Delivery Over $45', p: 'Pile it on. Code', code: 'HAMFREE', cta: 'See Menu', href: 'menu.html', img: imgFor(products, 'burger') },
+      { tag: 'Free Delivery', h: 'Free Delivery Over $40', p: 'Pile it on. Code', code: 'HAMFREE', cta: 'See Menu', href: 'menu.html', img: imgFor(products, 'burger') },
       { tag: 'New Range', h: 'The Bollywood Range', p: 'Spiced to perfection — bold Indian-inspired flavours.', code: '', cta: 'Explore', href: 'menu.html', img: imgFor(products, 'bollywood') }
     ];
     var sec = document.createElement('section');
@@ -160,6 +160,53 @@
     return sec;
   }
 
+
+  function buildCraft(products) {
+    var img = imgFor(products, 'traditional');
+    var sec = document.createElement('section');
+    sec.className = 'craft-band';
+    sec.innerHTML =
+      '<div class="craft-media"><img src="' + esc(img) + '" alt="Wood-fired pizza" loading="lazy" decoding="async">' +
+        '<span class="craft-chip c1">48-hour fermented dough</span>' +
+        '<span class="craft-chip c2">Wood-fired at 450&deg;C</span></div>' +
+      '<div class="craft-copy"><div class="home-eyebrow">The Craft</div>' +
+        '<h2 class="home-title">Slow dough.<br>Fast fire.</h2>' +
+        '<p>Every base is cold-fermented for 48 hours, stretched by hand and blistered in a 450&deg;C wood-fired oven for ninety seconds. No shortcuts, no freezer &mdash; just fire and fresh ingredients.</p>' +
+        '<a class="bv-cta" href="story.html">Our story &rarr;</a></div>';
+    return sec;
+  }
+
+  function buildGallery(products) {
+    var seen = {};
+    var picks = products.filter(function(p){
+      if (!p.image_url || p.out_of_stock) return false;
+      var c = p.category || 'x';
+      if (seen[c] > 1) return false;
+      seen[c] = (seen[c]||0) + 1;
+      return true;
+    }).slice(0, 8);
+    if (picks.length < 4) return null;
+    var sec = document.createElement('section'); sec.className = 'home-section gallery-section';
+    sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">Fresh from the pass</div><h2 class="home-title">The Lineup</h2></div>' +
+      '<div class="gal-rail">' + picks.map(function(p){
+        return '<a class="gal-card" href="menu.html?cat=' + encodeURIComponent(p.category||'') + '">' +
+          '<img src="' + esc(p.image_url) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">' +
+          '<span class="gal-meta"><b>' + esc(p.name) + '</b><i>' + money(p.price) + '</i></span></a>';
+      }).join('') + '</div>';
+    return sec;
+  }
+
+  function buildSteps() {
+    var sec = document.createElement('section'); sec.className = 'home-section steps-section';
+    sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">How it works</div><h2 class="home-title">Three steps to hot pizza</h2></div>' +
+      '<div class="steps-grid">' +
+        '<div class="step-card"><span class="step-n">01</span><i data-lucide="utensils-crossed"></i><h3>Pick your slice</h3><p>Browse the menu or build your own from the base up.</p></div>' +
+        '<div class="step-card"><span class="step-n">02</span><i data-lucide="flame"></i><h3>We fire it</h3><p>Hand-stretched and wood-fired at 450&deg;C in minutes.</p></div>' +
+        '<div class="step-card"><span class="step-n">03</span><i data-lucide="bike"></i><h3>At your door</h3><p>Sealed hot and delivered across Hamilton in about 28 minutes.</p></div>' +
+      '</div>';
+    return sec;
+  }
+
   function insertAfter(node, ref) { ref.parentNode.insertBefore(node, ref.nextSibling); }
 
   async function init() {
@@ -177,6 +224,9 @@
       nodes.push(buildBrandVideo());
       var c = buildCategories(products); if (c) nodes.push(c);
       var d = buildDishes(products); if (d) nodes.push(d);
+      nodes.push(buildCraft(products));
+      var g = buildGallery(products); if (g) nodes.push(g);
+      nodes.push(buildSteps());
       // video strip skipped: only stock placeholder clips exist (not food). Re-enable when real food videos are uploaded.
     } else {
       nodes.push(buildAds([{ image_url: 'assets/hero-pizza.png', category: '' }]));

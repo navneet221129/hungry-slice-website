@@ -1806,11 +1806,11 @@ let trackingInterval = null;
 let realOrderActive = false; // true once a real DB order is being tracked (disables the demo simulation)
 const trackerSteps = ['received', 'prep', 'oven', 'delivery', 'delivered'];
 const trackerStepDetails = {
-  'received': { title: 'Order Locked In', desc: 'Hamilton hub database verified your coordinates. Core prep sequence initialized.', progress: '10%', scooterX: 0 },
-  'prep': { title: 'Dough Formulation', desc: 'Artisanal Neapolitan double-fermented dough stretched. Custom toppings arranged.', progress: '35%', scooterX: 30 },
-  'oven': { title: 'Wood-fired Oven Chamber', desc: 'Baking at 450°C. Mozzarella melting. Micro-bubbles expanding in the crust.', progress: '60%', scooterX: 65 },
-  'delivery': { title: 'Thermal Dispatched Flight', desc: 'Out for courier flight across Hamilton. Sealed in thermal-lock chambers.', progress: '85%', scooterX: 105 },
-  'delivered': { title: 'Mission Complete', desc: 'Arrived at target address. Scorch-hot temperature secured. Bon appétit!', progress: '100%', scooterX: 135 }
+  'received': { title: 'Order Confirmed', desc: 'We\'ve received your order and sent it straight to the kitchen.', progress: '10%', scooterX: 0 },
+  'prep': { title: 'Being Prepared', desc: 'Double-fermented dough stretched by hand, your toppings arranged fresh.', progress: '35%', scooterX: 30 },
+  'oven': { title: 'In the Oven', desc: 'Baking at 450°C in the wood-fired oven until the crust blisters.', progress: '60%', scooterX: 65 },
+  'delivery': { title: 'Out for Delivery', desc: 'On its way across Hamilton, sealed hot in a thermal bag.', progress: '85%', scooterX: 105 },
+  'delivered': { title: 'Delivered', desc: 'Enjoy — and thank you for ordering with The Hungry Slice.', progress: '100%', scooterX: 135 }
 };
 
 function runSimulatedOrder() {
@@ -2265,7 +2265,7 @@ function applyCouponLogic(code) {
   if (code === 'BOOST30') {
     cartState.couponDiscount = 0.3;
     updateCartUI();
-    openSuccessModal('30% Discount Activated!', 'Coupon Code BOOST30 active: 30% discount applied to your flight bag!');
+    openSuccessModal('30% Discount Activated!', 'Code BOOST30 applied — 30% off your order.');
     return true;
   } else if (code === 'HAMFREE') {
     cartState.freeDelivery = true;
@@ -2542,6 +2542,7 @@ async function submitOrderToDatabase(paymentToken) {
         openSuccessModal('Order Placed!', `Your order is in! Live Tracking ID: ${String(orderId).slice(0,8)}`);
         subscribeToOrderTracker(orderId);
         try { localStorage.setItem('hs_active_order', orderId); } catch(e){}
+        try { localStorage.setItem('hs_last_items', JSON.stringify((cartState.items||[]).map(function(i){ return {id:i.id,name:i.name,price:i.price,img:i.img,qty:i.qty}; }))); } catch(e){}
         try {
           const _optin = document.getElementById('ship-offers-optin');
           if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' }).then(function(){}, function(){});
@@ -2582,7 +2583,7 @@ async function submitOrderToDatabase(paymentToken) {
   const confirmBtn = document.getElementById('next-checkout-btn');
   if (confirmBtn) {
     confirmBtn.disabled = false;
-    confirmBtn.innerHTML = 'Proceed to Route <i data-lucide="chevron-right"></i>';
+    confirmBtn.innerHTML = 'Continue to Checkout <i data-lucide="chevron-right"></i>';
   }
   const backBtn = document.getElementById('back-checkout-btn');
   if (backBtn) backBtn.style.display = 'none';
@@ -2638,7 +2639,7 @@ function stepCheckoutBack() {
   if (step === 2) {
     cartState.checkoutStep = 1;
     toggleStepUI(1);
-    document.getElementById('next-checkout-btn').innerHTML = 'Proceed to Route <i data-lucide="chevron-right"></i>';
+    document.getElementById('next-checkout-btn').innerHTML = 'Continue to Checkout <i data-lucide="chevron-right"></i>';
     document.getElementById('back-checkout-btn').style.display = 'none';
     lucide.createIcons();
   } else if (step === 3) {
@@ -3690,7 +3691,7 @@ if (document.readyState === 'loading') { document.addEventListener('DOMContentLo
     if (fill) fill.style.width = Math.min(100, st / FREE_AT * 100) + '%';
     if (st >= FREE_AT) {
       el.classList.add('unlocked');
-      if (msg) msg.textContent = '\uD83C\uDF89 FREE delivery unlocked';
+      if (msg) msg.textContent = 'Free delivery unlocked';
       if (amt) amt.textContent = '';
     } else {
       el.classList.remove('unlocked');
@@ -3723,4 +3724,171 @@ if (document.readyState === 'loading') { document.addEventListener('DOMContentLo
     };
     try { window.updateCartUI(); } catch(e){}
   }
+})();
+
+/* ===== ENGAGEMENT PACK (2026-07-03): badges, offer hook, urgency, coupon nudge, social proof, reorder ===== */
+(function(){
+  var onCustomerPage = !!document.querySelector('.main-header');
+  if (!onCustomerPage) return;
+
+  /* ---- 1. Bestseller / Popular badges on menu cards ---- */
+  function tagBestsellers(){
+    var track = document.getElementById('product-showcase-track');
+    if (!track || !window.PRODUCT_RATINGS) return;
+    var ranked = Object.keys(PRODUCT_RATINGS)
+      .map(function(id){ return { id:id, cnt:PRODUCT_RATINGS[id].cnt||0, avg:PRODUCT_RATINGS[id].avg||0 }; })
+      .filter(function(r){ return r.cnt > 0; })
+      .sort(function(a,b){ return (b.cnt-a.cnt) || (b.avg-a.avg); });
+    ranked.slice(0,4).forEach(function(r, idx){
+      var card = track.querySelector('.plc[data-pizza-id="'+r.id+'"]');
+      if (!card || card.querySelector('.plc-pop-badge')) return;
+      var wrapEl = card.querySelector('.plc-img-wrap');
+      if (!wrapEl) return;
+      var b = document.createElement('span');
+      b.className = 'plc-pop-badge' + (idx===0 ? ' plc-pop-top' : '');
+      b.textContent = idx===0 ? '#1 Bestseller' : 'Popular';
+      wrapEl.appendChild(b);
+    });
+  }
+  var _rdp = window.renderDynamicProducts;
+  if (typeof _rdp === 'function') {
+    window.renderDynamicProducts = function(){
+      var r = _rdp.apply(this, arguments);
+      try { tagBestsellers(); } catch(e){}
+      return r;
+    };
+    try { tagBestsellers(); } catch(e){}
+  }
+
+  /* ---- 2. Hero offer hook: first-order code with one-tap copy ---- */
+  var ctaGroup = document.querySelector('.hero-cta-group');
+  if (ctaGroup && !document.getElementById('offer-chip')) {
+    var chip = document.createElement('div');
+    chip.id = 'offer-chip'; chip.className = 'offer-chip';
+    chip.innerHTML = '<span>30% off your first order &mdash; code <b>BOOST30</b></span><button type="button" id="offer-copy">Copy code</button>';
+    ctaGroup.parentNode.insertBefore(chip, ctaGroup.nextSibling);
+    document.getElementById('offer-copy').onclick = function(){
+      var btn = this;
+      function done(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy code'; }, 2200); }
+      try { navigator.clipboard.writeText('BOOST30').then(done, done); } catch(e){ done(); }
+    };
+  }
+
+  /* ---- 3. Closing-soon urgency pill ---- */
+  function nzMinutes(){
+    try {
+      var parts = new Intl.DateTimeFormat('en-NZ', { timeZone:'Pacific/Auckland', hour:'2-digit', minute:'2-digit', hour12:false }).formatToParts(new Date());
+      var h=0,m=0;
+      parts.forEach(function(p){ if(p.type==='hour') h=parseInt(p.value,10); if(p.type==='minute') m=parseInt(p.value,10); });
+      return h*60+m;
+    } catch(e){ return null; }
+  }
+  function urgencyTick(){
+    var el = document.getElementById('close-soon-pill');
+    var sh = (typeof storeHours!=='undefined' && storeHours) ? storeHours : null;
+    var now = nzMinutes();
+    if (!sh || now==null) { if(el) el.remove(); return; }
+    var left = sh.close_hour*60 - now;
+    var show = now >= sh.open_hour*60 && left > 0 && left <= 60;
+    if (!show) { if(el) el.remove(); return; }
+    if (sessionStorage.getItem('hs_close_pill_x')) return;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'close-soon-pill'; el.className = 'close-soon-pill';
+      el.innerHTML = '<span id="close-soon-msg"></span><a href="menu.html">Order now</a><button type="button" aria-label="Dismiss">&times;</button>';
+      el.querySelector('button').onclick = function(){ try{sessionStorage.setItem('hs_close_pill_x','1');}catch(e){} el.remove(); };
+      document.body.appendChild(el);
+    }
+    document.getElementById('close-soon-msg').textContent = 'Kitchen closes in ' + left + ' min';
+  }
+  try { if (typeof loadStoreHours === 'function') loadStoreHours(); } catch(e){}
+  setTimeout(urgencyTick, 4000);
+  setInterval(urgencyTick, 60000);
+
+  /* ---- 4. Coupon nudge in cart drawer ---- */
+  function couponNudge(){
+    var box = document.querySelector('.coupon-input-box');
+    if (!box) return;
+    var el = document.getElementById('coupon-nudge');
+    var used = (typeof cartState!=='undefined') && cartState.couponDiscount > 0;
+    var hasItems = (typeof cartState!=='undefined') && (cartState.items||[]).length > 0;
+    if (used || !hasItems) { if (el) el.remove(); return; }
+    if (el) return;
+    el = document.createElement('button');
+    el.type = 'button'; el.id = 'coupon-nudge'; el.className = 'coupon-nudge';
+    el.innerHTML = 'First order? Tap to apply <b>BOOST30</b> &mdash; 30% off';
+    el.onclick = function(){
+      var inp = document.getElementById('coupon-entry');
+      if (inp) inp.value = 'BOOST30';
+      try { applyCouponCode('BOOST30'); } catch(e){}
+      el.remove();
+    };
+    box.parentNode.insertBefore(el, box);
+  }
+  var _upd2 = window.updateCartUI;
+  if (typeof _upd2 === 'function') {
+    window.updateCartUI = function(){
+      var r = _upd2.apply(this, arguments);
+      try { couponNudge(); } catch(e){}
+      return r;
+    };
+    try { couponNudge(); } catch(e){}
+  }
+
+  /* ---- 5. Social-proof ticker (real rating data, capped per session) ---- */
+  function proofCandidates(){
+    if (!window.PRODUCT_RATINGS || typeof databaseProducts === 'undefined' || !databaseProducts.length) return [];
+    return databaseProducts
+      .map(function(p){ var r = PRODUCT_RATINGS[p.id]; return r && r.cnt>0 && r.avg>=4 ? { name:p.name, avg:r.avg, cnt:r.cnt } : null; })
+      .filter(Boolean)
+      .sort(function(a,b){ return (b.avg-a.avg) || (b.cnt-a.cnt); })
+      .slice(0,6);
+  }
+  var proofIdx = 0;
+  function showProof(){
+    var shown = parseInt(sessionStorage.getItem('hs_proof_n')||'0',10);
+    if (shown >= 3) return;
+    var drawerOpen = document.querySelector('.cart-drawer-overlay.active');
+    if (drawerOpen) return;
+    var list = proofCandidates();
+    if (!list.length) return;
+    var it = list[proofIdx++ % list.length];
+    var el = document.getElementById('proof-toast');
+    if (!el) {
+      el = document.createElement('a');
+      el.id = 'proof-toast'; el.className = 'proof-toast'; el.href = 'menu.html';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<span class="pt-stars">&#9733; ' + it.avg.toFixed(1) + '</span><span class="pt-body"><b>' +
+      it.name.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</b> &mdash; rated by ' + it.cnt + ' local' + (it.cnt===1?'':'s') + '</span>';
+    el.classList.add('show');
+    try { sessionStorage.setItem('hs_proof_n', String(shown+1)); } catch(e){}
+    setTimeout(function(){ el.classList.remove('show'); }, 6000);
+  }
+  setTimeout(showProof, 9000);
+  setInterval(showProof, 32000);
+
+  /* ---- 6. One-tap reorder bar ---- */
+  function reorderBar(){
+    var last = null;
+    try { last = JSON.parse(localStorage.getItem('hs_last_items')||'null'); } catch(e){}
+    if (!last || !last.length) return;
+    if (sessionStorage.getItem('hs_reorder_x')) return;
+    if (typeof cartState === 'undefined' || (cartState.items||[]).length) return;
+    var total = 0; last.forEach(function(i){ total += Number(i.price)*Number(i.qty); });
+    var names = last.map(function(i){ return i.qty + '\u00d7 ' + i.name; }).join(', ');
+    if (names.length > 70) names = names.slice(0,67) + '\u2026';
+    var el = document.createElement('div');
+    el.id = 'reorder-bar'; el.className = 'reorder-bar';
+    el.innerHTML = '<div class="rb-txt"><b>Your usual?</b> <span></span></div><div class="rb-actions"><button type="button" id="rb-add">Add all &mdash; $' + total.toFixed(2) + '</button><button type="button" id="rb-x" aria-label="Dismiss">&times;</button></div>';
+    el.querySelector('.rb-txt span').textContent = names;
+    document.body.appendChild(el);
+    document.getElementById('rb-x').onclick = function(){ try{sessionStorage.setItem('hs_reorder_x','1');}catch(e){} el.remove(); };
+    document.getElementById('rb-add').onclick = function(){
+      last.forEach(function(i){ for (var k=0;k<i.qty;k++) addProductToCart(i.id, i.name, Number(i.price), i.img||''); });
+      el.remove();
+      try { toggleCartDrawer(true); } catch(e){}
+    };
+  }
+  setTimeout(reorderBar, 2500);
 })();

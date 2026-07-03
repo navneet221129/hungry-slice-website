@@ -56,9 +56,9 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1783081718">
+  <link rel="stylesheet" href="style.css?v=1783083944">
   <link rel="stylesheet" href="effects.css?v=1782723757">
-  <link rel="stylesheet" href="home.css?v=1783081718">
+  <link rel="stylesheet" href="home.css?v=1783085119">
   
   <!-- Spline Viewer module -->
   <script type="module" src="https://unpkg.com/@splinetool/viewer/build/spline-viewer.js"></script>
@@ -76,11 +76,11 @@
   <!-- Promo Announcement Bar -->
   <div class="promo-bar" id="promo-bar">
     <div class="promo-bar-track" id="promo-bar-track">
-      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
-      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
-      <span>🍕 New: Bollywood Range — Spiced to perfection!</span>
-      <span>🔥 FREE DELIVERY on orders over $45 — Use code <strong>HAMFREE</strong></span>
-      <span>⚡ 30% OFF your first order — Use code <strong>BOOST30</strong></span>
+      <span>Free delivery on orders over $40 — Use code <strong>HAMFREE</strong></span>
+      <span>30% off your first order — Use code <strong>BOOST30</strong></span>
+      <span>New: The Bollywood Range — spiced to perfection</span>
+      <span>Free delivery on orders over $40 — Use code <strong>HAMFREE</strong></span>
+      <span>30% off your first order — Use code <strong>BOOST30</strong></span>
     </div>
     <button class="promo-bar-close" onclick="closePromoBar()" aria-label="Close promo">×</button>
   </div>
@@ -333,14 +333,14 @@
   <div class="cart-drawer-overlay" id="cart-drawer">
     <div class="cart-drawer glass-card">
       <div class="cart-header">
-        <h2>Your Flight Bag</h2>
+        <h2>Your Order</h2>
         <button class="close-drawer-btn" onclick="toggleCartDrawer()" aria-label="Close cart"><i data-lucide="x"></i></button>
       </div>
 
       <!-- Steps indicator -->
       <div class="checkout-steps-bar">
         <div class="c-step active" id="c-step-1">1. Bag</div>
-        <div class="c-step" id="c-step-2">2. Route</div>
+        <div class="c-step" id="c-step-2">2. Details</div>
         <div class="c-step" id="c-step-3">3. Pay</div>
       </div>
 
@@ -357,7 +357,7 @@
           <!-- Free Delivery Progress Bar -->
           <div class="free-delivery-progress" id="free-delivery-bar">
             <div class="fdp-text">
-              <span class="fdp-icon">🚚</span>
+              <span class="fdp-icon"></span>
               <span id="fdp-message">Add <strong id="fdp-remaining">$45.00</strong> more for <strong>free delivery!</strong></span>
             </div>
             <div class="fdp-track">
@@ -499,7 +499,7 @@
         </div>
         <div class="drawer-action-row">
           <button class="btn btn-secondary" id="back-checkout-btn" style="display:none;" onclick="stepCheckoutBack()">Back</button>
-          <button class="btn btn-primary btn-grow" id="next-checkout-btn" onclick="stepCheckoutNext()">Proceed to Route <i data-lucide="chevron-right"></i></button>
+          <button class="btn btn-primary btn-grow" id="next-checkout-btn" onclick="stepCheckoutNext()">Continue to Checkout <i data-lucide="chevron-right"></i></button>
         </div>
       </div>
     </div>
@@ -665,9 +665,9 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1783081718"></script>
+  <script src="app.js?v=1783083944"></script>
   <script src="effects.js?v=1782723757"></script>
-  <script src="home.js?v=1783081718"></script>
+  <script src="home.js?v=1783085119"></script>
   <!-- AI Chat Order Widget -->
   <button id="aiChatFab" class="ai-chat-fab" type="button" aria-label="Open AI assistant" data-state="closed">
     <span class="ai-chat-fab-icon" aria-hidden="true">

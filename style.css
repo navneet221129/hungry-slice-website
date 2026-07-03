@@ -4691,3 +4691,56 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 .free-del-fill { height:100%; width:0%; border-radius:50px; background:linear-gradient(90deg,#ff5500,#ffb347); transition:width .6s cubic-bezier(.22,1,.36,1); }
 .free-del.unlocked .free-del-fill { background:linear-gradient(90deg,#22c55e,#84e29b); }
 @media (max-width:600px){ .free-del { padding:12px 20px 0; } }
+
+/* ===== PRO POLISH (2026-07-03): typography discipline + visual restraint ===== */
+:root { --font-impact: 'Outfit', 'Anton', sans-serif; }
+.hero-title { font-weight:800; letter-spacing:-2.5px; text-transform:none; }
+.menu-cat-title { font-weight:800; letter-spacing:-0.5px; text-transform:none; }
+.auth-logo, .hub-name { font-weight:800; }
+.reco-title, .review-modal-logo { font-weight:700; letter-spacing:-0.2px; text-transform:none; }
+.section-title { letter-spacing:-0.5px; }
+.plc-foot-clean .plc-price { font-weight:700; letter-spacing:0; }
+.btn { text-transform:none; letter-spacing:0.1px; }
+.btn-primary { box-shadow:0 4px 14px rgba(255,85,0,.20); }
+.btn-primary:hover { box-shadow:0 6px 20px rgba(255,85,0,.26); }
+/* promo strip: quiet, editorial */
+.promo-bar { background:#101014; color:#c9c9d2; font-weight:500; border-bottom:1px solid rgba(255,255,255,.08); }
+.promo-bar-track strong { background:transparent; color:#ff8a3d; padding:0 2px; letter-spacing:.04em; }
+.promo-bar-close { background:rgba(255,255,255,.08); color:#ddd; }
+/* hero ingredients: photography, not stickers */
+.ing-label { display:none; }
+.floating-ingredient img { box-shadow:0 12px 30px rgba(0,0,0,.28); }
+.tagline-badge { letter-spacing:.16em; }
+
+/* ===== ENGAGEMENT PACK (2026-07-03) ===== */
+/* bestseller badges */
+.plc-pop-badge { position:absolute; top:10px; left:10px; z-index:3; background:rgba(16,16,20,.85); color:#fff; font-size:.68rem; font-weight:700; letter-spacing:.04em; padding:4px 10px; border-radius:50px; backdrop-filter:blur(6px); }
+.plc-pop-badge.plc-pop-top { background:linear-gradient(135deg,var(--accent,#ff5500),#ff8a3d); }
+/* hero offer chip */
+.offer-chip { display:inline-flex; align-items:center; gap:12px; margin-top:18px; padding:10px 14px; border:1px dashed rgba(255,85,0,.5); border-radius:12px; font-size:.88rem; background:rgba(255,85,0,.06); }
+.offer-chip b { color:var(--accent,#ff5500); letter-spacing:.03em; }
+.offer-chip button { border:0; border-radius:8px; padding:7px 12px; font-weight:700; font-size:.8rem; cursor:pointer; background:var(--accent,#ff5500); color:#fff; font-family:inherit; }
+/* closing-soon pill */
+.close-soon-pill { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:1200; display:flex; align-items:center; gap:10px; background:rgba(16,16,20,.92); color:#fff; padding:10px 14px; border-radius:50px; font-size:.85rem; font-weight:600; box-shadow:0 12px 34px rgba(0,0,0,.4); backdrop-filter:blur(10px); }
+.close-soon-pill a { color:#ff8a3d; font-weight:700; text-decoration:none; }
+.close-soon-pill button { background:none; border:0; color:#aaa; font-size:1rem; cursor:pointer; padding:0 2px; }
+/* coupon nudge */
+.coupon-nudge { display:block; width:100%; text-align:left; margin:0 0 10px; padding:10px 14px; border:1px dashed rgba(255,85,0,.45); border-radius:10px; background:rgba(255,85,0,.05); color:inherit; font-size:.83rem; font-weight:500; cursor:pointer; font-family:inherit; }
+.coupon-nudge b { color:var(--accent,#ff5500); }
+/* social-proof toast */
+.proof-toast { position:fixed; left:20px; bottom:20px; z-index:1100; display:flex; align-items:center; gap:10px; max-width:320px; background:rgba(16,16,20,.94); color:#eee; padding:12px 16px; border-radius:14px; font-size:.83rem; text-decoration:none; box-shadow:0 14px 40px rgba(0,0,0,.45); opacity:0; transform:translateY(16px); transition:opacity .35s ease, transform .35s ease; pointer-events:none; }
+.proof-toast.show { opacity:1; transform:translateY(0); pointer-events:auto; }
+.proof-toast .pt-stars { color:#ffb347; font-weight:800; white-space:nowrap; }
+.proof-toast .pt-body b { color:#fff; }
+/* reorder bar */
+.reorder-bar { position:fixed; left:50%; transform:translateX(-50%); bottom:20px; z-index:1150; display:flex; align-items:center; gap:14px; max-width:min(560px,92vw); background:rgba(16,16,20,.94); color:#ddd; padding:12px 16px; border-radius:16px; font-size:.85rem; box-shadow:0 14px 40px rgba(0,0,0,.45); backdrop-filter:blur(10px); }
+.reorder-bar .rb-txt b { color:#fff; }
+.reorder-bar .rb-txt span { color:#aaa; }
+.reorder-bar .rb-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.reorder-bar #rb-add { border:0; border-radius:10px; padding:9px 14px; font-weight:700; font-size:.82rem; cursor:pointer; background:var(--accent,#ff5500); color:#fff; font-family:inherit; white-space:nowrap; }
+.reorder-bar #rb-x { background:none; border:0; color:#888; font-size:1.1rem; cursor:pointer; }
+@media (max-width:768px){
+  .proof-toast { left:12px; right:auto; bottom:132px; max-width:78vw; }
+  .close-soon-pill { bottom:76px; }
+  .reorder-bar { bottom:76px; flex-wrap:wrap; }
+}
