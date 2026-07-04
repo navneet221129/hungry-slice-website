@@ -23,7 +23,7 @@ let vegMode = (typeof localStorage !== 'undefined' ? localStorage.getItem('hs_ve
 
 // Day/Night Theme Toggling & Paynuts Sync
 window.toggleTheme = function() {
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
   const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
@@ -358,7 +358,7 @@ function initPaynutsGateway() {
       paynutsInstance.init(savedKey, 'paynuts-card-number', 'paynuts-cvc', function(instance) {
         console.log("Paynuts secure fields initialized successfully.");
         
-        const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const textColor = currentTheme === 'dark' ? '#e2dcd5' : '#111111';
         const placeholderColor = currentTheme === 'dark' ? '#9a9286' : '#6b7280';
         
@@ -715,6 +715,7 @@ function renderDynamicProducts() {
     if (!byCat[p.category]) { byCat[p.category] = []; catOrder.push(p.category); }
     byCat[p.category].push(p);
   });
+  const _arHash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
   const buildCard = (p) => {
     const pool = _imgPools[p.category] || _default;
     _catIdx[p.category] = (_catIdx[p.category] || 0);
@@ -722,8 +723,9 @@ function renderDynamicProducts() {
     _catIdx[p.category]++;
     const safeName = p.name.replace(/'/g, "\'");
     const featured = p.category === 'Hungry Special';
+    const arCls = featured ? '' : ('plc-ar-' + (_arHash(String(p.id)) % 3));
     return `
-      <div class="plc ${featured ? 'plc-featured' : ''}" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+      <div class="plc ${featured ? 'plc-featured' : ''} ${arCls}" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
         <div class="plc-img-wrap">
           <div class="plc-veg-badge ${p.is_veg ? 'veg' : 'nonveg'}" title="${p.is_veg ? 'Veg' : 'Non-Veg'}"></div>
           ${p.video_url ? `<video class="plc-img plc-video" data-src="${p.video_url}" poster="${p.video_poster || img}" muted loop playsinline preload="none" aria-label="${p.name}"></video><span class="plc-video-badge" aria-hidden="true">▶</span>` : `<img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">`}
@@ -2283,7 +2285,7 @@ async function stepCheckoutNext() {
   const { subtotal, deliveryFee, discount, total } = calculateCartTotals();
 
   if (cartState.items.length === 0) {
-    alert('Add pizzas to your bag to proceed!');
+    showCheckoutError('Your bag is empty — add a pizza first.');
     return;
   }
 
@@ -2299,9 +2301,13 @@ async function stepCheckoutNext() {
   } else if (step === 2) {
     // Validate inputs
     const phone = document.getElementById('ship-phone').value.trim();
-    const postcode = document.getElementById('ship-postcode').value.trim();
-    if (!phone || (cartState.deliveryMethod === 'delivery' && !document.getElementById('ship-address').value.trim())) {
-      alert('Please fill out all address and contact details.');
+    const addressEl = document.getElementById('ship-address');
+    const addressMissing = cartState.deliveryMethod === 'delivery' && !addressEl.value.trim();
+    clearFieldErrors();
+    if (!phone || addressMissing) {
+      if (!phone) markFieldError('ship-phone');
+      if (addressMissing) markFieldError('ship-address');
+      showCheckoutError(!phone && addressMissing ? 'Enter your phone number and delivery address.' : (!phone ? 'Enter a contact phone number.' : 'Enter your delivery address.'));
       return;
     }
 
@@ -2322,6 +2328,7 @@ async function stepCheckoutNext() {
     document.getElementById('next-checkout-btn').innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
     lucide.createIcons();
   } else if (step === 3) {
+    clearFieldErrors();
     const confirmBtn = document.getElementById('next-checkout-btn');
     confirmBtn.disabled = true;
     confirmBtn.innerText = 'Processing Payment...';
@@ -2329,7 +2336,8 @@ async function stepCheckoutNext() {
     const cardholder = document.getElementById('paynuts-cardholder').value.trim();
 
     if (!cardholder) {
-      alert("Please enter the Cardholder Name.");
+      showCheckoutError("Enter the cardholder's name.");
+      markFieldError('paynuts-cardholder');
       confirmBtn.disabled = false;
       confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
       lucide.createIcons();
@@ -2342,14 +2350,16 @@ async function stepCheckoutNext() {
       const year = document.getElementById('paynuts-expiry-year').value.trim();
 
       if (!month || month.length !== 2 || isNaN(month) || parseInt(month) < 1 || parseInt(month) > 12) {
-        alert("Please enter a valid 2-digit Expiry Month (MM).");
+        showCheckoutError("Enter a valid expiry month (MM).");
+        markFieldError('paynuts-expiry-month');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
         lucide.createIcons();
         return;
       }
       if (!year || (year.length !== 2 && year.length !== 4) || isNaN(year)) {
-        alert("Please enter a valid 2-digit or 4-digit Expiry Year (YY or YYYY).");
+        showCheckoutError("Enter a valid expiry year (YY or YYYY).");
+        markFieldError('paynuts-expiry-year');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
         lucide.createIcons();
@@ -2369,15 +2379,15 @@ async function stepCheckoutNext() {
         },
         function(errors) {
           console.error("Paynuts Tokenization Errors:", errors);
-          let errorMsg = "Card tokenization failed:\n";
+          let errorMsg = "Card tokenization failed: ";
           if (Array.isArray(errors)) {
-            errorMsg += errors.map(e => e.message || e.err_msg || JSON.stringify(e)).join("\n");
+            errorMsg += errors.map(e => e.message || e.err_msg || JSON.stringify(e)).join("; ");
           } else if (errors && errors.message) {
             errorMsg += errors.message;
           } else {
             errorMsg += JSON.stringify(errors);
           }
-          alert(errorMsg);
+          showCheckoutError(errorMsg);
           confirmBtn.disabled = false;
           confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
           lucide.createIcons();
@@ -2390,7 +2400,8 @@ async function stepCheckoutNext() {
       const cvc = document.getElementById('mock-cvc').value.trim();
 
       if (!cardNumber || cardNumber.replace(/\s+/g, '').length < 12) {
-        alert("Please enter a valid Card Number.");
+        showCheckoutError("Enter a valid card number.");
+        markFieldError('mock-card-number');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
         lucide.createIcons();
@@ -2398,14 +2409,16 @@ async function stepCheckoutNext() {
       }
       const expiryRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
       if (!expiry || !expiryRegex.test(expiry)) {
-        alert("Please enter a valid Expiry Date (MM/YY).");
+        showCheckoutError("Enter a valid expiry date (MM/YY).");
+        markFieldError('mock-expiry');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
         lucide.createIcons();
         return;
       }
       if (!cvc || cvc.length < 3) {
-        alert("Please enter a valid CVC security code.");
+        showCheckoutError("Enter a valid CVC security code.");
+        markFieldError('mock-cvc');
         confirmBtn.disabled = false;
         confirmBtn.innerHTML = 'Confirm Order <i data-lucide="check-circle"></i>';
         lucide.createIcons();
@@ -3475,7 +3488,65 @@ function _initAIChat(){
   }
 
   function greet(){
-    addBot('Hey! I can help you find your perfect pizza. Try <strong>"spicy chicken under $20"</strong> or tap a suggestion below.');
+    addBot('Kia ora! I can find food, <strong>add it to your bag</strong> ("add 2 pepperoni and a coke"), track your order, and answer questions. What are you craving?');
+    renderChips(['Bestsellers', 'Veg under $20', 'Something spicy', 'Track my order', 'Any deals?']);
+  }
+
+  var lastProducts = [];
+  var lastQuery = '';
+  var lastIntent = null;
+
+  function renderChips(chips){
+    if (!chips || !chips.length) return;
+    var old = log.querySelector('.ai-chat-chips-row');
+    if (old) old.remove();
+    var row = document.createElement('div');
+    row.className = 'ai-chat-chips-row';
+    chips.slice(0,5).forEach(function(c){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ai-chat-chip-dyn';
+      b.textContent = c;
+      b.addEventListener('click', function(){ sendMessage(c); });
+      row.appendChild(b);
+    });
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function productCardEl(p, qty){
+    var card = document.createElement('div');
+    card.className = 'ai-chat-product';
+    card.setAttribute('data-pid', p.id);
+    card.setAttribute('data-name', p.name);
+    card.setAttribute('data-price', p.price);
+    card.setAttribute('data-img', p.image_url || '');
+    var img = p.image_url || 'assets/hero-pizza.png';
+    var vegCls = p.is_veg ? '' : 'nonveg';
+    var vegLbl = p.is_veg ? 'Veg' : 'Non-veg';
+    var qtyBadge = qty && qty > 1 ? '<span class="ai-chat-product-qty">' + qty + '\u00d7</span>' : '';
+    card.innerHTML =
+      '<img class="ai-chat-product-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy">' +
+      '<div class="ai-chat-product-body">' +
+        '<div class="ai-chat-product-name">' + qtyBadge + esc(p.name) + '</div>' +
+        '<div class="ai-chat-product-meta">' +
+          '<span class="ai-chat-product-veg ' + vegCls + '" title="' + vegLbl + '"></span>' +
+          '<span class="ai-chat-product-price">$' + Number(p.price).toFixed(2) + '</span>' +
+          '<span>&middot; ' + esc(p.category || '') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<button type="button" class="ai-chat-product-add">Add</button>';
+    return card;
+  }
+
+  function wireCard(card, qty){
+    var addBtn = card.querySelector('.ai-chat-product-add');
+    function doAdd(e){
+      if (e) e.stopPropagation();
+      addToCartFromChat(card, addBtn, qty || 1);
+    }
+    addBtn.addEventListener('click', doAdd);
+    card.addEventListener('click', doAdd);
   }
 
   function renderProducts(products){
@@ -3483,49 +3554,53 @@ function _initAIChat(){
     var wrap = document.createElement('div');
     wrap.className = 'ai-chat-products';
     products.forEach(function(p){
-      var card = document.createElement('div');
-      card.className = 'ai-chat-product';
-      card.setAttribute('data-pid', p.id);
-      var img = p.image_url || 'assets/hero-pizza.png';
-      var vegCls = p.is_veg ? '' : 'nonveg';
-      var vegLbl = p.is_veg ? 'Veg' : 'Non-veg';
-      card.innerHTML =
-        '<img class="ai-chat-product-img" src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy">' +
-        '<div class="ai-chat-product-body">' +
-          '<div class="ai-chat-product-name">' + esc(p.name) + '</div>' +
-          '<div class="ai-chat-product-meta">' +
-            '<span class="ai-chat-product-veg ' + vegCls + '" title="' + vegLbl + '"></span>' +
-            '<span class="ai-chat-product-price">$' + Number(p.price).toFixed(2) + '</span>' +
-            '<span>&middot; ' + esc(p.category || '') + '</span>' +
-          '</div>' +
-        '</div>' +
-        '<button type="button" class="ai-chat-product-add">Add</button>';
+      var card = productCardEl(p, 0);
       wrap.appendChild(card);
+      wireCard(card, 1);
     });
     log.appendChild(wrap);
     log.scrollTop = log.scrollHeight;
-    wrap.querySelectorAll('.ai-chat-product').forEach(function(card){
-      var addBtn = card.querySelector('.ai-chat-product-add');
-      function doAdd(e){
-        if (e) e.stopPropagation();
-        var pid = card.getAttribute('data-pid');
-        addToCartFromChat(pid, addBtn);
-      }
-      addBtn.addEventListener('click', doAdd);
-      card.addEventListener('click', doAdd);
-    });
   }
 
-  function addToCartFromChat(pid, btn){
+  function renderOrderItems(items){
+    if (!items || !items.length) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'ai-chat-products';
+    items.forEach(function(p){
+      var card = productCardEl(p, p.qty || 1);
+      wrap.appendChild(card);
+      wireCard(card, p.qty || 1);
+    });
+    var allBtn = document.createElement('button');
+    allBtn.type = 'button';
+    allBtn.className = 'ai-chat-addall';
+    var total = items.reduce(function(a, i){ return a + Number(i.price) * (i.qty || 1); }, 0);
+    allBtn.textContent = 'Add all to bag \u2014 $' + total.toFixed(2);
+    allBtn.addEventListener('click', function(){
+      items.forEach(function(p){
+        for (var k = 0; k < (p.qty || 1); k++) {
+          if (typeof window.addProductToCart === 'function') window.addProductToCart(p.id, p.name, Number(p.price), p.image_url || '');
+        }
+      });
+      allBtn.textContent = 'Added \u2713 \u2014 open your bag to checkout';
+      allBtn.disabled = true;
+      addBot('In the bag! <a href="#" onclick="toggleCartDrawer(true);return false;">Review your order &rarr;</a>');
+    });
+    wrap.appendChild(allBtn);
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function addToCartFromChat(card, btn, qty){
     var added = false;
     try {
-      if (typeof window.addToCart === 'function') {
-        var prod = (typeof prodById === 'function') ? prodById(pid) : null;
-        if (prod) { window.addToCart(prod); added = true; }
-        else { window.addToCart(pid); added = true; }
-      } else if (typeof window.cart !== 'undefined' && typeof prodById === 'function') {
-        var p2 = prodById(pid);
-        if (p2 && typeof window.cart.add === 'function') { window.cart.add(p2); added = true; }
+      var pid = card.getAttribute('data-pid');
+      var name = card.getAttribute('data-name');
+      var price = Number(card.getAttribute('data-price'));
+      var img = card.getAttribute('data-img') || '';
+      if (typeof window.addProductToCart === 'function' && pid && name && !isNaN(price)) {
+        for (var k = 0; k < (qty || 1); k++) window.addProductToCart(pid, name, price, img);
+        added = true;
       }
     } catch (err) { console.warn('addToCart failed', err); }
     if (added && btn) {
@@ -3537,24 +3612,80 @@ function _initAIChat(){
     }
   }
 
-  async function sendMessage(text){
+  var STATUS_RE = /\b(track|status|where)\b[^]*\b(order|pizza|food)\b|\bmy order\b/i;
+  var STATUS_LABELS = { received: 'Order received \u2014 the kitchen has it', preparing: 'Being prepared \u2014 dough stretched, toppings on', oven: 'In the wood-fired oven right now', delivery: 'Out for delivery \u2014 on its way to you', delivered: 'Delivered \u2014 enjoy!' };
+  async function tryOrderStatus(text){
+    if (!STATUS_RE.test(text)) return false;
+    var oid = null;
+    try { oid = localStorage.getItem('hs_active_order'); } catch(e){}
+    if (!oid) {
+      addBot('I don\'t see an active order on this device. If you ordered here recently, check the <a href="track.html">Order Tracker</a> with your order ID.');
+      return true;
+    }
+    try {
+      var client = (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : null;
+      if (client) {
+        var r = await client.rpc('get_order_status', { p_id: oid });
+        var st = r && r.data;
+        if (st) {
+          addBot('\ud83d\udce6 Your order <strong>#' + esc(String(oid).slice(0,8)) + '</strong>: <strong>' + (STATUS_LABELS[st] || st) + '</strong>.<br><a href="track.html">Watch it live on the tracker &rarr;</a>');
+          return true;
+        }
+      }
+    } catch(e){ console.warn('status check failed', e); }
+    addBot('I couldn\'t look that order up just now. Try the <a href="track.html">Order Tracker</a> \u2014 it has the live status.');
+    return true;
+  }
+
+  var ORDINAL_RE = /\b(?:add|get|want|take)\b[^]*\b(first|second|third|fourth|1st|2nd|3rd|4th|top|last)\b/i;
+  var ORD_IDX = { first: 0, '1st': 0, top: 0, second: 1, '2nd': 1, third: 2, '3rd': 2, fourth: 3, '4th': 3 };
+  function tryOrdinalAdd(text){
+    var m = text.match(ORDINAL_RE);
+    if (!m || !lastProducts.length) return false;
+    var key = m[1].toLowerCase();
+    var idx = key === 'last' ? lastProducts.length - 1 : ORD_IDX[key];
+    if (idx == null || idx >= lastProducts.length) return false;
+    var p = lastProducts[idx];
+    if (typeof window.addProductToCart === 'function') {
+      window.addProductToCart(p.id, p.name, Number(p.price), p.image_url || '');
+      addBot('Added <strong>' + esc(p.name) + '</strong> ($' + Number(p.price).toFixed(2) + ') to your bag. <a href="#" onclick="toggleCartDrawer(true);return false;">Checkout &rarr;</a>');
+      renderChips(['Add a drink', 'Something sweet', 'Track my order']);
+      return true;
+    }
+    return false;
+  }
+
+    async function sendMessage(text){
     text = String(text || '').trim();
     if (!text) return;
     addUser(text);
     input.value = '';
     if (sendBtn) sendBtn.disabled = true;
+
+    if (tryOrdinalAdd(text)) { if (sendBtn) sendBtn.disabled = false; if (input) input.focus(); return; }
+    var handledStatus = await tryOrderStatus(text);
+    if (handledStatus) { if (sendBtn) sendBtn.disabled = false; if (input) input.focus(); return; }
+
     var typing = addTyping();
     try {
       if (!SUPABASE_URL) throw new Error('Supabase not configured');
       var res = await fetch(SUPABASE_URL + '/functions/v1/chat-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY || '', 'Authorization': 'Bearer ' + (SUPABASE_KEY || '') },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, lastQuery: lastQuery, lastIntent: lastIntent }),
       });
       var data = await res.json();
       typing.remove();
       addBot(mdRender(data.reply || 'Hmm.'));
-      if (data.products && data.products.length) renderProducts(data.products);
+      if (data.order_items && data.order_items.length) {
+        renderOrderItems(data.order_items);
+      } else if (data.products && data.products.length) {
+        renderProducts(data.products);
+        lastProducts = data.products;
+      }
+      if (data.echoQuery) lastQuery = data.echoQuery;
+      if (data.intent) lastIntent = data.intent;
+      if (data.chips) renderChips(data.chips);
     } catch (err) {
       typing.remove();
       addBot('Connection hiccup. Try again in a sec?');
@@ -3891,4 +4022,167 @@ if (document.readyState === 'loading') { document.addEventListener('DOMContentLo
     };
   }
   setTimeout(reorderBar, 2500);
+})();
+
+/* ===== CHECKOUT FRICTION FIX (2026-07-04): inline errors replace blocking alert() ===== */
+function showCheckoutError(msg){
+  var bar = document.querySelector('.checkout-steps-bar');
+  if (!bar) return;
+  var el = document.getElementById('checkout-error-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'checkout-error-banner';
+    el.className = 'checkout-error-banner';
+    bar.parentNode.insertBefore(el, bar.nextSibling);
+  }
+  el.textContent = msg;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  el.scrollIntoView({block:'nearest', behavior:'smooth'});
+  clearTimeout(el._hideT);
+  el._hideT = setTimeout(function(){ el.classList.remove('show'); }, 5000);
+}
+function markFieldError(fieldId){
+  var input = document.getElementById(fieldId);
+  if (!input) return;
+  var row = input.closest('.form-row') || input;
+  row.classList.add('field-error');
+  input.focus();
+  var clear = function(){ row.classList.remove('field-error'); input.removeEventListener('input', clear); };
+  input.addEventListener('input', clear);
+}
+function clearFieldErrors(){
+  document.querySelectorAll('.form-row.field-error').forEach(function(r){ r.classList.remove('field-error'); });
+}
+
+/* ===== CART UPSELL (2026-07-04): one-tap add-on suggestions from real low-priced sides/desserts ===== */
+(function(){
+  function upsellCandidates(){
+    if (!Array.isArray(databaseProducts) || !databaseProducts.length) return [];
+    var inCart = {};
+    (cartState.items||[]).forEach(function(i){ inCart[i.id] = true; });
+    var rx = /side|dessert|wing|fries|garlic bread|dip/i;
+    return databaseProducts
+      .filter(function(p){ return p.image_url && !p.out_of_stock && !inCart[p.id] && rx.test(p.category||'') })
+      .sort(function(a,b){ return Number(a.price) - Number(b.price); })
+      .slice(0, 2);
+  }
+  function renderUpsell(){
+    var host = document.getElementById('cart-items-list');
+    if (!host || !host.parentNode) return;
+    var old = document.getElementById('cart-upsell-block');
+    if (old) old.remove();
+    if (!cartState.items || !cartState.items.length) return;
+    var picks = upsellCandidates();
+    if (!picks.length) return;
+    var el = document.createElement('div');
+    el.id = 'cart-upsell-block'; el.className = 'cart-upsell';
+    el.innerHTML = '<div class="cart-upsell-head">Often added</div>' + picks.map(function(p){
+      var safe = String(p.name).replace(/'/g,"\\'");
+      return '<div class="cart-upsell-row"><img src="'+p.image_url+'" alt="" loading="lazy">' +
+        '<span class="cu-name">'+p.name+'</span><span class="cu-price">$'+Number(p.price).toFixed(2)+'</span>' +
+        '<button type="button" onclick="addProductToCart(\''+p.id+'\',\''+safe+'\','+Number(p.price)+',\''+p.image_url+'\')">Add</button></div>';
+    }).join('');
+    var feeNote = host.parentNode.querySelector('.bag-fee-note');
+    if (feeNote) feeNote.insertAdjacentElement('afterend', el);
+    else host.insertAdjacentElement('afterend', el);
+  }
+  var _u1 = window.updateCartUI;
+  if (typeof _u1 === 'function') {
+    window.updateCartUI = function(){
+      var r = _u1.apply(this, arguments);
+      try { renderUpsell(); } catch(e){}
+      return r;
+    };
+  }
+})();
+
+/* ===== QUICK VIEW (2026-07-04): tap product image -> rich detail modal ===== */
+(function(){
+  function findProduct(pid){
+    try { return (databaseProducts || []).find(function(p){ return String(p.id) === String(pid); }) || null; } catch(e){ return null; }
+  }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+
+  var qty = 1, current = null;
+
+  function ensureModal(){
+    var m = document.getElementById('qv-modal');
+    if (m) return m;
+    m = document.createElement('div');
+    m.id = 'qv-modal';
+    m.className = 'qv-overlay';
+    m.innerHTML = '<div class="qv-card" role="dialog" aria-modal="true">' +
+      '<button type="button" class="qv-close" aria-label="Close">&times;</button>' +
+      '<div class="qv-media" id="qv-media"></div>' +
+      '<div class="qv-body">' +
+        '<div class="qv-toprow"><span class="qv-veg" id="qv-veg"></span><h3 id="qv-name"></h3></div>' +
+        '<div class="qv-stars" id="qv-stars"></div>' +
+        '<p class="qv-desc" id="qv-desc"></p>' +
+        '<div class="qv-actions">' +
+          '<div class="qv-stepper"><button type="button" id="qv-minus" aria-label="Less">&minus;</button><span id="qv-qty">1</span><button type="button" id="qv-plus" aria-label="More">+</button></div>' +
+          '<button type="button" class="qv-add" id="qv-add"></button>' +
+        '</div>' +
+      '</div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', function(e){ if (e.target === m) closeQV(); });
+    m.querySelector('.qv-close').onclick = closeQV;
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeQV(); });
+    m.querySelector('#qv-minus').onclick = function(){ if (qty > 1) qty--; syncQty(); };
+    m.querySelector('#qv-plus').onclick = function(){ if (qty < 10) qty++; syncQty(); };
+    m.querySelector('#qv-add').onclick = function(){
+      if (!current) return;
+      for (var k = 0; k < qty; k++) addProductToCart(current.id, current.name, Number(current.price), current.image_url || '');
+      closeQV();
+      try { toggleCartDrawer(true); } catch(e){}
+    };
+    return m;
+  }
+  function syncQty(){
+    var m = document.getElementById('qv-modal');
+    if (!m || !current) return;
+    m.querySelector('#qv-qty').textContent = qty;
+    m.querySelector('#qv-add').textContent = 'Add ' + qty + ' to bag \u2014 $' + (Number(current.price) * qty).toFixed(2);
+  }
+  function openQV(pid){
+    var p = findProduct(pid);
+    if (!p) return false;
+    current = p; qty = 1;
+    var m = ensureModal();
+    var media = m.querySelector('#qv-media');
+    if (p.video_url) {
+      media.innerHTML = '<video src="' + esc(p.video_url) + '" poster="' + esc(p.video_poster || p.image_url || '') + '" autoplay muted loop playsinline></video>';
+    } else {
+      media.innerHTML = '<img src="' + esc(p.image_url || 'assets/hero-pizza.png') + '" alt="' + esc(p.name) + '">';
+    }
+    m.querySelector('#qv-name').textContent = p.name;
+    var veg = m.querySelector('#qv-veg');
+    veg.className = 'qv-veg ' + (p.is_veg ? 'veg' : 'nonveg');
+    veg.title = p.is_veg ? 'Vegetarian' : 'Non-vegetarian';
+    var stars = m.querySelector('#qv-stars');
+    try { stars.innerHTML = (typeof ratingStarsHTML === 'function') ? ratingStarsHTML(p.id) : ''; } catch(e){ stars.innerHTML = ''; }
+    m.querySelector('#qv-desc').textContent = p.description || '';
+    syncQty();
+    m.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return true;
+  }
+  function closeQV(){
+    var m = document.getElementById('qv-modal');
+    if (!m) return;
+    m.classList.remove('open');
+    document.body.style.overflow = '';
+    var v = m.querySelector('video');
+    if (v) { try { v.pause(); } catch(e){} }
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.target.closest('.plc-quick-add, .plc-add-btn, .plc-stars-overlay, .qty-btn')) return;
+    var wrapEl = e.target.closest('.plc-img-wrap');
+    if (wrapEl) {
+      var card = wrapEl.closest('.plc[data-pizza-id]');
+      if (card && openQV(card.getAttribute('data-pizza-id'))) { e.preventDefault(); e.stopPropagation(); return; }
+    }
+    var tileEl = e.target.closest('.bento-tile[data-pid]');
+    if (tileEl && openQV(tileEl.getAttribute('data-pid'))) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
 })();

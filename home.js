@@ -79,7 +79,7 @@
   function buildDishes(products) {
     var pick = products.filter(function (p) { return p.image_url && !p.out_of_stock; }).slice(0, 14);
     if (!pick.length) return null;
-    var sec = document.createElement('section'); sec.className = 'home-section';
+    var sec = document.createElement('section'); sec.className = 'home-section section-tint';
     sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">Crowd Favourites</div><h2 class="home-title">Popular Right Now</h2></div>' +
       '<div class="dish-carousel"><button class="dish-arrow prev" aria-label="Previous">&#8249;</button>' +
       '<div class="dish-viewport"><div class="dish-track">' +
@@ -172,32 +172,52 @@
       '<div class="craft-copy"><div class="home-eyebrow">The Craft</div>' +
         '<h2 class="home-title">Slow dough.<br>Fast fire.</h2>' +
         '<p>Every base is cold-fermented for 48 hours, stretched by hand and blistered in a 450&deg;C wood-fired oven for ninety seconds. No shortcuts, no freezer &mdash; just fire and fresh ingredients.</p>' +
-        '<a class="bv-cta" href="story.html">Our story &rarr;</a></div>';
+        '<div class="craft-cta-row"><a class="btn btn-primary" href="menu.html">Order now</a><a class="craft-story-link" href="story.html">Our story &rarr;</a></div></div>';
     return sec;
   }
 
   function buildGallery(products) {
     var seen = {};
-    var picks = products.filter(function(p){
+    var pool = products.filter(function(p){
       if (!p.image_url || p.out_of_stock) return false;
       var c = p.category || 'x';
       if (seen[c] > 1) return false;
       seen[c] = (seen[c]||0) + 1;
       return true;
-    }).slice(0, 8);
-    if (picks.length < 4) return null;
-    var sec = document.createElement('section'); sec.className = 'home-section gallery-section';
+    });
+    if (pool.length < 5) return null;
+    var heroP = pool.find(function(p){ return p.video_url; }) || pool[0];
+    var rest = pool.filter(function(p){ return p !== heroP; }).slice(0, 5);
+    var total = products.filter(function(p){ return !p.out_of_stock; }).length;
+
+    function tile(p, cls){
+      return '<a class="bento-tile ' + cls + '" href="menu.html?cat=' + encodeURIComponent(p.category||'') + '" data-pid="' + esc(p.id) + '">' +
+        '<img src="' + esc(p.image_url) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">' +
+        '<span class="gal-meta"><b>' + esc(p.name) + '</b><i>' + money(p.price) + '</i></span></a>';
+    }
+    var heroMedia = heroP.video_url
+      ? '<video src="' + esc(heroP.video_url) + '" poster="' + esc(heroP.video_poster || heroP.image_url) + '" muted loop playsinline preload="none"></video>'
+      : '<img class="kenburns" src="' + esc(heroP.image_url) + '" alt="' + esc(heroP.name) + '" loading="lazy" decoding="async">';
+    var heroTile = '<a class="bento-tile bento-hero" href="menu.html?cat=' + encodeURIComponent(heroP.category||'') + '" data-pid="' + esc(heroP.id) + '">' +
+      heroMedia +
+      '<span class="gal-meta"><b>' + esc(heroP.name) + '</b><i>' + money(heroP.price) + '</i></span>' +
+      '<span class="bento-flag">Signature</span></a>';
+    var ctaTile = '<a class="bento-tile bento-cta" href="menu.html">' +
+      '<span class="bcta-n">' + total + '</span><span class="bcta-l">items on the menu</span><span class="bcta-go">View full menu &rarr;</span></a>';
+
+    var sec = document.createElement('section'); sec.className = 'home-section bento-section';
     sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">Fresh from the pass</div><h2 class="home-title">The Lineup</h2></div>' +
-      '<div class="gal-rail">' + picks.map(function(p){
-        return '<a class="gal-card" href="menu.html?cat=' + encodeURIComponent(p.category||'') + '">' +
-          '<img src="' + esc(p.image_url) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">' +
-          '<span class="gal-meta"><b>' + esc(p.name) + '</b><i>' + money(p.price) + '</i></span></a>';
-      }).join('') + '</div>';
+      '<div class="bento-grid">' + heroTile + rest.map(function(p, i){ return tile(p, i === 0 ? 'bento-wide' : ''); }).join('') + ctaTile + '</div>';
+
+    var v = sec.querySelector('video');
+    if (v && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function(en){ en.forEach(function(e){ e.isIntersecting ? v.play().catch(function(){}) : v.pause(); }); }, { threshold: .3 }).observe(v);
+    }
     return sec;
   }
 
   function buildSteps() {
-    var sec = document.createElement('section'); sec.className = 'home-section steps-section';
+    var sec = document.createElement('section'); sec.className = 'home-section steps-section section-tint';
     sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">How it works</div><h2 class="home-title">Three steps to hot pizza</h2></div>' +
       '<div class="steps-grid">' +
         '<div class="step-card"><span class="step-n">01</span><i data-lucide="utensils-crossed"></i><h3>Pick your slice</h3><p>Browse the menu or build your own from the base up.</p></div>' +
@@ -224,8 +244,8 @@
       nodes.push(buildBrandVideo());
       var c = buildCategories(products); if (c) nodes.push(c);
       var d = buildDishes(products); if (d) nodes.push(d);
-      nodes.push(buildCraft(products));
       var g = buildGallery(products); if (g) nodes.push(g);
+      nodes.push(buildCraft(products));
       nodes.push(buildSteps());
       // video strip skipped: only stock placeholder clips exist (not food). Re-enable when real food videos are uploaded.
     } else {
@@ -279,8 +299,10 @@
   var txt = hero.querySelector('.hero-text-content');
   var vis = hero.querySelector('.hero-visual-container');
   var tick = false;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function upd(){
     tick = false;
+    if (reduceMotion) return;
     var y = window.scrollY, h = hero.offsetHeight || 1;
     if (y > h) return;
     var k = y / h;
