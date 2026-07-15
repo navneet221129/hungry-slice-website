@@ -20,6 +20,11 @@ let selectedCategory = 'All';
 let searchQuery = '';
 let vegMode = (typeof localStorage !== 'undefined' ? localStorage.getItem('hs_veg') : null) || 'all';
 
+// Global HTML-escaper for any DB/user string interpolated into innerHTML (XSS defense).
+function hsEsc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+// For strings placed inside a single-quoted inline handler arg — escape quotes AND backslashes.
+function hsAttr(s){ return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+
 
 // Day/Night Theme Toggling & Paynuts Sync
 window.toggleTheme = function() {
@@ -721,26 +726,30 @@ function renderDynamicProducts() {
     _catIdx[p.category] = (_catIdx[p.category] || 0);
     const img = p.image_url || (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || pool[_catIdx[p.category] % pool.length];
     _catIdx[p.category]++;
-    const safeName = p.name.replace(/'/g, "\'");
+    const safeName = hsAttr(p.name);
+    const eName = hsEsc(p.name);
+    const eImg = hsAttr(img);
+    const eId = hsAttr(p.id);
     const featured = p.category === 'Hungry Special';
     const arCls = featured ? '' : ('plc-ar-' + (_arHash(String(p.id)) % 3));
+    const price = Number(p.price) || 0;
     return `
-      <div class="plc ${featured ? 'plc-featured' : ''} ${arCls}" data-pizza-id="${p.id}" data-name="${p.name}" data-price="${p.price}">
+      <div class="plc ${featured ? 'plc-featured' : ''} ${arCls}" data-pizza-id="${hsEsc(p.id)}" data-name="${hsEsc(p.name)}" data-price="${price}">
         <div class="plc-img-wrap">
           <div class="plc-veg-badge ${p.is_veg ? 'veg' : 'nonveg'}" title="${p.is_veg ? 'Veg' : 'Non-Veg'}"></div>
-          ${p.video_url ? `<video class="plc-img plc-video" data-src="${p.video_url}" poster="${p.video_poster || img}" muted loop playsinline preload="none" aria-label="${p.name}"></video><span class="plc-video-badge" aria-hidden="true">▶</span>` : `<img src="${img}" alt="${p.name}" class="plc-img" loading="lazy">`}
+          ${p.video_url ? `<video class="plc-img plc-video" data-src="${hsEsc(p.video_url)}" poster="${hsEsc(p.video_poster || img)}" muted loop playsinline preload="none" aria-label="${eName}"></video><span class="plc-video-badge" aria-hidden="true">▶</span>` : `<img src="${hsEsc(img)}" alt="${eName}" class="plc-img" loading="lazy">`}
           ${featured ? '<span class="plc-flag-overlay">★ TOP PICK</span>' : ''}
           <div class="plc-img-overlay">
-            <div class="plc-stars-overlay" title="Tap to rate" onclick="event.stopPropagation();openReviewModal('${p.id}','${safeName}')">${ratingStarsHTML(p.id)}</div>
+            <div class="plc-stars-overlay" title="Tap to rate" onclick="event.stopPropagation();openReviewModal('${eId}','${safeName}')">${ratingStarsHTML(p.id)}</div>
           </div>
-          <button class="plc-quick-add" onclick="addProductToCart('${p.id}','${safeName}',${p.price},'${img}')" aria-label="Add ${p.name}">+</button>
+          <button class="plc-quick-add" onclick="addProductToCart('${eId}','${safeName}',${price},'${eImg}')" aria-label="Add ${eName}">+</button>
         </div>
         <div class="plc-body">
-          <h3 class="plc-name">${p.name}</h3>
-          <p class="plc-desc">${p.description || ''}</p>
+          <h3 class="plc-name">${eName}</h3>
+          <p class="plc-desc">${hsEsc(p.description || '')}</p>
           <div class="plc-foot-clean">
-            <div class="plc-price">$${Number(p.price).toFixed(2)}</div>
-            <button class="plc-add-btn" onclick="addProductToCart('${p.id}','${safeName}',${p.price},'${img}')">+ Add</button>
+            <div class="plc-price">$${price.toFixed(2)}</div>
+            <button class="plc-add-btn" onclick="addProductToCart('${eId}','${safeName}',${price},'${eImg}')">+ Add</button>
           </div>
         </div>
       </div>
@@ -3236,12 +3245,16 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
   function prodById(id){ return (databaseProducts||[]).find(function(p){return p.id===id;}); }
   function recoImg(p){ return p.image_url || (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || ''; }
   function recoCardHTML(p){
-    var img=recoImg(p); var safe=(p.name||'').replace(/'/g,"\\'");
+    var img=recoImg(p);
+    var safe = (typeof hsAttr==='function') ? hsAttr(p.name) : (p.name||'').replace(/'/g,"\\'");
+    var safeImg = (typeof hsAttr==='function') ? hsAttr(img) : img;
+    var safeId = (typeof hsAttr==='function') ? hsAttr(p.id) : p.id;
+    var price = Number(p.price) || 0;
     var reasonBadge = p.__reason ? '<div class="reco-reason">'+esc(p.__reason)+'</div>' : '';
-    return '<div class="reco-card" data-id="'+p.id+'">'
-      + '<div class="reco-img" style="background-image:url(\''+img+'\')">'+reasonBadge+'</div>'
-      + '<button class="reco-add" aria-label="Add '+esc(p.name)+'" onclick="addProductToCart(\''+p.id+'\',\''+safe+'\','+Number(p.price)+',\''+img+'\')">+</button>'
-      + '<div class="reco-info"><span class="reco-name">'+esc(p.name)+'</span><span class="reco-price">$'+Number(p.price).toFixed(2)+'</span></div>'
+    return '<div class="reco-card" data-id="'+esc(p.id)+'">'
+      + '<div class="reco-img" style="background-image:url(&quot;'+safeImg+'&quot;)">'+reasonBadge+'</div>'
+      + '<button class="reco-add" aria-label="Add '+esc(p.name)+'" onclick="addProductToCart(\''+safeId+'\',\''+safe+'\','+price+',\''+safeImg+'\')">+</button>'
+      + '<div class="reco-info"><span class="reco-name">'+esc(p.name)+'</span><span class="reco-price">$'+price.toFixed(2)+'</span></div>'
       + '</div>';
   }
   function renderRecoSection(box, title, products){
