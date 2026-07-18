@@ -1,0 +1,83 @@
+/* ============================================================
+   ADVANCED FX PACK (2026-07-18)
+   Cursor spotlight glow, magnetic buttons, custom cursor ring,
+   cinematic film-grain overlay, animated stat counters.
+   Desktop fine-pointer only, fully reduced-motion aware,
+   never blocks interaction (all layers pointer-events:none
+   except where explicitly needed).
+   ============================================================ */
+
+/* ---- 1. Cinematic film-grain overlay ---- */
+.fx-grain {
+  position: fixed;
+  inset: -60px;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  animation: fxGrainShift 1.1s steps(4) infinite;
+}
+@keyframes fxGrainShift {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-3%, 2%); }
+  50%  { transform: translate(2%, -3%); }
+  75%  { transform: translate(-2%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---- 2. Cursor spotlight glow (ambient light that trails the pointer) ---- */
+.fx-cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(216, 83, 30, 0.16), rgba(216, 83, 30, 0.05) 45%, transparent 72%);
+  pointer-events: none;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  will-change: transform;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+body.fx-pointer-active .fx-cursor-glow { opacity: 1; }
+
+/* ---- 3. Custom cursor accent ring (rides alongside the native cursor) ---- */
+.fx-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.22s cubic-bezier(.2,.8,.2,1), height 0.22s cubic-bezier(.2,.8,.2,1),
+              background 0.22s ease, border-color 0.22s ease, opacity 0.3s ease;
+  mix-blend-mode: difference;
+  opacity: 0;
+}
+body.fx-pointer-active .fx-cursor-ring { opacity: 1; }
+.fx-cursor-ring.fx-cursor-hover {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---- 4. Magnetic buttons (JS applies inline transform on pointer proximity) ---- */
+.btn-primary, .btn-secondary, .order-now-btn, .review-cta-btn {
+  transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s ease;
+}
+
+/* ---- 5. Animated count-up utility (generic — any element with data-count-to) ---- */
+[data-count-to] { font-variant-numeric: tabular-nums; }
+
+/* ---- Respect reduced motion / touch devices: everything above is only
+   ever injected by JS when neither condition applies, so no extra
+   media-query overrides are required here. ---- */
