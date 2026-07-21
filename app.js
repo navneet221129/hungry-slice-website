@@ -2565,6 +2565,7 @@ async function submitOrderToDatabase(paymentToken) {
         subscribeToOrderTracker(orderId);
         try { localStorage.setItem('hs_active_order', orderId); } catch(e){}
         try { localStorage.setItem('hs_last_items', JSON.stringify((cartState.items||[]).map(function(i){ return {id:i.id,name:i.name,price:i.price,img:i.img,qty:i.qty}; }))); } catch(e){}
+        try { if (typeof window.hsTrack === 'function') window.hsTrack('purchase', { total: total, items: (cartState.items||[]).length }); } catch(e){}
         try {
           const _optin = document.getElementById('ship-offers-optin');
           if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' }).then(function(){}, function(){});
@@ -4198,4 +4199,53 @@ function clearFieldErrors(){
     var tileEl = e.target.closest('.bento-tile[data-pid]');
     if (tileEl && openQV(tileEl.getAttribute('data-pid'))) { e.preventDefault(); e.stopPropagation(); }
   }, true);
+})();
+
+/* ===== FUNNEL ANALYTICS (2026-07-18): free first-party events -> Supabase site_events ===== */
+(function(){
+  function client(){ return (typeof supabaseClient !== 'undefined' && supabaseClient) ? supabaseClient : null; }
+  function sid(){
+    try {
+      var s = localStorage.getItem('hs_sid');
+      if (!s) { s = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(36).slice(2)); localStorage.setItem('hs_sid', s); }
+      return s;
+    } catch(e) { return 'anon'; }
+  }
+  var _sent = {};
+  window.hsTrack = function (event, meta, oncePerPage) {
+    try {
+      if (oncePerPage && _sent[event]) return;
+      _sent[event] = true;
+      var c = client();
+      if (!c) return;
+      c.from('site_events').insert({
+        session_id: sid(), event: event,
+        path: location.pathname, meta: meta || null
+      }).then(function(){}, function(){});
+    } catch(e){}
+  };
+
+  function arm(){
+    hsTrack('page_view', null, true);
+    var fab = document.getElementById('aiChatFab');
+    if (fab) fab.addEventListener('click', function(){ hsTrack('chat_open', null, true); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm);
+  else arm();
+
+  // funnel hooks: wrap the cart/checkout entry points
+  var _addFn = window.addProductToCart;
+  if (typeof _addFn === 'function') {
+    window.addProductToCart = function(){
+      hsTrack('add_to_cart', { id: arguments[0] });
+      return _addFn.apply(this, arguments);
+    };
+  }
+  var _stepFn = window.stepCheckoutNext;
+  if (typeof _stepFn === 'function') {
+    window.stepCheckoutNext = function(){
+      try { if (cartState.checkoutStep === 1 && cartState.items.length) hsTrack('begin_checkout', { items: cartState.items.length }, true); } catch(e){}
+      return _stepFn.apply(this, arguments);
+    };
+  }
 })();

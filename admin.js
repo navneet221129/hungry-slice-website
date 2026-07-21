@@ -461,6 +461,7 @@ function renderCustomers() {
 /* ============ ANALYTICS ============ */
 let charts = {};
 async function loadAnalytics() {
+  loadFunnel();
   const [{data:daily}, {data:hourly}, {data:top}, {data:suburb}] = await Promise.all([
     sb.from('daily_sales').select('*').limit(7),
     sb.from('hourly_orders').select('*'),
@@ -749,3 +750,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
   else attach();
 })();
+
+/* ---- Website funnel (7d): sessions -> cart -> checkout -> purchase ---- */
+async function loadFunnel() {
+  const pane = document.getElementById('tab-analytics');
+  if (!pane) return;
+  let box = document.getElementById('funnel-box');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'funnel-box';
+    box.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;';
+    pane.insertBefore(box, pane.firstChild);
+  }
+  const { data, error } = await sb.from('site_events')
+    .select('session_id,event')
+    .gte('ts', new Date(Date.now() - 7*24*3600*1000).toISOString());
+  if (error) { box.innerHTML = '<div class="stat"><div class="stat-lbl">Funnel unavailable: ' + error.message + '</div></div>'; return; }
+  const by = {};
+  (data||[]).forEach(r => { (by[r.event] = by[r.event] || new Set()).add(r.session_id); });
+  const n = e => (by[e] ? by[e].size : 0);
+  const visitors = n('page_view'), carts = n('add_to_cart'), checkouts = n('begin_checkout'), buys = n('purchase');
+  const pct = (a,b) => b ? Math.round(a/b*100) + '%' : '\u2014';
+  box.innerHTML =
+    '<div class="stat"><div class="stat-num">' + visitors + '</div><div class="stat-lbl">Visitors (7d)</div></div>' +
+    '<div class="stat"><div class="stat-num">' + carts + '</div><div class="stat-lbl">Added to cart \u00b7 ' + pct(carts,visitors) + '</div></div>' +
+    '<div class="stat"><div class="stat-num">' + checkouts + '</div><div class="stat-lbl">Began checkout \u00b7 ' + pct(checkouts,carts) + '</div></div>' +
+    '<div class="stat"><div class="stat-num">' + buys + '</div><div class="stat-lbl">Purchased \u00b7 ' + pct(buys,visitors) + ' of visitors</div></div>';
+}

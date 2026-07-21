@@ -24,18 +24,61 @@
     "@context": "https://schema.org",
     "@type": "Restaurant",
     "name": "The Hungry Slice",
-    "description": "Premium food-tech pizza delivery and takeaway in Hamilton, New Zealand.",
+    "description": "Wood-fired pizza, gourmet burgers and the Bollywood Range - delivery and pickup across Hamilton, New Zealand.",
     "url": "https://thehungryslice.co.nz/",
     "image": "https://thehungryslice.co.nz/assets/hero-pizza.png",
-    "servesCuisine": ["Pizza", "Burgers"],
+    "servesCuisine": [
+      "Pizza",
+      "Burgers",
+      "Indian-inspired"
+    ],
     "priceRange": "$$",
     "address": {
       "@type": "PostalAddress",
-      "addressLocality": "Hamilton",
+      "streetAddress": "5 Peachgrove Road",
+      "addressLocality": "Hamilton East",
       "addressRegion": "Waikato",
+      "postalCode": "3216",
       "addressCountry": "NZ"
     },
-    "areaServed": "Hamilton, New Zealand"
+    "areaServed": "Hamilton, New Zealand",
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday"
+        ],
+        "opens": "11:00",
+        "closes": "22:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Friday",
+          "Saturday"
+        ],
+        "opens": "11:00",
+        "closes": "23:00"
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": "Sunday",
+        "opens": "12:00",
+        "closes": "21:30"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5.0",
+      "reviewCount": "5"
+    },
+    "hasMenu": "https://thehungryslice.co.nz/menu",
+    "sameAs": [
+      "https://www.facebook.com/share/18ksGR4uxJ/"
+    ]
   }
   </script>
   
@@ -56,7 +99,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1784144877">
+  <link rel="stylesheet" href="style.css?v=1784654382">
   <link rel="stylesheet" href="effects.css?v=1782723757">
   <link rel="stylesheet" href="advanced-fx.css?v=1">
   <link rel="stylesheet" href="home.css?v=1784144877">
@@ -667,7 +710,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1784144877"></script>
+  <script src="app.js?v=1784381031"></script>
   <script src="effects.js?v=1782723757"></script>
   <script type="module" src="motion-fx.js?v=1784378941"></script>
   <script defer src="advanced-fx.js?v=1"></script>
