@@ -306,7 +306,8 @@
     var y = window.scrollY, h = hero.offsetHeight || 1;
     if (y > h) return;
     var k = y / h;
-    if (vid) vid.style.transform = 'translateY(' + (y * 0.35) + 'px) scale(' + (1 + k * 0.08) + ')';
+    var _isMob = window.matchMedia && window.matchMedia('(max-width:768px)').matches;
+    if (vid && !_isMob) vid.style.transform = 'translateY(' + (y * 0.35) + 'px) scale(' + (1 + k * 0.08) + ')';
     if (txt) { txt.style.transform = 'translateY(' + (y * 0.18) + 'px)'; txt.style.opacity = String(Math.max(0, 1 - k * 1.15)); }
     if (vis) vis.style.transform = 'translateY(' + (y * 0.10) + 'px)';
   }

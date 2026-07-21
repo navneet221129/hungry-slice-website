@@ -3515,6 +3515,8 @@ body.promo-closed #nav-spacer { height: 80px !important; }
   .tagline-badge{color:#ffd9c2 !important;text-shadow:0 1px 10px rgba(0,0,0,.55);}
 }
 @media (prefers-reduced-motion: reduce){.reveal{opacity:1 !important;transform:none !important;transition:none !important;}.hero-video{display:none;}}
+/* iOS Reduce Motion: still show the ambient hero video on mobile (parallax/zoom already disabled there, so it stays calm). Common cause of "no video on iPhone". */
+@media (prefers-reduced-motion: reduce) and (max-width:768px){.hero-video{display:block !important;}}
 /* =============================================================== */
 
 /* Hide developer/config panel on live site (was overlapping hero CTAs) */
