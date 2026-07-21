@@ -2903,12 +2903,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function initHeroVideo(){
     var hv=document.getElementById('hero-video');
     if(!hv)return;
-    var play=function(){var p=hv.play();if(p&&p.catch)p.catch(function(){});};
+    var play=function(){try{hv.muted=true;var p=hv.play();if(p&&p.catch)p.catch(function(){});}catch(e){}};
     var go=function(){hv.classList.add('is-ready');play();};
     if(hv.readyState>=2)go();
+    hv.addEventListener('loadedmetadata',go);
     hv.addEventListener('loadeddata',go);
     hv.addEventListener('canplay',go);
-    document.addEventListener('click',function once(){play();document.removeEventListener('click',once);});
+    play();
+    ['touchstart','pointerdown','scroll','click'].forEach(function(ev){
+      document.addEventListener(ev,function once(){play();document.removeEventListener(ev,once);},{passive:true});
+    });
   }
   function initReveal(){
     if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;

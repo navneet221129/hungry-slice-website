@@ -3505,8 +3505,7 @@ body.promo-closed #nav-spacer { height: 80px !important; }
 .plc:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.12);}
 @media (max-width:768px){
   /* Mobile hero = always-dark cinematic video panel (theme-independent for legibility) */
-  .hero-video{display:block;}
-  .hero-video.is-ready{opacity:1 !important;}
+  .hero-video{display:block;opacity:1 !important;}
   .hero-video-scrim{display:block !important;background:linear-gradient(180deg,rgba(12,10,9,.34) 0%,rgba(12,10,9,.2) 38%,rgba(12,10,9,.66) 100%) !important;}
   /* Food photo as section background = guaranteed-visible fallback if the <video> never paints on the device (iOS codec/autoplay, dark charcoal bg). Video plays on top when able. */
   .hero-section{min-height:76vh;display:flex;align-items:center;background-image:url("assets/hero-pizza.png") !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;}
