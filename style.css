@@ -3505,8 +3505,8 @@ body.promo-closed #nav-spacer { height: 80px !important; }
 .plc:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.12);}
 @media (max-width:768px){
   /* Mobile hero = always-dark cinematic video panel (theme-independent for legibility) */
-  .hero-video{display:block;opacity:.62;}
-  .hero-video-scrim{display:block !important;background:linear-gradient(180deg,rgba(12,10,9,.5) 0%,rgba(12,10,9,.3) 42%,rgba(12,10,9,.8) 100%) !important;}
+  .hero-video{display:block;opacity:1 !important;}
+  .hero-video-scrim{display:block !important;background:linear-gradient(180deg,rgba(12,10,9,.36) 0%,rgba(12,10,9,.22) 38%,rgba(12,10,9,.68) 100%) !important;}
   .hero-section{min-height:76vh;display:flex;align-items:center;}
   .hero-container{width:100%;}
   .hero-title{color:#fff !important;text-shadow:0 2px 20px rgba(0,0,0,.6);}
