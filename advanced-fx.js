@@ -116,9 +116,139 @@
       }, { passive: true });
     }
 
+    /* ============================================================
+       CINEMATIC COLOR GRADE + SCROLL EFFECTS (v2)
+       Scroll-linked hue shift, gradient-ink titles, underline
+       sweeps, clip reveals, velocity skew, layered parallax.
+       Requires GSAP + ScrollTrigger (already on every page);
+       dynamically loads them as a fallback.
+       ============================================================ */
+    function loadScript(src) {
+      return new Promise(function (res, rej) {
+        var s = document.createElement('script');
+        s.src = src; s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    function ensureGsap() {
+      if (window.gsap && window.ScrollTrigger) return Promise.resolve();
+      var base = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/';
+      var chain = window.gsap ? Promise.resolve() : loadScript(base + 'gsap.min.js');
+      return chain.then(function () {
+        return window.ScrollTrigger ? null : loadScript(base + 'ScrollTrigger.min.js');
+      });
+    }
+
+    function initCineGrade() {
+      document.body.classList.add('fx-cine');
+
+      /* ambient color wash layer */
+      var wash = document.createElement('div');
+      wash.className = 'fx-color-wash';
+      wash.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(wash);
+
+      if (reduce) {
+        /* static polish only: open all underlines + reveals, skip motion */
+        document.documentElement.style.setProperty('--fx-glow', '0.45');
+        document.querySelectorAll('.section-title').forEach(function (el) {
+          el.style.setProperty('--fx-under', '1');
+          el.style.setProperty('--fx-ink', '55%');
+        });
+        return;
+      }
+
+      ensureGsap().then(function () {
+        var gsap = window.gsap;
+        if (!gsap || !window.ScrollTrigger) return;
+        gsap.registerPlugin(window.ScrollTrigger);
+        var ST = window.ScrollTrigger;
+
+        /* ---- 1. Whole-page color grade scrub: hue drifts warm -> rose-gold ---- */
+        var hueState = { h: -8, glow: 0.55 };
+        function applyWash() {
+          document.documentElement.style.setProperty('--fx-hue', hueState.h.toFixed(1) + 'deg');
+          document.documentElement.style.setProperty('--fx-glow', hueState.glow.toFixed(3));
+        }
+        applyWash();
+        gsap.to(hueState, {
+          h: 26, glow: 0.75, ease: 'none', onUpdate: applyWash,
+          scrollTrigger: { trigger: document.body, start: 'top top', end: 'max', scrub: 1.2 }
+        });
+
+        /* ---- 2. Section titles: ink flow + underline sweep + clip reveal ---- */
+        document.querySelectorAll('.section-title').forEach(function (title) {
+          title.classList.add('fx-clip');
+          ST.create({
+            trigger: title, start: 'top 88%', once: true,
+            onEnter: function () { title.classList.add('fx-clip-in'); }
+          });
+          var ink = { p: 96, u: 0 };
+          gsap.to(ink, {
+            p: 30, u: 1, ease: 'none',
+            onUpdate: function () {
+              title.style.setProperty('--fx-ink', ink.p.toFixed(1) + '%');
+              title.style.setProperty('--fx-under', ink.u.toFixed(2));
+            },
+            scrollTrigger: { trigger: title, start: 'top 92%', end: 'top 40%', scrub: 0.6 }
+          });
+        });
+
+        /* ---- 3. Velocity skew: card tracks lean with scroll speed ---- */
+        var skewTargets = document.querySelectorAll(
+          '.testimonials-track, .bento-grid, .offers-grid, .numbers-grid, .product-list-grid, .plc-grid, .timeline-stack'
+        );
+        if (skewTargets.length) {
+          skewTargets.forEach(function (el) { el.classList.add('fx-skew'); });
+          var skewSetters = Array.prototype.map.call(skewTargets, function (el) {
+            return gsap.quickTo(el, '--fx-skew', { duration: 0.4, ease: 'power3.out', unit: 'deg' });
+          });
+          ST.create({
+            start: 0, end: 'max',
+            onUpdate: function (self) {
+              var v = gsap.utils.clamp(-1.6, 1.6, self.getVelocity() / -420);
+              skewSetters.forEach(function (setter) { setter(v); });
+            }
+          });
+        }
+
+        /* ---- 4. Layered drift parallax on cards (alternating depth) ---- */
+        document.querySelectorAll('.review-card, .bento-tile, .offer-card, .step-card').forEach(function (card, i) {
+          gsap.fromTo(card,
+            { y: (i % 3 === 0 ? 34 : i % 3 === 1 ? 14 : 24) },
+            {
+              y: (i % 3 === 0 ? -22 : i % 3 === 1 ? -8 : -16), ease: 'none',
+              scrollTrigger: { trigger: card, start: 'top bottom', end: 'bottom top', scrub: 0.8 }
+            });
+        });
+
+        /* ---- 5. Hero cinematic grade: video warms & deepens as you scroll away ---- */
+        var heroVideo = document.querySelector('.hero-video');
+        if (heroVideo) {
+          gsap.fromTo(heroVideo,
+            { filter: 'saturate(1.05) contrast(1.02) brightness(1)' },
+            {
+              filter: 'saturate(1.35) contrast(1.12) brightness(0.82) hue-rotate(-6deg)', ease: 'none',
+              scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 0.5 }
+            });
+        }
+
+        /* ---- 6. Footer approach: wash cools into deep ember night ---- */
+        var footer = document.querySelector('.app-footer');
+        if (footer) {
+          gsap.to(hueState, {
+            h: -30, ease: 'none', onUpdate: applyWash,
+            scrollTrigger: { trigger: footer, start: 'top bottom', end: 'top 55%', scrub: 0.8 }
+          });
+        }
+      }).catch(function () { /* no-op */ });
+    }
+
     function init() {
       initCountUp();
       initDesktopFx();
+      initCineGrade();
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();

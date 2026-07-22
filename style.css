@@ -4914,3 +4914,289 @@ body.light-mode .menu-cat-count { color: #666 !important; }
   .offer-poster:hover .offer-poster-media{transform:none;}
 }
 /* =============================================================== */
+
+
+/* ===================== Custom-pizza reveal (build page) ===================== */
+.pizza-reveal-overlay{
+  position:fixed;inset:0;z-index:4000;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(10,8,7,.86);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;transition:opacity .3s ease;
+}
+.pizza-reveal-overlay.on{opacity:1;}
+.pizza-reveal-stage{position:relative;width:min(72vw,380px);aspect-ratio:1;}
+.pizza-reveal-glow{position:absolute;inset:-14%;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,138,60,.5) 0%,rgba(216,83,30,.25) 45%,transparent 70%);
+  animation:prGlow 1.6s ease-in-out infinite alternate;}
+.pizza-reveal-pizza{position:absolute;inset:0;border-radius:50%;overflow:hidden;
+  filter:drop-shadow(0 30px 46px rgba(0,0,0,.6));
+  animation:prBake 1s cubic-bezier(.16,1,.3,1) both;}
+.pizza-reveal-pizza .pizza-builder-view{position:absolute;inset:0;width:100%;height:100%;margin:0;}
+.pizza-reveal-ring{position:absolute;inset:-4%;border-radius:50%;border:3px dashed rgba(242,179,92,.55);
+  animation:prSpinSlow 14s linear infinite;}
+.pizza-reveal-steam{position:absolute;top:-8%;left:50%;transform:translateX(-50%);display:flex;gap:16px;}
+.pizza-reveal-steam span{width:6px;height:40px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.38));
+  filter:blur(3px);opacity:0;animation:prSteam 2.1s ease-in-out infinite;}
+.pizza-reveal-steam span:nth-child(2){animation-delay:.45s;height:56px;}
+.pizza-reveal-steam span:nth-child(3){animation-delay:.9s;}
+.pizza-reveal-title{margin-top:34px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.5rem,5vw,2.3rem);
+  color:#fff;text-align:center;letter-spacing:-.5px;
+  animation:prPop .55s cubic-bezier(.34,1.56,.64,1) .55s both;}
+.pizza-reveal-title .pr-accent{color:#f08a3c;}
+.pizza-reveal-sub{margin-top:8px;max-width:min(84vw,460px);text-align:center;color:rgba(255,255,255,.78);
+  font-size:.9rem;line-height:1.5;animation:prPop .5s ease .75s both;}
+.pizza-reveal-price{margin-top:12px;font-family:var(--font-display);font-weight:800;font-size:1.5rem;color:#f2b35c;
+  animation:prPop .5s cubic-bezier(.34,1.56,.64,1) .9s both;}
+.pizza-reveal-overlay.fly .pizza-reveal-stage{animation:prFly .7s cubic-bezier(.5,-.1,.75,.4) both;}
+.pizza-reveal-overlay.fly .pizza-reveal-title,
+.pizza-reveal-overlay.fly .pizza-reveal-sub,
+.pizza-reveal-overlay.fly .pizza-reveal-price{opacity:0;transition:opacity .25s;}
+@keyframes prBake{0%{transform:scale(.2) rotate(-260deg);opacity:0;}60%{opacity:1;}100%{transform:scale(1) rotate(0deg);opacity:1;}}
+@keyframes prGlow{from{transform:scale(.94);opacity:.75;}to{transform:scale(1.06);opacity:1;}}
+@keyframes prSpinSlow{to{transform:rotate(360deg);}}
+@keyframes prSteam{0%{opacity:0;transform:translateY(10px) scaleY(.6);}35%{opacity:.5;}100%{opacity:0;transform:translateY(-58px) scaleY(1.15);}}
+@keyframes prPop{from{opacity:0;transform:translateY(14px) scale(.92);}to{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes prFly{to{transform:translate(32vw,-38vh) scale(.06) rotate(160deg);opacity:0;}}
+@media (prefers-reduced-motion: reduce){
+  .pizza-reveal-pizza,.pizza-reveal-title,.pizza-reveal-sub,.pizza-reveal-price{animation:none !important;opacity:1;}
+  .pizza-reveal-glow,.pizza-reveal-ring,.pizza-reveal-steam span{animation:none !important;}
+  .pizza-reveal-overlay.fly .pizza-reveal-stage{animation:none !important;opacity:0;transition:opacity .3s;}
+}
+/* =============================================================== */
+
+
+/* ===================== Photoreal 3D pizza builder ===================== */
+/* Perspective must live on the PARENT for the stage's own rotateX to read as 3D */
+.builder-canvas-box{perspective:1200px;}
+/* overflow:hidden on the view flattens child 3D transforms -- lift it, children are all round & inside */
+.pizza-builder-view{overflow:visible !important;}
+.toppings-rendered-container{transform-style:preserve-3d;}
+.rendered-topping{transform-style:preserve-3d;}
+.rendered-topping .rt-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;}
+.rt-tex{position:absolute;inset:0;background-repeat:no-repeat;}
+.rt-shine{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.4) 0%,rgba(255,255,255,.1) 30%,rgba(0,0,0,0) 52%,rgba(0,0,0,.22) 82%,rgba(0,0,0,.38) 100%);}
+/* Ingredient silhouettes -- clip/mask on .rt-inner clips both texture and lighting */
+.ts-round{border-radius:50%;overflow:hidden;-webkit-mask-image:radial-gradient(circle,#000 88%,transparent 99%);mask-image:radial-gradient(circle,#000 88%,transparent 99%);}
+.ts-ring{border-radius:50%;overflow:hidden;
+  -webkit-mask-image:radial-gradient(circle,transparent 0 30%,#000 38% 86%,transparent 96%);
+  mask-image:radial-gradient(circle,transparent 0 30%,#000 38% 86%,transparent 96%);}
+.ts-arc{border-radius:50%;overflow:hidden;
+  -webkit-mask-image:radial-gradient(circle at 40% 40%,transparent 0 42%,#000 50% 90%,transparent 99%);
+  mask-image:radial-gradient(circle at 40% 40%,transparent 0 42%,#000 50% 90%,transparent 99%);}
+.ts-leaf{border-radius:8% 72% 8% 72%;overflow:hidden;}
+.ts-leaf .rt-shine{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.34) 0%,transparent 45%),
+  linear-gradient(135deg,transparent 46%,rgba(0,0,0,.28) 50%,transparent 54%),
+  radial-gradient(circle at 75% 80%,rgba(0,0,0,.3) 0%,transparent 55%);}
+.ts-mush{overflow:hidden;clip-path:polygon(8% 52%,10% 38%,20% 22%,36% 12%,52% 9%,68% 13%,82% 24%,90% 40%,92% 52%,80% 55%,78% 88%,72% 95%,58% 96%,52% 90%,50% 58%,42% 56%,24% 56%);}
+.ts-chunk{overflow:hidden;border-radius:44% 56% 52% 48% / 46% 50% 54% 50%;
+  -webkit-mask-image:radial-gradient(circle,#000 82%,transparent 99%);mask-image:radial-gradient(circle,#000 82%,transparent 99%);}
+/* Sauce soaks into the crust photo instead of sitting on it */
+.layer-sauce{mix-blend-mode:multiply;
+  background:radial-gradient(circle at 44% 40%,rgba(214,40,12,.92) 0%,rgba(178,22,4,.85) 46%,rgba(140,14,2,.8) 68%,rgba(120,10,0,.35) 82%,transparent 90%);}
+.layer-sauce.active-truffle{background:radial-gradient(circle at 44% 40%,rgba(240,231,205,.95) 0%,rgba(216,204,170,.85) 60%,rgba(190,178,142,.4) 82%,transparent 90%);}
+.layer-sauce.active-bbq{background:radial-gradient(circle at 44% 40%,rgba(96,30,8,.95) 0%,rgba(66,16,2,.85) 60%,rgba(50,10,0,.4) 82%,transparent 90%);}
+/* Bubbly melted-cheese mottling */
+.layer-cheese{
+  background:
+    radial-gradient(circle at 30% 32%,rgba(255,244,190,.9) 0 7%,transparent 11%),
+    radial-gradient(circle at 62% 24%,rgba(255,238,170,.85) 0 6%,transparent 10%),
+    radial-gradient(circle at 74% 58%,rgba(255,246,200,.9) 0 8%,transparent 12%),
+    radial-gradient(circle at 44% 70%,rgba(255,240,175,.85) 0 7%,transparent 11%),
+    radial-gradient(circle at 22% 58%,rgba(255,248,205,.8) 0 6%,transparent 10%),
+    radial-gradient(circle at 56% 46%,rgba(254,249,195,.92) 0%,rgba(253,224,71,.85) 78%,rgba(240,200,50,.4) 88%,transparent 94%);}
+@media (prefers-reduced-motion: reduce){
+  #bpStage{transform:none !important;}
+}
+@media (max-width:768px){
+  .builder-canvas-box{perspective:900px;}
+}
+/* =============================================================== */
+
+
+/* ===================== Chef hand + cutter chop (build page) ===================== */
+.bp-hand{
+  position:absolute;top:-6%;left:50%;width:56%;z-index:13;pointer-events:none;
+  opacity:0;transform:translate(70%,-70%) rotate(8deg);
+  filter:drop-shadow(0 16px 22px rgba(0,0,0,.4));
+}
+.bp-hand.sprinkling{animation:bpHand 1.7s cubic-bezier(.25,.8,.35,1) both;}
+@keyframes bpHand{
+  0%{opacity:0;transform:translate(70%,-70%) rotate(8deg);}
+  16%{opacity:1;transform:translate(-46%,-34%) rotate(0deg);}
+  26%{transform:translate(-46%,-30%) rotate(-7deg);}
+  36%{transform:translate(-50%,-34%) rotate(5deg);}
+  46%{transform:translate(-44%,-30%) rotate(-7deg);}
+  56%{transform:translate(-48%,-34%) rotate(4deg);}
+  70%{opacity:1;transform:translate(-46%,-32%) rotate(0deg);}
+  100%{opacity:0;transform:translate(70%,-75%) rotate(10deg);}
+}
+.bp-cutter{
+  position:absolute;top:50%;left:50%;width:52%;z-index:13;pointer-events:none;opacity:0;
+  filter:drop-shadow(0 14px 18px rgba(0,0,0,.45));
+  animation:bpCut 1.75s ease-in-out both;
+}
+@keyframes bpCut{
+  0%{opacity:0;transform:translate(-160%,-160%) rotate(-18deg);}
+  6%{opacity:1;}
+  34%{opacity:1;transform:translate(60%,60%) rotate(-18deg);}
+  40%{opacity:0;transform:translate(60%,60%) rotate(-18deg);}
+  46%{opacity:0;transform:translate(60%,-160%) rotate(18deg) scaleX(-1);}
+  52%{opacity:1;transform:translate(30%,-120%) rotate(18deg) scaleX(-1);}
+  80%{opacity:1;transform:translate(-160%,60%) rotate(18deg) scaleX(-1);}
+  86%{opacity:0;transform:translate(-170%,70%) rotate(18deg) scaleX(-1);}
+  100%{opacity:0;transform:translate(-170%,70%) rotate(18deg) scaleX(-1);}
+}
+/* Slice lines: 8 cuts, revealed in two passes */
+.bp-slices{position:absolute;inset:0;border-radius:50%;z-index:7;pointer-events:none;}
+.bp-slices::before,.bp-slices::after{
+  content:'';position:absolute;inset:4%;border-radius:50%;opacity:0;transition:opacity .3s ease;
+}
+.bp-slices::before{background:
+  linear-gradient(0deg,transparent calc(50% - 1.2px),rgba(52,20,6,.55) 50%,transparent calc(50% + 1.2px)),
+  linear-gradient(90deg,transparent calc(50% - 1.2px),rgba(52,20,6,.55) 50%,transparent calc(50% + 1.2px));}
+.bp-slices::after{background:
+  linear-gradient(45deg,transparent calc(50% - 1.2px),rgba(52,20,6,.5) 50%,transparent calc(50% + 1.2px)),
+  linear-gradient(135deg,transparent calc(50% - 1.2px),rgba(52,20,6,.5) 50%,transparent calc(50% + 1.2px));}
+.bp-slices.cut1::before{opacity:1;}
+.bp-slices.cut2::after{opacity:1;}
+.pizza-builder-view.chopped{animation:bpChopJiggle .42s ease-in-out 1;}
+@keyframes bpChopJiggle{
+  0%,100%{transform:scale(1) rotate(0);}
+  30%{transform:scale(1.025) rotate(.8deg);}
+  60%{transform:scale(.99) rotate(-.8deg);}
+}
+@media (prefers-reduced-motion: reduce){
+  .bp-hand,.bp-cutter{display:none !important;}
+  .pizza-builder-view.chopped{animation:none;}
+}
+/* =============================================================== */
+
+
+/* ===================== Builder realism v2: sauce photo + table + straight cuts ===================== */
+/* Real sauced-base photo crossfade */
+.bp-sauce-photo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:2;opacity:0;transition:opacity .55s ease;}
+/* Gradient sauce tint retired -- the photo does the job */
+.builder-layer.layer-sauce{opacity:0 !important;}
+/* Real wooden table replaces the circular board */
+.builder-canvas-box{background:url('assets/wood-table.png') center/cover no-repeat !important;}
+.bp-board{display:none !important;}
+.bp-shadow{bottom:4%;width:84%;height:44px;filter:blur(12px);}
+/* Straight cut lines, revealed one per cutter pass */
+.bp-slices .cutline{position:absolute;inset:5%;border-radius:50%;opacity:0;transition:opacity .22s ease;}
+.bp-slices .cutline.on{opacity:1;}
+.bp-slices .c1{background:linear-gradient(90deg,transparent calc(50% - 1.3px),rgba(52,20,6,.55) 50%,transparent calc(50% + 1.3px));}
+.bp-slices .c2{background:linear-gradient(0deg,transparent calc(50% - 1.3px),rgba(52,20,6,.55) 50%,transparent calc(50% + 1.3px));}
+.bp-slices .c3{background:linear-gradient(135deg,transparent calc(50% - 1.3px),rgba(52,20,6,.5) 50%,transparent calc(50% + 1.3px));}
+.bp-slices .c4{background:linear-gradient(45deg,transparent calc(50% - 1.3px),rgba(52,20,6,.5) 50%,transparent calc(50% + 1.3px));}
+.bp-cutter{width:44%;}
+@media (prefers-reduced-motion: reduce){
+  .bp-sauce-photo{transition:none;}
+}
+/* =============================================================== */
+
+
+/* ===================== Kitchen finale: oven bake + cheese shreds ===================== */
+/* Cheese shred sprite */
+.ts-shred{border-radius:5px;overflow:hidden;}
+/* Oven scene */
+.pr-oven{position:absolute;left:50%;top:55%;width:96%;transform:translate(-50%,-50%);z-index:3;opacity:0;transition:opacity .5s ease;pointer-events:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.5));}
+.pizza-reveal-overlay.ph-oven .pr-oven{opacity:1;}
+.pizza-reveal-overlay.ph-out .pr-oven{opacity:0;}
+.pr-oven-glow{position:absolute;left:50%;top:58%;width:62%;height:36%;transform:translate(-50%,-50%);border-radius:16px;z-index:4;opacity:0;pointer-events:none;filter:blur(12px);
+  background:radial-gradient(ellipse at center,rgba(255,145,40,.6),rgba(255,90,0,.28) 55%,transparent 78%);}
+.pizza-reveal-overlay.ph-baking .pr-oven-glow{opacity:1;animation:prOvenGlow .9s ease-in-out infinite alternate;}
+.pizza-reveal-overlay.ph-out .pr-oven-glow{opacity:0;animation:none;}
+@keyframes prOvenGlow{from{opacity:.5;transform:translate(-50%,-50%) scale(.95);}to{opacity:1;transform:translate(-50%,-50%) scale(1.06);}}
+/* Pizza slides into the oven mouth, then re-emerges baked */
+.pizza-reveal-pizza{z-index:2;transition:transform .85s cubic-bezier(.55,0,.6,1),opacity .3s ease .5s;}
+.pizza-reveal-overlay.ph-oven .pizza-reveal-pizza{animation:none;transform:translateY(14%) scale(.4);opacity:0;}
+.pizza-reveal-overlay.ph-out .pizza-reveal-pizza{transform:none;opacity:1;transition:transform .7s cubic-bezier(.16,1,.3,1),opacity .25s ease;}
+/* Browned melted-cheese glaze once baked */
+.pr-baked-glaze{position:absolute;inset:0;border-radius:50%;z-index:8;opacity:0;transition:opacity .9s ease;pointer-events:none;mix-blend-mode:multiply;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(190,120,30,.3) 0 9%,transparent 13%),
+    radial-gradient(circle at 66% 24%,rgba(170,100,25,.26) 0 7%,transparent 11%),
+    radial-gradient(circle at 72% 62%,rgba(190,120,30,.28) 0 8%,transparent 12%),
+    radial-gradient(circle at 40% 72%,rgba(160,95,20,.25) 0 8%,transparent 12%),
+    radial-gradient(circle at 52% 48%,rgba(255,195,95,.16),rgba(150,85,15,.2) 70%,rgba(90,45,8,.3) 100%);}
+.pizza-reveal-overlay.ph-out .pr-baked-glaze{opacity:1;}
+/* Steam only once it's out of the oven */
+.pizza-reveal-steam{opacity:0;transition:opacity .5s ease;z-index:5;}
+.pizza-reveal-overlay.ph-out .pizza-reveal-steam{opacity:1;}
+/* Title always visible (phase captions); details + price only at the end */
+.pizza-reveal-title{animation:prPop .5s cubic-bezier(.34,1.56,.64,1) .35s both;}
+.pizza-reveal-sub,.pizza-reveal-price{animation:none !important;opacity:0;transform:translateY(14px);transition:opacity .45s ease,transform .45s ease;}
+.pizza-reveal-overlay.ph-done .pizza-reveal-sub{opacity:1;transform:none;}
+.pizza-reveal-overlay.ph-done .pizza-reveal-price{opacity:1;transform:none;transition-delay:.12s;}
+@media (prefers-reduced-motion: reduce){
+  .pr-oven,.pr-oven-glow{display:none !important;}
+  .pizza-reveal-pizza{transition:none;}
+}
+/* =============================================================== */
+
+
+/* Cheese cubes: beveled dice read (bright top-left face, shaded bottom-right) */
+.ts-cube{border-radius:2.5px;overflow:hidden;}
+.ts-cube .rt-shine{background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,.12) 38%,rgba(0,0,0,.08) 62%,rgba(0,0,0,.32) 100%);}
+
+
+/* ===================== Baked realism: melted cheese blanket + fluffy puff + cut ooze ===================== */
+/* Molten cheese sheet fades in once baked (under the browning glaze) */
+.pr-melt{position:absolute;inset:0;border-radius:50%;z-index:7;opacity:0;transition:opacity 1s ease .15s;pointer-events:none;filter:blur(1.2px);
+  background:
+    radial-gradient(circle at 42% 38%,rgba(250,226,160,.72) 0 26%,transparent 42%),
+    radial-gradient(circle at 62% 55%,rgba(247,220,150,.68) 0 24%,transparent 40%),
+    radial-gradient(circle at 35% 62%,rgba(252,232,170,.66) 0 22%,transparent 38%),
+    radial-gradient(circle at 55% 30%,rgba(246,216,140,.62) 0 20%,transparent 36%),
+    radial-gradient(circle at 28% 34%,rgba(248,222,150,.55) 0 16%,transparent 30%),
+    radial-gradient(circle at 68% 70%,rgba(250,228,162,.55) 0 16%,transparent 30%),
+    radial-gradient(circle at 50% 48%,rgba(249,224,155,.55) 0 40%,rgba(249,224,155,.25) 52%,transparent 62%);}
+.pizza-reveal-overlay.ph-out .pr-melt{opacity:1;}
+/* Discrete shreds/cubes fuse and spread into the melt */
+.pizza-reveal-overlay.ph-out .topping-node-cheese{animation:none !important;opacity:0 !important;transition:opacity .7s ease;}
+/* Crust puffs up fluffy after the bake (on the inner view so it doesn't fight the oven slide transition) */
+.pizza-reveal-overlay .pizza-reveal-pizza .pizza-builder-view{animation:none;}
+.pizza-reveal-overlay.ph-out .pizza-reveal-pizza .pizza-builder-view{animation:prFluff 1s cubic-bezier(.34,1.56,.64,1) .75s both;}
+@keyframes prFluff{0%{transform:scale(1);}45%{transform:scale(1.07);}75%{transform:scale(1.015);}100%{transform:scale(1.035);}}
+/* Molten cheese blob squeezed out along a fresh cut */
+.pr-ooze{position:absolute;z-index:9;transform:translate(-50%,-50%) scale(0);pointer-events:none;
+  border-radius:45% 55% 62% 38% / 52% 48% 58% 42%;
+  background:radial-gradient(circle at 38% 32%,#fdf0c8 0%,#f3d792 55%,#e2b95e 100%);
+  box-shadow:0 1px 3px rgba(120,70,10,.35);
+  animation:prOoze .55s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes prOoze{0%{transform:translate(-50%,-50%) scale(0);}70%{transform:translate(-50%,-48%) scale(1.18);}100%{transform:translate(-50%,-46%) scale(1);}}
+@media (prefers-reduced-motion: reduce){
+  .pr-melt{transition:none;}
+  .pizza-reveal-overlay.ph-out .pizza-reveal-pizza .pizza-builder-view{animation:none;}
+  .pr-ooze{animation:none;transform:translate(-50%,-50%) scale(1);}
+}
+/* =============================================================== */
+
+
+/* Steam clears the moment slicing starts -- keep the cut crisp */
+.pizza-reveal-overlay.ph-cut .pizza-reveal-steam{opacity:0 !important;}
+
+
+/* Overlay steam retired -- element no longer rendered; guard any stragglers */
+.pizza-reveal-overlay .pizza-reveal-steam{display:none !important;}
+
+
+/* Melt sits under the toppings inside the pizza (toppings container is z6) */
+.pizza-reveal-pizza .pizza-builder-view .pr-melt{z-index:5;}
+
+
+/* Baked-pizza PHOTO is the post-bake surface -- crisp, no gradient wash */
+.pr-baked-photo{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:5;opacity:0;transition:opacity .9s ease .1s;pointer-events:none;}
+.pizza-reveal-overlay.ph-out .pr-baked-photo{opacity:1;}
+
+
+/* Live cut lines: a bar that scales open under the rolling wheel (drawn, not pre-cut) */
+.bp-slices .cutline-live{position:absolute;inset:5%;border-radius:50%;}
+.bp-slices .cutline-live i{position:absolute;left:calc(50% - 1.3px);top:4%;width:2.6px;height:92%;border-radius:2px;
+  background:linear-gradient(180deg,rgba(52,20,6,.5),rgba(52,20,6,.6) 50%,rgba(52,20,6,.5));
+  transform:scaleY(0);transform-origin:top center;transition:transform .5s linear .06s;}
+.bp-slices .cutline-live.on i{transform:scaleY(1);}
+@media (prefers-reduced-motion: reduce){
+  .bp-slices .cutline-live i{transition:none;}
+}

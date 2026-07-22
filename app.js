@@ -1563,7 +1563,7 @@ function initBuilder() {
   const toppings = document.querySelectorAll('.topping-btn');
 
   // Use crisp SVG sprites for the picker icons too (consistent with the pizza).
-  toppings.forEach(b => { const tt = b.getAttribute('data-topping'); const th = b.querySelector('.topping-thumb'); if (th) th.innerHTML = toppingSVG(tt); });
+  // topping thumbs keep their real photos from the markup
 
   // Handle Crust, Sauce, Cheese choices
   options.forEach(btn => {
@@ -1580,6 +1580,7 @@ function initBuilder() {
       
       // Update Visual canvas class representations
       updateBuilderLayers();
+      if (type === 'cheese') sprinkleCheese();
       // Update Pricing
       calculateBuilderPrice();
       // Update 3D pizza constructor
@@ -1609,11 +1610,18 @@ function initBuilder() {
   });
 
   updateBuilderLayers();
+  sprinkleCheese(true);
   calculateBuilderPrice();
   
   // Initialize 3D Pizza Canvas
   initPizza3D();
 }
+
+const SAUCE_PHOTO = {
+  tomato: 'assets/pizza-base-tomato.png',
+  bbq: 'assets/pizza-base-bbq.png',
+  truffle: 'assets/pizza-base-truffle.png'
+};
 
 function updateBuilderLayers() {
   const sauceLayer = document.getElementById('p-sauce');
@@ -1621,39 +1629,52 @@ function updateBuilderLayers() {
   
   if (!sauceLayer || !cheeseLayer) return;
 
-  // Clear existing active sauce classes
-  sauceLayer.className = 'builder-layer layer-sauce';
-  sauceLayer.classList.add(`active-${builderState.sauce}`);
+  // Real sauced-base photo crossfade (gradient tint retired)
+  const saucePhoto = document.getElementById('p-sauce-photo');
+  if (saucePhoto) {
+    const src = SAUCE_PHOTO[builderState.sauce];
+    if (src) {
+      if (!saucePhoto.src.endsWith(src)) saucePhoto.src = src;
+      saucePhoto.style.opacity = '1';
+    } else {
+      saucePhoto.style.opacity = '0';
+    }
+  }
 
   // Clear existing cheese classes
   cheeseLayer.className = 'builder-layer layer-cheese';
   cheeseLayer.classList.add(`active-${builderState.cheese}`);
 }
 
-// Realistic SVG ingredient sprites for the pizza builder (no external images = always renders).
-const TOPPING_SVG = {
-  pepperoni: '<svg viewBox="0 0 40 40"><defs><radialGradient id="pepG" cx="40%" cy="34%"><stop offset="0%" stop-color="#e2675a"/><stop offset="65%" stop-color="#c63b2f"/><stop offset="100%" stop-color="#9c2a21"/></radialGradient></defs><circle cx="20" cy="20" r="18" fill="url(#pepG)" stroke="#86231b" stroke-width="1"/><circle cx="14" cy="15" r="2.3" fill="#7a1e17"/><circle cx="26" cy="14" r="1.8" fill="#7a1e17"/><circle cx="22" cy="26" r="2.5" fill="#7a1e17"/><circle cx="13" cy="25" r="1.6" fill="#7a1e17"/><circle cx="28" cy="23" r="1.5" fill="#7a1e17"/><circle cx="19" cy="19" r="1.4" fill="#7a1e17"/></svg>',
-  basil: '<svg viewBox="0 0 40 40"><defs><linearGradient id="basG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5cb85c"/><stop offset="100%" stop-color="#2e7d32"/></linearGradient></defs><path d="M20 3 C31 9 33 27 20 37 C7 27 9 9 20 3 Z" fill="url(#basG)" stroke="#1b5e20" stroke-width="1"/><path d="M20 6 L20 34" stroke="#1b5e20" stroke-width="1.2" opacity=".55"/><path d="M20 14 L14 12 M20 20 L13 19 M20 26 L15 27 M20 14 L26 12 M20 20 L27 19 M20 26 L25 27" stroke="#1b5e20" stroke-width="0.8" opacity=".4"/></svg>',
-  jalapeno: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#6aa84f" stroke="#365f1c" stroke-width="1.2"/><circle cx="20" cy="20" r="8.5" fill="#e6f0d4"/><circle cx="17" cy="18" r="1" fill="#c7d6a8"/><circle cx="22" cy="21" r="1" fill="#c7d6a8"/><circle cx="19" cy="23" r="0.9" fill="#c7d6a8"/></svg>',
-  mushrooms: '<svg viewBox="0 0 40 40"><defs><linearGradient id="mushG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f3e7d2"/><stop offset="100%" stop-color="#d6b487"/></linearGradient></defs><path d="M5 22 C5 9 35 9 35 22 L35 24 C35 28 5 28 5 24 Z" fill="url(#mushG)" stroke="#b5916a" stroke-width="1"/><rect x="16.5" y="22" width="7" height="10" rx="2.5" fill="#ecdcc0" stroke="#b5916a" stroke-width="1"/><path d="M13 20 L13 24 M20 19 L20 24 M27 20 L27 24" stroke="#c3a079" stroke-width="1"/></svg>',
-  chicken: '<svg viewBox="0 0 40 40"><defs><radialGradient id="chkG" cx="40%" cy="34%"><stop offset="0%" stop-color="#ecbf7d"/><stop offset="100%" stop-color="#b97c39"/></radialGradient></defs><path d="M10 13 Q14 6 23 8 Q34 11 31 22 Q30 33 18 31 Q7 29 9 19 Z" fill="url(#chkG)" stroke="#94601f" stroke-width="1"/><circle cx="16" cy="16" r="1.3" fill="#9c6a2c" opacity=".6"/><circle cx="24" cy="22" r="1.5" fill="#9c6a2c" opacity=".5"/><circle cx="19" cy="24" r="1" fill="#9c6a2c" opacity=".5"/></svg>',
-  onions: '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17.5" fill="none" stroke="#a86fb0" stroke-width="3.5"/><circle cx="20" cy="20" r="12.5" fill="none" stroke="#c79ccd" stroke-width="2.5"/><circle cx="20" cy="20" r="8" fill="none" stroke="#e3cce6" stroke-width="2.5"/><circle cx="20" cy="20" r="3.5" fill="none" stroke="#f0e3f2" stroke-width="2"/></svg>'
+// Photoreal ingredient sprites: real photo textures clipped to ingredient shapes.
+// Each piece samples a random crop of the texture so no two pieces look identical.
+const TOPPING_TEX = {
+  pepperoni: { tex: 'assets/pepperoni.png',   shape: 'ts-round', size: [26, 36], zoom: [190, 300] },
+  basil:     { tex: 'assets/basil.png',       shape: 'ts-leaf',  size: [24, 34], zoom: [170, 260] },
+  jalapeno:  { tex: 'assets/jalapeno.png',    shape: 'ts-ring',  size: [22, 30], zoom: [170, 260] },
+  mushrooms: { tex: 'assets/cheese-slice.png',shape: 'ts-mush',  size: [26, 36], zoom: [180, 280], filter: 'sepia(.6) saturate(.7) brightness(.9)' },
+  chicken:   { tex: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300&q=80', shape: 'ts-chunk', size: [24, 34], zoom: [240, 360], filter: 'saturate(1.15) brightness(.92) contrast(1.05)' },
+  onions:    { tex: 'https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=300&q=80', shape: 'ts-arc',   size: [26, 38], zoom: [230, 340], filter: 'saturate(1.2) brightness(.95)' }
 };
-function toppingSVG(t){ return TOPPING_SVG[t] || TOPPING_SVG.pepperoni; }
 
-// Sprinkle realistic toppings across the pizza (randomised polar scatter, staggered drop-in).
+// Sprinkle photoreal toppings across the pizza (randomised polar scatter, staggered 3D drop-in).
 function addToppingsToCanvas(topping) {
   const container = document.getElementById('rendered-toppings');
   if (!container) return;
-  const svg = toppingSVG(topping);
+  const cfg = TOPPING_TEX[topping] || TOPPING_TEX.pepperoni;
+  sprinkleHand();
+  const HAND_DELAY = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 380;
   const COUNT = 13;
   for (let i = 0; i < COUNT; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const radius = 6 + Math.sqrt(Math.random()) * 34; // area-uniform, keep off the crust edge
+    const radius = 6 + Math.sqrt(Math.random()) * 33; // area-uniform, keep off the crust edge
     const top = 50 + radius * Math.sin(angle);
     const left = 50 + radius * Math.cos(angle);
-    const size = 22 + Math.random() * 12;
+    const size = cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0]);
     const rot = Math.floor(Math.random() * 360);
+    const z = 4 + Math.random() * 18; // per-piece height above the cheese
+    const zoom = cfg.zoom[0] + Math.random() * (cfg.zoom[1] - cfg.zoom[0]);
+    const jitter = 0.9 + Math.random() * 0.2;
 
     const item = document.createElement('div');
     item.className = `rendered-topping topping-node-${topping}`;
@@ -1661,13 +1682,26 @@ function addToppingsToCanvas(topping) {
     item.style.left = left + '%';
     item.style.width = size + 'px';
     item.style.height = size + 'px';
-    item.style.animationDelay = `${i * 45}ms`;
+    item.style.animationDelay = `${HAND_DELAY + i * 45}ms`;
 
     const inner = document.createElement('div');
-    inner.className = 'rt-inner';
-    inner.style.transform = `rotate(${rot}deg)`;
-    inner.innerHTML = svg;
+    inner.className = 'rt-inner ' + cfg.shape;
+    inner.style.transform = `translateZ(${z.toFixed(1)}px) rotate(${rot}deg)`;
+    inner.style.filter = `drop-shadow(0 ${(2 + z * 0.22).toFixed(1)}px ${(3 + z * 0.28).toFixed(1)}px rgba(0,0,0,0.45))`;
 
+    const tex = document.createElement('div');
+    tex.className = 'rt-tex';
+    tex.style.backgroundImage = `url("${cfg.tex}")`;
+    tex.style.backgroundSize = zoom.toFixed(0) + '%';
+    // stay on the subject: sample the central region of the texture, never its edges/background
+    tex.style.backgroundPosition = `${(30 + Math.random() * 40).toFixed(1)}% ${(30 + Math.random() * 40).toFixed(1)}%`;
+    tex.style.filter = (cfg.filter ? cfg.filter + ' ' : '') + `brightness(${jitter.toFixed(2)})`;
+
+    const shine = document.createElement('div');
+    shine.className = 'rt-shine';
+
+    inner.appendChild(tex);
+    inner.appendChild(shine);
     item.appendChild(inner);
     container.appendChild(item);
   }
@@ -1717,8 +1751,8 @@ function addCustomPizzaToCart() {
   // Visual Confetti explosion
   triggerConfettiExplosion();
   
-  // Show Cart Drawer
-  toggleCartDrawer(true);
+  // Full kitchen finale inside the reveal overlay: oven bake -> slice -> ready
+  showPizzaReveal(detailsStr, price, function () { toggleCartDrawer(true); });
 }
 
 // ========================================================
@@ -3730,18 +3764,20 @@ if (document.readyState === 'loading') { document.addEventListener('DOMContentLo
     stage._tilt = true;
     var box = stage.closest('.builder-canvas-box') || stage;
     var raf = null, tx = 0, ty = 0;
+    var BASE_X = 11; // resting 3D tilt so the pizza reads as a dish, not a flat disc
+    stage.style.transform = 'rotateX(' + BASE_X + 'deg)';
     box.addEventListener('pointermove', function(e){
       var r = stage.getBoundingClientRect();
       var px = (e.clientX - r.left) / r.width - 0.5;
       var py = (e.clientY - r.top) / r.height - 0.5;
-      tx = px * 16; ty = -py * 16;
+      tx = px * 16; ty = BASE_X - py * 14;
       if (!raf) raf = requestAnimationFrame(function(){
         stage.style.transform = 'rotateY(' + tx + 'deg) rotateX(' + ty + 'deg)';
         raf = null;
       });
     });
     box.addEventListener('pointerleave', function(){
-      stage.style.transform = 'rotateY(0deg) rotateX(0deg)';
+      stage.style.transform = 'rotateX(' + BASE_X + 'deg) rotateY(0deg)';
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
@@ -4268,4 +4304,212 @@ function copyCoupon(el){
     if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done, done); }
     else { done(); }
   }catch(e){ done(); }
+}
+
+
+/* ===== Custom-pizza finale: into the oven -> bake -> fresh out -> slice -> ready -> fly to cart ===== */
+function showPizzaReveal(detailsStr, price, onDone) {
+  var view = document.querySelector('.pizza-builder-view');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!view) { if (onDone) onDone(); return; }
+  var ov = document.createElement('div');
+  ov.className = 'pizza-reveal-overlay';
+  ov.innerHTML =
+    '<div class="pizza-reveal-stage">' +
+      '<div class="pizza-reveal-glow"></div>' +
+      '<div class="pizza-reveal-ring"></div>' +
+      '<img class="pr-oven" src="assets/pizza-oven.png" alt="">' +
+      '<div class="pr-oven-glow"></div>' +
+      '<div class="pizza-reveal-pizza"></div>' +
+    '</div>' +
+    '<div class="pizza-reveal-title">Into the Oven&hellip;</div>' +
+    '<div class="pizza-reveal-sub"></div>' +
+    '<div class="pizza-reveal-price"></div>';
+  ov.querySelector('.pizza-reveal-sub').textContent = detailsStr || '';
+  ov.querySelector('.pizza-reveal-price').textContent = '$' + Number(price).toFixed(2);
+  var pizzaWrap = ov.querySelector('.pizza-reveal-pizza');
+  pizzaWrap.insertBefore(view.cloneNode(true), pizzaWrap.firstChild);
+  // real baked-pizza photo crossfades in under the toppings layer (z5 < toppings z6)
+  var baked = document.createElement('img');
+  baked.className = 'pr-baked-photo';
+  baked.src = 'assets/pizza-base-baked.png';
+  baked.alt = '';
+  pizzaWrap.querySelector('.pizza-builder-view').appendChild(baked);
+  document.body.appendChild(ov);
+  var title = ov.querySelector('.pizza-reveal-title');
+  requestAnimationFrame(function () { ov.classList.add('on'); });
+
+  function finish() {
+    ov.classList.add('ph-done');
+    title.innerHTML = 'Your Pizza Is <span class="pr-accent">Ready!</span>';
+    setTimeout(function () {
+      ov.classList.add('fly');
+      setTimeout(function () {
+        ov.classList.remove('on');
+        setTimeout(function () { ov.remove(); if (onDone) onDone(); }, 320);
+      }, reduce ? 300 : 720);
+    }, reduce ? 900 : 1500);
+  }
+
+  if (reduce) { finish(); return; }
+
+  setTimeout(function () { ov.classList.add('ph-oven'); }, 900);
+  setTimeout(function () { ov.classList.add('ph-baking'); title.textContent = 'Baking\u2026'; }, 1800);
+  setTimeout(function () { ov.classList.add('ph-out'); title.textContent = 'Fresh Out! Slicing\u2026'; }, 4000);
+  setTimeout(function () {
+    ov.classList.add('ph-cut'); // steam clears so the slicing stays crisp
+    var clonedView = ov.querySelector('.pizza-reveal-pizza .pizza-builder-view');
+    runCutterPasses(ov.querySelector('.pizza-reveal-stage'), clonedView || pizzaWrap, finish);
+  }, 4850);
+}
+
+
+/* ===== Chef-hand sprinkle: real hand drops the ingredients on every topping add ===== */
+function sprinkleHand() {
+  var stage = document.getElementById('bpStage');
+  if (!stage) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var h = stage.querySelector('.bp-hand');
+  if (!h) {
+    h = document.createElement('img');
+    h.className = 'bp-hand';
+    h.src = 'assets/chef-hand.png';
+    h.alt = '';
+    stage.appendChild(h);
+  }
+  h.classList.remove('sprinkling');
+  void h.offsetWidth; // restart the animation
+  h.classList.add('sprinkling');
+}
+
+/* ===== Cutter: 4 straight passes through the middle, one cut line after each -- works on any stage/pizza pair ===== */
+function runCutterPasses(stage, view, done) {
+  var cutter = document.createElement('img');
+  cutter.className = 'bp-cutter';
+  cutter.src = 'assets/pizza-cutter.png';
+  cutter.alt = '';
+  cutter.style.animation = 'none';
+  cutter.style.opacity = '0';
+  stage.appendChild(cutter);
+  var lines = document.createElement('div');
+  lines.className = 'bp-slices';
+  view.appendChild(lines);
+
+  var R = view.offsetWidth * 0.72;
+  var passes = [
+    { x: 0, y: 1, rot: 0 },
+    { x: 1, y: 0, rot: 90 },
+    { x: 0.707, y: 0.707, rot: 45 },
+    { x: -0.707, y: 0.707, rot: 135 }
+  ];
+  // one rotated bar per pass; it scales open under the wheel so the cut appears AS it's being made
+  passes.forEach(function (p) {
+    var ln = document.createElement('div');
+    ln.className = 'cutline-live';
+    ln.style.transform = 'rotate(' + (-Math.atan2(p.x, p.y) * 180 / Math.PI) + 'deg)';
+    ln.innerHTML = '<i></i>';
+    lines.appendChild(ln);
+  });
+  void lines.offsetWidth; // flush layout so the scaleY(0) start state paints and the draw transition runs
+  function runPass(i) {
+    if (i >= passes.length) {
+      setTimeout(function () { cutter.remove(); if (done) done(); }, 240);
+      return;
+    }
+    var p = passes[i];
+    cutter.style.opacity = '1';
+    var from = 'translate(calc(-50% + ' + (-p.x * R) + 'px), calc(-50% + ' + (-p.y * R) + 'px)) rotate(' + p.rot + 'deg)';
+    var to = 'translate(calc(-50% + ' + (p.x * R) + 'px), calc(-50% + ' + (p.y * R) + 'px)) rotate(' + p.rot + 'deg)';
+    var anim = cutter.animate(
+      [ { transform: from, opacity: 0 }, { transform: from, opacity: 1, offset: 0.12 }, { transform: to, opacity: 1, offset: 0.88 }, { transform: to, opacity: 0 } ],
+      { duration: 640, easing: 'ease-in-out' }
+    );
+    // the line starts drawing the moment the wheel bites (12% in) and finishes with the pass
+    setTimeout(function () { lines.children[i].classList.add('on'); }, 80);
+    anim.onfinish = function () {
+      cutter.style.opacity = '0';
+      spawnCheeseOoze(view, p);
+      try { if (typeof playSound === 'function') playSound('tab'); } catch (e) {}
+      setTimeout(function () { runPass(i + 1); }, 90);
+    };
+  }
+  runPass(0);
+}
+
+
+/* ===== Cheese factor: per-selection looks. Light = sparse fine shreds, normal = dense shreds,
+   double = dense diced CUBES over shreds, vegan = warm-tinted flakes. Hand sprinkles on change. ===== */
+const CHEESE_STYLES = {
+  light:  { shreds: 14, cubes: 0,  filter: '' },
+  normal: { shreds: 28, cubes: 0,  filter: '' },
+  double: { shreds: 16, cubes: 32, filter: '' },
+  vegan:  { shreds: 22, cubes: 6,  filter: 'sepia(.35) saturate(1.1) ' }
+};
+function cheesePiece(kind, styleFilter, delayMs) {
+  const angle = Math.random() * Math.PI * 2;
+  const radius = 5 + Math.sqrt(Math.random()) * 34;
+  const item = document.createElement('div');
+  item.className = 'rendered-topping topping-node-cheese';
+  item.style.top = (50 + radius * Math.sin(angle)) + '%';
+  item.style.left = (50 + radius * Math.cos(angle)) + '%';
+  if (kind === 'cube') {
+    const s = 7 + Math.random() * 5;
+    item.style.width = s + 'px';
+    item.style.height = s + 'px';
+  } else {
+    item.style.width = (16 + Math.random() * 14) + 'px';
+    item.style.height = (5 + Math.random() * 3) + 'px';
+  }
+  item.style.animationDelay = delayMs + 'ms';
+  const inner = document.createElement('div');
+  inner.className = 'rt-inner ' + (kind === 'cube' ? 'ts-cube' : 'ts-shred');
+  const z = kind === 'cube' ? 3 + Math.random() * 9 : 2 + Math.random() * 6;
+  inner.style.transform = 'translateZ(' + z.toFixed(1) + 'px) rotate(' + Math.floor(Math.random() * 360) + 'deg)';
+  inner.style.filter = 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))';
+  const tex = document.createElement('div');
+  tex.className = 'rt-tex';
+  tex.style.backgroundImage = 'url("assets/cheese-slice.png")';
+  tex.style.backgroundSize = (260 + Math.random() * 140).toFixed(0) + '%';
+  tex.style.backgroundPosition = (30 + Math.random() * 40).toFixed(1) + '% ' + (30 + Math.random() * 40).toFixed(1) + '%';
+  tex.style.filter = styleFilter + 'saturate(1.05) brightness(' + (0.98 + Math.random() * 0.1).toFixed(2) + ')';
+  const shine = document.createElement('div');
+  shine.className = 'rt-shine';
+  inner.appendChild(tex); inner.appendChild(shine); item.appendChild(inner);
+  return item;
+}
+function sprinkleCheese(skipHand) {
+  const container = document.getElementById('rendered-toppings');
+  if (!container) return;
+  container.querySelectorAll('.topping-node-cheese').forEach(function (n) { n.remove(); });
+  if (!skipHand) sprinkleHand();
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const delay0 = (skipHand || reduce) ? 0 : 380;
+  const st = CHEESE_STYLES[builderState.cheese] || CHEESE_STYLES.normal;
+  let i = 0;
+  for (let k = 0; k < st.shreds; k++) {
+    container.insertBefore(cheesePiece('shred', st.filter, delay0 + (i++) * 28), container.firstChild);
+  }
+  // cubes go on top of the shreds (still under the toppings, which sit later in the container)
+  const anchor = container.firstChild;
+  for (let k = 0; k < st.cubes; k++) {
+    container.insertBefore(cheesePiece('cube', st.filter, delay0 + (i++) * 28), anchor);
+  }
+}
+
+
+/* ===== Molten cheese oozes out along a fresh cut ===== */
+function spawnCheeseOoze(view, p) {
+  for (var k = 0; k < 4; k++) {
+    var t = Math.random() * 1.1 - 0.55;          // position along the cut line
+    var side = (Math.random() - 0.5) * 3;         // tiny drift off the line
+    var d = document.createElement('div');
+    d.className = 'pr-ooze';
+    d.style.left = (50 + p.x * t * 42 + (-p.y) * side) + '%';
+    d.style.top = (50 + p.y * t * 42 + p.x * side) + '%';
+    var s = 5 + Math.random() * 7;
+    d.style.width = s + 'px';
+    d.style.height = (s * (0.9 + Math.random() * 0.5)) + 'px';
+    d.style.animationDelay = (k * 70) + 'ms';
+    view.appendChild(d);
+  }
 }
