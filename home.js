@@ -26,39 +26,48 @@
   }
 
   // ---------- builders ----------
-  function buildAds(products) {
-    var slides = [
-      { tag: 'First Order', h: '30% OFF Your First Bite', p: 'New here? Use code', code: 'BOOST30', cta: 'Order Now', href: 'menu.html', img: imgFor(products, 'traditional') },
-      { tag: 'Free Delivery', h: 'Free Delivery Over $40', p: 'Pile it on. Code', code: 'HAMFREE', cta: 'See Menu', href: 'menu.html', img: imgFor(products, 'burger') },
-      { tag: 'New Range', h: 'The Bollywood Range', p: 'Spiced to perfection — bold Indian-inspired flavours.', code: '', cta: 'Explore', href: 'menu.html', img: imgFor(products, 'bollywood') }
-    ];
+  function buildOffers(products) {
+    var pizza = imgFor(products, 'traditional');
+    var burger = imgFor(products, 'burger');
+    var boll = imgFor(products, 'bollywood');
     var sec = document.createElement('section');
-    sec.className = 'ad-slider'; sec.setAttribute('aria-label', 'Offers');
+    sec.className = 'home-section offers-home';
+    function coupon(img, badge, badgeSmall, badgeCls, kicker, title, desc, code, timerId) {
+      return '<article class="offer-poster" style="--poster-img:url(' + esc(img) + ')">' +
+        '<div class="offer-poster-media"></div><div class="offer-poster-scrim"></div>' +
+        '<div class="offer-poster-badge ' + badgeCls + '">' + badge + (badgeSmall ? '<small>' + badgeSmall + '</small>' : '') + '</div>' +
+        '<div class="offer-poster-body">' +
+          '<span class="offer-poster-kicker">' + kicker + '</span>' +
+          '<h3 class="offer-poster-title">' + title + '</h3>' +
+          '<p class="offer-poster-desc">' + desc + '</p>' +
+          '<div class="offer-poster-row">' +
+            '<button class="coupon-chip" type="button" data-code="' + code + '" onclick="copyCoupon(this)"><span class="coupon-chip-label">CODE</span><span class="coupon-chip-code">' + code + '</span><i data-lucide="copy" class="coupon-chip-ic"></i></button>' +
+            '<div class="offer-countdown"><span class="offer-countdown-lbl">Ends in</span><span id="' + timerId + '">00:00:00</span></div>' +
+          '</div>' +
+          '<button class="btn btn-primary btn-full offer-poster-cta" data-apply="' + code + '">Redeem &amp; Order <i data-lucide="arrow-right"></i></button>' +
+        '</div></article>';
+    }
     sec.innerHTML =
-      '<div class="ad-viewport"><div class="ad-track">' +
-      slides.map(function (s) {
-        return '<div class="ad-slide"><div class="ad-slide-bg" style="background-image:url(\'' + esc(s.img) + '\')"></div>' +
-          '<div class="ad-slide-inner"><div class="ad-slide-tag">' + esc(s.tag) + '</div>' +
-          '<div class="ad-slide-h">' + esc(s.h) + '</div>' +
-          '<div class="ad-slide-p">' + esc(s.p) + (s.code ? ' <span class="ad-slide-code">' + esc(s.code) + '</span>' : '') + '</div>' +
-          '<a class="ad-cta" href="' + esc(s.href) + '">' + esc(s.cta) + '</a></div></div>';
-      }).join('') +
-      '</div></div>' +
-      '<button class="ad-arrow prev" aria-label="Previous">&#8249;</button><button class="ad-arrow next" aria-label="Next">&#8250;</button>' +
-      '<div class="ad-dots"></div>';
-    var track = sec.querySelector('.ad-track'), dotsWrap = sec.querySelector('.ad-dots'), i = 0, n = slides.length, timer;
-    for (var d = 0; d < n; d++) { var b = document.createElement('button'); b.className = 'ad-dot' + (d === 0 ? ' on' : ''); b.dataset.i = d; dotsWrap.appendChild(b); }
-    function go(k) { i = (k + n) % n; track.style.transform = 'translateX(' + (-i * 100) + '%)'; dotsWrap.querySelectorAll('.ad-dot').forEach(function (x, xi) { x.classList.toggle('on', xi === i); }); }
-    function next() { go(i + 1); } function prev() { go(i - 1); }
-    function play() { stop(); timer = setInterval(next, 5000); } function stop() { if (timer) clearInterval(timer); }
-    sec.querySelector('.next').onclick = function () { next(); play(); };
-    sec.querySelector('.prev').onclick = function () { prev(); play(); };
-    dotsWrap.onclick = function (e) { if (e.target.dataset.i != null) { go(+e.target.dataset.i); play(); } };
-    // swipe
-    var sx = null; track.addEventListener('pointerdown', function (e) { sx = e.clientX; stop(); });
-    window.addEventListener('pointerup', function (e) { if (sx == null) return; var dx = e.clientX - sx; if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); } sx = null; play(); });
-    sec.addEventListener('mouseenter', stop); sec.addEventListener('mouseleave', play);
-    play();
+      '<div class="section-header"><span class="sub-heading">DEALS &amp; OFFERS</span>' +
+      '<h2 class="section-title">Grab Today&#39;s Hottest Deals</h2>' +
+      '<p class="section-subtitle">Tap a code to copy it, then redeem at checkout.</p></div>' +
+      '<div class="offers-grid poster-grid">' +
+      coupon(pizza, '30%', 'OFF', '', 'First Order Special', '30% Off Your First Bite', 'New here? Slice 30% off any order &mdash; pizzas, burgers, the lot.', 'BOOST30', 'timer-tues') +
+      coupon(burger, 'FREE', 'DELIVERY', 'badge-gold', 'Hamilton Midweek', 'Free Delivery Over $40', 'Order $40+ anywhere in Hamilton and we&rsquo;ll bring it over &mdash; on the house.', 'HAMFREE', 'timer-free') +
+      '<article class="offer-poster" style="--poster-img:url(' + esc(boll) + ')">' +
+        '<div class="offer-poster-media"></div><div class="offer-poster-scrim"></div>' +
+        '<div class="offer-poster-badge badge-new">NEW</div>' +
+        '<div class="offer-poster-body">' +
+          '<span class="offer-poster-kicker">Just Launched</span>' +
+          '<h3 class="offer-poster-title">The Bollywood Range</h3>' +
+          '<p class="offer-poster-desc">Butter chicken, tandoori, chilly paneer &amp; more &mdash; spiced to perfection.</p>' +
+          '<div class="offer-poster-row"><span class="offer-tag-pill">&#127798; 10 new dishes</span></div>' +
+          '<a class="btn btn-primary btn-full offer-poster-cta" href="menu.html?cat=Bollywood%20Range">Explore the Range <i data-lucide="arrow-right"></i></a>' +
+        '</div></article>' +
+      '</div>';
+    sec.querySelectorAll('[data-apply]').forEach(function (btn) {
+      btn.addEventListener('click', function () { try { applyCouponCode(btn.getAttribute('data-apply')); } catch (e) {} });
+    });
     return sec;
   }
 
@@ -136,30 +145,6 @@
     sec.innerHTML = '<div class="cta-inner"><div class="cta-h">Still Hungry?</div><p class="cta-p">Big bites, bold flavours — delivered scorching hot across Hamilton.</p><a class="ad-cta" href="menu.html">Order Now &rarr;</a></div>';
     return sec;
   }
-
-  function buildBrandVideo() {
-    var sec = document.createElement('section');
-    sec.className = 'brand-video';
-    var hasVid = !!BRAND_VIDEO_URL;
-    var media = hasVid
-      ? '<video class="bv-media" autoplay muted loop playsinline preload="metadata" poster="' + esc(BRAND_POSTER) + '" src="' + esc(BRAND_VIDEO_URL) + '"></video>'
-      : '<div class="bv-media" style="background:url(\'' + esc(BRAND_POSTER) + '\') center/cover;"></div>';
-    sec.innerHTML =
-      '<div class="bv-frame">' + media +
-      '' +
-      '<div class="bv-overlay">' +
-        '<div class="bv-tag">Hamilton\'s Cloud Kitchen</div>' +
-        '<h2 class="bv-name">THE HUNGRY <span class="bv-accent">SLICE</span></h2>' +
-        '<div class="bv-tagline">Big Bites. Bold Flavours.</div>' +
-        '<a class="bv-cta" href="menu.html">Order Now &rarr;</a>' +
-      '</div></div>';
-    var v = sec.querySelector('video');
-    if (v && 'IntersectionObserver' in window) {
-      new IntersectionObserver(function(en){en.forEach(function(e){ e.isIntersecting ? v.play().catch(function(){}) : v.pause(); });},{threshold:.3}).observe(v);
-    }
-    return sec;
-  }
-
 
   function buildCraft(products) {
     var img = imgFor(products, 'traditional');
@@ -240,8 +225,7 @@
     var anchor = hero; // insert sequence right after hero
     var nodes = [];
     if (products.length) {
-      nodes.push(buildAds(products));
-      nodes.push(buildBrandVideo());
+      nodes.push(buildOffers(products));
       var c = buildCategories(products); if (c) nodes.push(c);
       var d = buildDishes(products); if (d) nodes.push(d);
       var g = buildGallery(products); if (g) nodes.push(g);
@@ -249,7 +233,7 @@
       nodes.push(buildSteps());
       // video strip skipped: only stock placeholder clips exist (not food). Re-enable when real food videos are uploaded.
     } else {
-      nodes.push(buildAds([{ image_url: 'assets/hero-pizza.png', category: '' }]));
+      nodes.push(buildOffers([]));
     }
     nodes.forEach(function (nd) { insertAfter(nd, anchor); anchor = nd; });
 
@@ -260,6 +244,8 @@
 
     // let effects.js tag the new cards for scroll-reveal
     if (window.lucide && window.lucide.createIcons) try { window.lucide.createIcons(); } catch (e) {}
+    // offer posters were injected async -> (re)start their end-of-day countdowns now that the elements exist
+    if (typeof initCountdownTimers === 'function') try { initCountdownTimers(); } catch (e) {}
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

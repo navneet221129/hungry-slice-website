@@ -4253,3 +4253,19 @@ function clearFieldErrors(){
     };
   }
 })();
+
+
+/* ===== Offer poster: copy coupon code to clipboard ===== */
+function copyCoupon(el){
+  var code = el.getAttribute('data-code'); if(!code) return;
+  var codeEl = el.querySelector('.coupon-chip-code');
+  function done(){
+    el.classList.add('copied');
+    if(codeEl) codeEl.textContent = 'Copied!';
+    setTimeout(function(){ el.classList.remove('copied'); if(codeEl) codeEl.textContent = code; }, 1600);
+  }
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done, done); }
+    else { done(); }
+  }catch(e){ done(); }
+}
