@@ -3095,32 +3095,6 @@ function initCardFormatting(){
     if(el) window.playSound(classify(el));
   }, true);
 
-  /* ---- Spoken welcome greeting (once per page open) ---- */
-  let _spoke = false;
-  function attemptGreet(){
-    if(_spoke) return;
-    if(!('speechSynthesis' in window)){ _spoke = true; return; }
-    try{
-      const vs = window.speechSynthesis.getVoices() || [];
-      const u = new SpeechSynthesisUtterance('Welcome to the Hungry Slice');
-      u.rate = 0.96; u.pitch = 1.0; u.volume = 1.0;
-      const pref = vs.find(v => /^en/i.test(v.lang) && /female|samantha|karen|victoria|moira|tessa|fiona|google uk english female|zira|aria|jenny/i.test(v.name))
-                || vs.find(v => /en-GB|en-AU/.test(v.lang))
-                || vs.find(v => /^en/i.test(v.lang));
-      if(pref) u.voice = pref;
-      u.onstart = () => { _spoke = true; };
-      window.speechSynthesis.cancel();
-      window.speechSynthesis.speak(u);
-    }catch(e){}
-  }
-  function greetWhenReady(){
-    if(!('speechSynthesis' in window)) return;
-    if(window.speechSynthesis.getVoices().length) attemptGreet();
-    else { window.speechSynthesis.addEventListener('voiceschanged', attemptGreet, { once:true }); setTimeout(attemptGreet, 600); }
-  }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', greetWhenReady); else greetWhenReady();
-  // Browsers usually block audio/speech until a user gesture — retry on the first interaction.
-  ['pointerdown','keydown','touchstart'].forEach(ev => window.addEventListener(ev, attemptGreet, { passive:true }));
 })();
 
 
