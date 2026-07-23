@@ -1731,6 +1731,10 @@ function calculateBuilderPrice() {
   if (priceEl) {
     priceEl.innerText = `$${cost.toFixed(2)}`;
   }
+  const stickyPriceEl = document.getElementById('builder-price-sticky');
+  if (stickyPriceEl) {
+    stickyPriceEl.innerText = `$${cost.toFixed(2)}`;
+  }
   return cost;
 }
 
@@ -3354,8 +3358,8 @@ function closeStaffLogin(){ const m=document.getElementById('staff-modal'); if(m
     if(typeof cartState==='undefined' || !cartState.items) return;
     var ids=cartState.items.map(function(i){return i.id;}).filter(Boolean);
     if(!ids.length){ box.innerHTML=''; box.style.display='none'; return; }
-    var recs=await rpcRecommend(ids,4);
-    recs=recs.filter(function(p){return ids.indexOf(p.id)<0;}).slice(0,4);
+    var recs=await rpcRecommend(ids,8);
+    recs=recs.filter(function(p){return ids.indexOf(p.id)<0;}).slice(0,8);
     renderRecoSection(box, 'Complete your meal', recs);
   }
   function init(){
@@ -4108,48 +4112,6 @@ function clearFieldErrors(){
   document.querySelectorAll('.form-row.field-error').forEach(function(r){ r.classList.remove('field-error'); });
 }
 
-/* ===== CART UPSELL (2026-07-04): one-tap add-on suggestions from real low-priced sides/desserts ===== */
-(function(){
-  function upsellCandidates(){
-    if (!Array.isArray(databaseProducts) || !databaseProducts.length) return [];
-    var inCart = {};
-    (cartState.items||[]).forEach(function(i){ inCart[i.id] = true; });
-    var rx = /side|dessert|wing|fries|garlic bread|dip/i;
-    return databaseProducts
-      .filter(function(p){ return p.image_url && !p.out_of_stock && !inCart[p.id] && rx.test(p.category||'') })
-      .sort(function(a,b){ return Number(a.price) - Number(b.price); })
-      .slice(0, 2);
-  }
-  function renderUpsell(){
-    var host = document.getElementById('cart-items-list');
-    if (!host || !host.parentNode) return;
-    var old = document.getElementById('cart-upsell-block');
-    if (old) old.remove();
-    if (!cartState.items || !cartState.items.length) return;
-    var picks = upsellCandidates();
-    if (!picks.length) return;
-    var el = document.createElement('div');
-    el.id = 'cart-upsell-block'; el.className = 'cart-upsell';
-    el.innerHTML = '<div class="cart-upsell-head">Often added</div>' + picks.map(function(p){
-      var safe = String(p.name).replace(/'/g,"\\'");
-      return '<div class="cart-upsell-row"><img src="'+p.image_url+'" alt="" loading="lazy">' +
-        '<span class="cu-name">'+p.name+'</span><span class="cu-price">$'+Number(p.price).toFixed(2)+'</span>' +
-        '<button type="button" onclick="addProductToCart(\''+p.id+'\',\''+safe+'\','+Number(p.price)+',\''+p.image_url+'\')">Add</button></div>';
-    }).join('');
-    var feeNote = host.parentNode.querySelector('.bag-fee-note');
-    if (feeNote) feeNote.insertAdjacentElement('afterend', el);
-    else host.insertAdjacentElement('afterend', el);
-  }
-  var _u1 = window.updateCartUI;
-  if (typeof _u1 === 'function') {
-    window.updateCartUI = function(){
-      var r = _u1.apply(this, arguments);
-      try { renderUpsell(); } catch(e){}
-      return r;
-    };
-  }
-})();
-
 /* ===== QUICK VIEW (2026-07-04): tap product image -> rich detail modal ===== */
 (function(){
   function findProduct(pid){
@@ -4437,63 +4399,15 @@ function runCutterPasses(stage, view, done) {
 }
 
 
-/* ===== Cheese factor: per-selection looks. Light = sparse fine shreds, normal = dense shreds,
-   double = dense diced CUBES over shreds, vegan = warm-tinted flakes. Hand sprinkles on change. ===== */
-const CHEESE_STYLES = {
-  light:  { shreds: 14, cubes: 0,  filter: '' },
-  normal: { shreds: 28, cubes: 0,  filter: '' },
-  double: { shreds: 16, cubes: 32, filter: '' },
-  vegan:  { shreds: 22, cubes: 6,  filter: 'sepia(.35) saturate(1.1) ' }
-};
-function cheesePiece(kind, styleFilter, delayMs) {
-  const angle = Math.random() * Math.PI * 2;
-  const radius = 5 + Math.sqrt(Math.random()) * 34;
-  const item = document.createElement('div');
-  item.className = 'rendered-topping topping-node-cheese';
-  item.style.top = (50 + radius * Math.sin(angle)) + '%';
-  item.style.left = (50 + radius * Math.cos(angle)) + '%';
-  if (kind === 'cube') {
-    const s = 7 + Math.random() * 5;
-    item.style.width = s + 'px';
-    item.style.height = s + 'px';
-  } else {
-    item.style.width = (16 + Math.random() * 14) + 'px';
-    item.style.height = (5 + Math.random() * 3) + 'px';
-  }
-  item.style.animationDelay = delayMs + 'ms';
-  const inner = document.createElement('div');
-  inner.className = 'rt-inner ' + (kind === 'cube' ? 'ts-cube' : 'ts-shred');
-  const z = kind === 'cube' ? 3 + Math.random() * 9 : 2 + Math.random() * 6;
-  inner.style.transform = 'translateZ(' + z.toFixed(1) + 'px) rotate(' + Math.floor(Math.random() * 360) + 'deg)';
-  inner.style.filter = 'drop-shadow(0 1.5px 2px rgba(0,0,0,0.35))';
-  const tex = document.createElement('div');
-  tex.className = 'rt-tex';
-  tex.style.backgroundImage = 'url("assets/cheese-slice.png")';
-  tex.style.backgroundSize = (260 + Math.random() * 140).toFixed(0) + '%';
-  tex.style.backgroundPosition = (30 + Math.random() * 40).toFixed(1) + '% ' + (30 + Math.random() * 40).toFixed(1) + '%';
-  tex.style.filter = styleFilter + 'saturate(1.05) brightness(' + (0.98 + Math.random() * 0.1).toFixed(2) + ')';
-  const shine = document.createElement('div');
-  shine.className = 'rt-shine';
-  inner.appendChild(tex); inner.appendChild(shine); item.appendChild(inner);
-  return item;
-}
+/* ===== Cheese factor: real creamy spread photo layer (ref-matched). #p-cheese shows the
+   cheese-spread image; coverage/opacity set by CSS class active-<level> in updateBuilderLayers.
+   The hand does the spreading gesture on change. ===== */
 function sprinkleCheese(skipHand) {
-  const container = document.getElementById('rendered-toppings');
-  if (!container) return;
-  container.querySelectorAll('.topping-node-cheese').forEach(function (n) { n.remove(); });
+  // clear any legacy shred/cube sprites from earlier versions
+  var container = document.getElementById('rendered-toppings');
+  if (container) container.querySelectorAll('.topping-node-cheese').forEach(function (n) { n.remove(); });
   if (!skipHand) sprinkleHand();
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const delay0 = (skipHand || reduce) ? 0 : 380;
-  const st = CHEESE_STYLES[builderState.cheese] || CHEESE_STYLES.normal;
-  let i = 0;
-  for (let k = 0; k < st.shreds; k++) {
-    container.insertBefore(cheesePiece('shred', st.filter, delay0 + (i++) * 28), container.firstChild);
-  }
-  // cubes go on top of the shreds (still under the toppings, which sit later in the container)
-  const anchor = container.firstChild;
-  for (let k = 0; k < st.cubes; k++) {
-    container.insertBefore(cheesePiece('cube', st.filter, delay0 + (i++) * 28), anchor);
-  }
+  updateBuilderLayers();
 }
 
 

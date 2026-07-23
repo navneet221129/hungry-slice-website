@@ -56,7 +56,7 @@
   <script src="assets/lucide.min.js"></script>
   
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=1784716146">
+  <link rel="stylesheet" href="style.css?v=1784814835">
   <link rel="stylesheet" href="effects.css?v=1782723757">
   <link rel="stylesheet" href="advanced-fx.css?v=2">
   
@@ -278,6 +278,12 @@
 
     </div>
   </section>
+
+  <!-- Mobile sticky Add-to-Cart bar (always reachable while building) -->
+  <div class="builder-sticky-cta" id="builderStickyCta">
+    <div class="bsc-price"><span class="bsc-lbl">Total</span><span class="bsc-amount" id="builder-price-sticky">$18.00</span></div>
+    <button class="btn btn-primary bsc-btn" onclick="addCustomPizzaToCart()">Add to Cart <i data-lucide="shopping-cart"></i></button>
+  </div>
   </main>
 
   <!-- Sign-in Modal -->
@@ -667,7 +673,7 @@
   <!-- Supabase CDN Client and Fallback Data -->
   <script src="assets/supabase-js.js"></script>
   <script src="menu-data.js"></script>
-  <script src="app.js?v=1784716205"></script>
+  <script src="app.js?v=1784814835"></script>
   <script src="effects.js?v=1782723757"></script>
   <script type="module" src="motion-fx.js?v=1784378941"></script>
   <script defer src="advanced-fx.js?v=2"></script>
