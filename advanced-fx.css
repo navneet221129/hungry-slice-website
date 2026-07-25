@@ -215,8 +215,12 @@ body.fx-cine .motion-progress-bar {
 }
 
 /* ---- 7. Cards: flat borders -> graded glass with ember edge-light ---- */
+/* Both builder panels are exempt. This rule's `overflow:hidden` beat the
+   options column's own `overflow-y:auto` and clipped its last 143px —
+   which is where the Add-to-Cart button lives, so desktop users had no
+   way to reach it. It also beat the canvas box's position:sticky. */
 body.fx-cine .review-card,
-body.fx-cine .glass-card {
+body.fx-cine .glass-card:not(.builder-canvas-box):not(.builder-controls) {
   position: relative;
   overflow: hidden;
 }

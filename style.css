@@ -5318,3 +5318,77 @@ body.light-mode .menu-cat-count { color: #666 !important; }
    stacked in the same corner. The builder page already has its own. */
 body.on-builder .mcart-cta { display: none !important; }
 body.on-builder.mcart-visible { padding-bottom: 62px; }
+
+
+/* ===================================================================
+   Builder CTA dock (desktop)
+
+   The only Add-to-Cart on desktop used to be the last child of the
+   right-hand options column, so you had to scroll past crust, sauce,
+   cheese and every topping to reach it — and the mobile sticky bar is
+   `display:none` above 768px, so there was no fallback. This docks a
+   price + CTA directly under the pizza inside .builder-canvas-box,
+   which is already position:sticky, so it stays put while you build.
+   =================================================================== */
+.bcta-dock { display: none; }
+
+@media (min-width: 769px) {
+  /* stack pizza over dock; the box was a centred single-item flex row */
+  .builder-canvas-box {
+    flex-direction: column;
+    gap: 22px;
+    height: auto;
+    min-height: 500px;
+    justify-content: center;
+  }
+
+  .bcta-dock {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    max-width: 380px;
+    padding: 12px 12px 12px 18px;
+    border-radius: 16px;
+    background: rgba(20, 14, 11, .92);
+    border: 1px solid rgba(255, 255, 255, .12);
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .38);
+  }
+  .bcta-price { display: flex; flex-direction: column; line-height: 1.05; flex-shrink: 0; }
+  .bcta-lbl {
+    font-size: .6rem; letter-spacing: 1px; text-transform: uppercase;
+    color: rgba(255, 255, 255, .6); font-weight: 700;
+  }
+  .bcta-amount {
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 1.3rem; color: #f2b35c;
+  }
+  .bcta-btn {
+    flex: 1; margin: 0; padding: 13px 16px;
+    font-size: .96rem; white-space: nowrap;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .bcta-btn svg { width: 18px; height: 18px; }
+
+  /* The bottom-of-column summary is now a duplicate. Keep the running
+     price there for reference, drop the second button. */
+  .builder-summary-card .btn-full { display: none; }
+
+  /* Keep the panel pinned so the dock stays beside the options.
+     (advanced-fx.css now exempts this box from its card rule, which
+     used to override this with position:relative.)
+     align-self:start matters: as a stretched grid item the box grew to
+     the full height of the options column, so the pizza sat centred in
+     dead space and drifted out of view instead of sticking. */
+  .builder-canvas-box {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+  }
+
+  /* Let the options column run to its natural height rather than
+     scrolling inside a capped panel — the page scrolls, and the sticky
+     pizza + dock ride alongside it. */
+  .builder-controls { max-height: none; overflow-y: visible; }
+}

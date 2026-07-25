@@ -1735,6 +1735,10 @@ function calculateBuilderPrice() {
   if (stickyPriceEl) {
     stickyPriceEl.innerText = `$${cost.toFixed(2)}`;
   }
+  const dockPriceEl = document.getElementById('builder-price-dock');
+  if (dockPriceEl) {
+    dockPriceEl.innerText = `$${cost.toFixed(2)}`;
+  }
   return cost;
 }
 
