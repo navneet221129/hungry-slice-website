@@ -12,6 +12,11 @@
   --sw-font-body: 'Inter', system-ui, sans-serif;
 }
 
+.sw-root {
+  margin-bottom: 80px; /* Space between scroll-world + reviews section */
+  position: relative;
+}
+
 body { background: #14100E; }
 
 /* ---- Site chrome vs engine chrome -------------------------------------
