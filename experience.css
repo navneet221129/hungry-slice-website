@@ -87,3 +87,36 @@ body { background: #14100E; }
 .sw-btn { padding: 13px 24px !important; }
 .sw-route { padding: 18px 10px !important; }
 .sw-route__label { padding: 5px 11px !important; }
+
+
+
+/* ---- CTA button styling (override engine defaults) ---- */
+.sw-copy__cta button,
+.sw-root button:not(.sw-nav__item),
+.sw-root [role="button"] {
+  background: #D85326 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border: none !important;
+  border-radius: 28px !important;
+  padding: 14px 32px !important;
+  font-size: 1.05rem !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(216, 83, 38, 0.4) !important;
+}
+
+.sw-copy__cta button:first-child,
+.sw-copy__cta :first-child > button {
+  background: #D85326 !important;
+}
+
+.sw-copy__cta button:last-child,
+.sw-copy__cta :last-child > button {
+  background: transparent !important;
+  border: 2px solid rgba(247, 239, 230, 0.5) !important;
+  color: #F7EFE6 !important;
+}
+
+.sw-root button:hover {
+  box-shadow: 0 6px 16px rgba(216, 83, 38, 0.6) !important;
+}
