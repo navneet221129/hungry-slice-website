@@ -4687,6 +4687,9 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 @media (max-width:768px){
   body.mcart-visible { padding-bottom: 150px; }
   body.mcart-visible .ai-chat-fab { bottom: 140px; }
+  /* the builder's stacked total+CTA bar is ~101px tall at bottom:72px,
+     so the FAB has to clear ~180px there or it sits on the button */
+  body.on-builder .ai-chat-fab { bottom: 186px; }
 }
 
 /* ===== UI WOW PASS (2026-07-03) ===== */
@@ -5221,24 +5224,26 @@ body.light-mode .menu-cat-count { color: #666 !important; }
   .builder-sticky-cta{
     position:fixed; left:12px; right:12px;
     bottom:calc(72px + env(safe-area-inset-bottom)); z-index:170;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    display:flex; flex-direction:column; align-items:stretch; gap:9px;
     background:rgba(20,14,11,.92); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
     border:1px solid rgba(255,255,255,.12); border-radius:16px;
-    padding:9px 10px 9px 16px; box-shadow:0 12px 34px rgba(0,0,0,.5);
+    padding:11px 14px 12px; box-shadow:0 12px 34px rgba(0,0,0,.5);
     animation:mcartUp .35s cubic-bezier(.16,1,.3,1);
   }
-  .builder-sticky-cta .bsc-price{display:flex;flex-direction:column;line-height:1.05;flex-shrink:0;}
+  .builder-sticky-cta .bsc-price{display:flex;align-items:baseline;justify-content:space-between;gap:10px;line-height:1.05;flex-shrink:0;}
   .builder-sticky-cta .bsc-lbl{font-size:.6rem;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.6);font-weight:700;}
   .builder-sticky-cta .bsc-amount{font-family:var(--font-display);font-weight:800;font-size:1.28rem;color:#f2b35c;}
-  .builder-sticky-cta .bsc-btn{flex:1;margin:0;padding:13px 14px;font-size:.98rem;white-space:nowrap;}
+  .builder-sticky-cta .bsc-btn{width:100%;margin:0;padding:13px 14px;font-size:.98rem;white-space:nowrap;justify-content:center;}
   .builder-sticky-cta .bsc-btn svg{width:18px;height:18px;}
   /* when the 'items in bag' bar is showing, stack the pizza CTA above it */
   body.mcart-visible .builder-sticky-cta{ bottom:calc(140px + env(safe-area-inset-bottom)); }
   /* the in-flow summary button is redundant on mobile now -> keep the price box, hide its button */
   .builder-summary-card .btn-full{ display:none; }
   /* clear the sticky bar (+ bag bar + nav) so nothing at page bottom hides behind it */
-  #builder{ padding-bottom:150px; }
-  body.mcart-visible #builder{ padding-bottom:220px; }
+  /* stacked CTA bar is ~101px tall and sits at bottom:72px, so the last
+     control needs ~180px of clearance to stay tappable above it */
+  #builder{ padding-bottom:195px; }
+  body.mcart-visible #builder{ padding-bottom:230px; }
   /* the reveal overlay must sit above the sticky bar */
   .pizza-reveal-overlay{ z-index:4000; }
 }
@@ -5319,6 +5324,16 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 body.on-builder .mcart-cta { display: none !important; }
 body.on-builder.mcart-visible { padding-bottom: 62px; }
 
+/* ...and because that bag bar is hidden here, nothing should still be
+   reserving room for it. These `mcart-visible` offsets were pushing the
+   builder's own CTA and the Ask-AI button up over empty space, which put
+   the FAB on top of the Add-to-Cart button. */
+body.on-builder.mcart-visible .builder-sticky-cta {
+  bottom: calc(72px + env(safe-area-inset-bottom)) !important;
+}
+body.on-builder.mcart-visible .ai-chat-fab { bottom: 186px; }
+body.on-builder.mcart-visible #builder { padding-bottom: 195px; }
+
 
 /* ===================================================================
    Builder CTA dock (desktop)
@@ -5344,18 +5359,21 @@ body.on-builder.mcart-visible { padding-bottom: 62px; }
 
   .bcta-dock {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    flex-direction: column;      /* total on top, CTA underneath */
+    align-items: stretch;
+    gap: 10px;
     width: 100%;
     max-width: 380px;
-    padding: 12px 12px 12px 18px;
+    padding: 14px 16px;
     border-radius: 16px;
     background: rgba(20, 14, 11, .92);
     border: 1px solid rgba(255, 255, 255, .12);
     box-shadow: 0 12px 34px rgba(0, 0, 0, .38);
   }
-  .bcta-price { display: flex; flex-direction: column; line-height: 1.05; flex-shrink: 0; }
+  .bcta-price {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 10px; line-height: 1.05; flex-shrink: 0;
+  }
   .bcta-lbl {
     font-size: .6rem; letter-spacing: 1px; text-transform: uppercase;
     color: rgba(255, 255, 255, .6); font-weight: 700;
@@ -5365,7 +5383,7 @@ body.on-builder.mcart-visible { padding-bottom: 62px; }
     font-size: 1.3rem; color: #f2b35c;
   }
   .bcta-btn {
-    flex: 1; margin: 0; padding: 13px 16px;
+    width: 100%; margin: 0; padding: 13px 16px;
     font-size: .96rem; white-space: nowrap;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
