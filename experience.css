@@ -1,0 +1,84 @@
+/* The Hungry Slice — scroll-world experience page.
+   NOTE: the engine declares its defaults on `.sw-root` itself (inside @layer sw).
+   A direct declaration on an element always beats a value inherited from :root,
+   layers or not — so the brand tokens must target `.sw-root`, not just `:root`. */
+:root,
+.sw-root {
+  --sw-bg: #14100E;
+  --sw-ink: #F7EFE6;
+  --sw-ink-soft: rgba(247, 239, 230, 0.68);
+  --sw-accent: #D85326;
+  --sw-font-display: 'Outfit', system-ui, sans-serif;
+  --sw-font-body: 'Inter', system-ui, sans-serif;
+}
+
+body { background: #14100E; }
+
+/* ---- Site chrome vs engine chrome -------------------------------------
+   The engine's own fixed topbar (z-50) sits under the site header (z-100,
+   top:36px, ~80px tall = 116px bottom edge), so slide it clear. The engine's
+   brand is omitted in the config, not hidden here. */
+.sw-topbar { top: 116px !important; justify-content: flex-end !important; }
+.sw-scrollbar { top: 116px !important; }
+
+/* ---- Mobile: clear the site's fixed bottom furniture -------------------
+   ≤768px the site shows .zom-bottom-nav (62px + safe-area, z-200) and lifts
+   the Ask-AI FAB to bottom:78px. The engine parks its copy at ~56–110px,
+   which lands on top of both. Raise the copy above the whole stack and drop
+   the scroll hint — there is no vertical room left for it. */
+@media (max-width: 768px) {
+  .sw-copy { bottom: calc(146px + env(safe-area-inset-bottom)) !important; }
+  .sw-hint { display: none !important; }
+  .sw-topbar, .sw-scrollbar { top: 96px !important; }
+}
+
+/* ---- Outro, below the flight ---- */
+.xp-outro {
+  padding: clamp(64px, 12vh, 140px) 24px calc(clamp(64px, 12vh, 140px) + env(safe-area-inset-bottom));
+  text-align: center;
+  background: #14100E;
+  color: #F7EFE6;
+  position: relative;
+  z-index: 70; /* above every engine layer (max z-60) once the flight ends */
+}
+.xp-outro h2 {
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+.xp-outro p {
+  color: rgba(247, 239, 230, 0.66);
+  font-size: clamp(1rem, 2.2vw, 1.15rem);
+  margin: 0 auto 28px;
+  max-width: 46ch;
+}
+.xp-outro-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.xp-outro .btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(247, 239, 230, 0.28);
+  color: #F7EFE6;
+}
+.xp-outro .btn-ghost:hover { border-color: var(--sw-accent); color: var(--sw-accent); }
+
+/* The footer must also clear the fixed engine layers. */
+.app-footer { position: relative; z-index: 70; }
+
+/* ---- Engine padding recovery ------------------------------------------
+   The site's * { padding: 0 } reset (unlayered) beats the engine's padding
+   rules (which live inside @layer sw). Restore the engine's intended spacing
+   without a layer so it ranks higher than the reset. This is necessary because
+   the engine's CSS assumes a minimal or zero reset, not a blanket zero-out. */
+.sw-topbar { padding: clamp(14px, 2.4vw, 26px) clamp(18px, 5vw, 64px) !important; }
+.sw-nav { padding: 5px !important; }
+.sw-nav__item { padding: 7px 14px !important; }
+.sw-topcta { padding: 10px 20px !important; }
+.sw-copy__eyebrow { margin-top: 18px !important; }
+.sw-copy__title { margin: 12px 0 0 !important; }
+.sw-copy__body { margin-top: 18px !important; }
+.sw-copy__tags { margin: 24px 0 0 !important; padding: 7px 14px !important; }
+.sw-copy__cta { margin-top: 28px !important; }
+.sw-btn { padding: 13px 24px !important; }
+.sw-route { padding: 18px 10px !important; }
+.sw-route__label { padding: 5px 11px !important; }
