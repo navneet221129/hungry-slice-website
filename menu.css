@@ -1,0 +1,98 @@
+/* ============================================================
+   Menu page: compact header + sticky filter toolbar.
+   The old layout spent ~600px on a heading before any food and
+   clipped every category label; a 98-item menu needs filters
+   that stay reachable while you scroll.
+   ============================================================ */
+.menu-head {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 44px) 20px clamp(14px, 2vw, 20px);
+}
+.menu-head__title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2rem, 6vw, 3.2rem); line-height: 1.05;
+  letter-spacing: -0.03em; margin: 0;
+}
+.menu-head__sub {
+  margin: 12px 0 0; max-width: 60ch;
+  color: var(--text-muted); font-size: clamp(.95rem, 2vw, 1.05rem); line-height: 1.5;
+}
+
+.menu-toolbar {
+  position: sticky;
+  top: var(--hs-toolbar-top, 116px);
+  z-index: 90;
+  background: var(--bg-lux);
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 24px;
+}
+.menu-toolbar__inner {
+  max-width: 1240px; margin: 0 auto;
+  padding: 12px 20px 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+/* Search */
+.menu-toolbar .search-wrapper {
+  position: relative; display: flex; align-items: center;
+  background: var(--bg-card); border: 1px solid var(--border-light);
+  border-radius: 999px; padding: 0 14px;
+}
+.menu-toolbar .search-wrapper .search-icon { flex: none; width: 18px; height: 18px; color: var(--text-muted); }
+.menu-toolbar #menu-search-input {
+  flex: 1; border: 0; outline: none; background: none;
+  font: inherit; color: var(--text-color);
+  padding: 12px 10px;
+}
+.menu-toolbar #menu-search-input::placeholder { color: var(--text-muted); }
+
+/* Diet pills */
+.menu-toolbar .veg-mode-bar { display: flex; gap: 8px; }
+
+/* Category rail — one scrolling row, never a 12-tile wall */
+.menu-toolbar .category-filters-container {
+  display: flex; flex-wrap: nowrap; gap: 8px;
+  overflow-x: auto; overflow-y: hidden;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  scroll-snap-type: x proximity;
+}
+.menu-toolbar .category-filters-container::-webkit-scrollbar { display: none; }
+.menu-toolbar .filter-pill {
+  flex: 0 0 auto;               /* stop the labels being squeezed + clipped */
+  width: auto; height: auto;
+  display: inline-flex; flex-direction: row; align-items: center; gap: 7px;
+  white-space: nowrap;          /* "Bollywood Range" was rendering as "ollywood Range" */
+  overflow: visible; text-overflow: clip;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  font-size: .88rem; font-weight: 600;
+  color: var(--text-color);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.menu-toolbar .filter-pill .pill-icon {
+  font-size: 1rem; line-height: 1;
+  width: auto; height: auto; margin: 0; padding: 0;
+  background: none; border-radius: 0;   /* base style drew a circular tile */
+  display: inline-flex; align-items: center;
+}
+.menu-toolbar .filter-pill:hover { border-color: var(--accent); }
+.menu-toolbar .filter-pill.active {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+
+@media (max-width: 768px) {
+  .menu-toolbar { top: var(--hs-toolbar-top-mobile, 96px); }
+  .menu-toolbar__inner { padding: 10px 14px 8px; gap: 8px; }
+  .menu-toolbar .filter-pill { padding: 8px 14px; font-size: .84rem; }
+  .menu-head { padding-bottom: 10px; }
+}
+
+/* The reco rail carried a 160px top margin to clear the old stacked
+   controls block; the sticky toolbar replaced it. */
+.menu-toolbar + .menu-reco { margin-top: 20px !important; }

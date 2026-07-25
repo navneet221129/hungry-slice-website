@@ -20,20 +20,20 @@
         clipMobile: 'assets/vid/dough-m.mp4',
         accent: '#D85326',
         eyebrow: 'Where it starts',
-        title: 'It begins the night before.',
-        body: 'Cold-fermented for 48 hours, then hand-stretched to order — never a pressed disc from a bag.',
-        tags: ['48-hour ferment', 'Hand-stretched']
+        title: 'It starts with fresh dough.',
+        body: 'Every base is prepped in our Hamilton kitchen and topped the moment your order lands.',
+        tags: ['Fresh dough', 'Hamilton kitchen']
       },
       {
-        id: 'fire', label: 'The Fire',
+        id: 'fire', label: 'The Bake',
         still: 'assets/sw-fire.webp',
         clip: 'assets/vid/fire.mp4',
         clipMobile: 'assets/vid/fire-m.mp4',
         accent: '#D85326',
         eyebrow: 'The part you can taste',
-        title: 'Ninety seconds in the fire.',
-        body: 'A stone deck that hot blisters the crust and locks the char in before the cheese ever turns to rubber.',
-        tags: ['Wood-fired', 'Stone deck'],
+        title: 'Straight into the oven.',
+        body: 'Baked to order until the cheese is bubbling and the base is crisp — never sitting under a heat lamp.',
+        tags: ['Baked to order', 'Crisp base'],
         scroll: 1.6, linger: 0.35
       },
       {
@@ -55,4 +55,19 @@
     ],
     connectors: []
   });
+})();
+
+/* The engine's layers are all position:fixed and it never unmounts them, so
+   after .sw-track scrolls past they keep painting over the rest of the page.
+   Flag the root once the track is out of view; experience.css hides them. */
+(function () {
+  function arm() {
+    var root = document.querySelector('.sw-root');
+    var track = root && root.querySelector('.sw-track');
+    if (!track) { return setTimeout(arm, 200); }
+    new IntersectionObserver(function (entries) {
+      root.classList.toggle('sw-done', !entries[0].isIntersecting);
+    }, { threshold: 0 }).observe(track);
+  }
+  arm();
 })();

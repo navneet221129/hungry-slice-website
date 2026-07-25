@@ -227,10 +227,11 @@ h1, h2, h3, h4 {
 .logo {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.4rem;
+  font-size: clamp(1.05rem, 3.4vw, 1.4rem);
   text-decoration: none;
   color: var(--primary);
   letter-spacing: -0.5px;
+  white-space: nowrap;
 }
 
 .logo-accent {
@@ -3087,6 +3088,14 @@ spline-viewer.hero-pizza-img {
   }
 }
 
+/* The desktop nav needs ~815px to lay out, but the nav swaps to the hamburger
+   only at 768px — so 769-992px overflowed the header sideways. Swap earlier. */
+@media (max-width: 992px) {
+  .nav-links { display: none; }
+  .hamburger-btn { display: flex; }
+  .mobile-nav-overlay { display: flex; }
+}
+
 
 /* ============================================================
    ENHANCEMENT 2: PROMO ANNOUNCEMENT BAR
@@ -3644,9 +3653,13 @@ img.hero-pizza-img{
   /* Footer — clear mcart-cta + bottom nav */
   footer, .site-footer { padding-bottom: 140px !important; }
 
-  /* Page body — fix right-side white gap */
-  body { overflow-x: hidden; }
-  .page-wrapper, main, .site-wrapper { max-width: 100vw; overflow-x: hidden; }
+  /* Page body — fix right-side white gap.
+     `overflow-x: hidden` forces the other axis to `auto`, which turned
+     <body> and <main> into nested scroll containers: that broke
+     position:sticky and cost iOS its momentum/rubber-band scrolling.
+     `clip` does the same clipping without creating a scroll box. */
+  body { overflow-x: clip; }
+  .page-wrapper, main, .site-wrapper { max-width: 100vw; overflow-x: clip; }
 }
 
 /* Footer class fix */
@@ -5244,3 +5257,64 @@ body.light-mode .menu-cat-count { color: #666 !important; }
 .layer-cheese.active-double{ opacity:1 !important; transform:scale(1.0); }
 .layer-cheese.active-vegan{ opacity:.82 !important; transform:scale(.96); filter:sepia(.2) saturate(1.15) brightness(1.03); }
 /* =============================================================== */
+
+
+/* ===================================================================
+   Pizza builder realism pass (2026-07-25)
+
+   The build looked fake for four reasons, all fixed here:
+     1. the cheese was `cheese-spread.png`, an AI swirl that reads as
+        piped mashed potato rather than melted mozzarella, and it was
+        opaque enough to hide the (good) crust photo underneath;
+     2. a white linear-gradient "sheen" swept across on a loop, which
+        is how plastic behaves, not cheese;
+     3. `.bp-char` stamped seven identical radial dots as "char";
+     4. the whole pie bobbed AND rotated forever, so it read as a
+        floating sticker instead of food sitting on a board.
+   =================================================================== */
+
+/* 1. Cheese = the real baked-pizza photograph, masked to the cheese
+      disc so the actual crust from .bp-base still reads at the edge. */
+.layer-cheese {
+  background: url('assets/pizza-base-baked.png') center/cover no-repeat !important;
+  mix-blend-mode: normal !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0 58%, rgba(0,0,0,.75) 66%, transparent 73%);
+          mask-image: radial-gradient(circle at 50% 50%, #000 0 58%, rgba(0,0,0,.75) 66%, transparent 73%);
+  transform: scale(1) !important;   /* was scaled per level, which slid the cheese off the base */
+}
+/* Coverage now reads through opacity alone: less cheese = more sauce shows. */
+.layer-cheese.active-light  { opacity: .72 !important; }
+.layer-cheese.active-normal { opacity: .92 !important; }
+.layer-cheese.active-double { opacity: 1 !important; filter: saturate(1.06) brightness(1.02); }
+.layer-cheese.active-vegan  { opacity: .88 !important; filter: sepia(.14) saturate(1.1) brightness(1.04); }
+
+/* 2 + 3. Drop the plastic sweep and the stamped dots — the photograph
+          already carries real browning and real highlights. */
+.bp-cheese-sheen { display: none !important; }
+.bp-char { display: none !important; }
+
+/* A restrained bake-edge shading, replacing the seven dots. */
+.bp-gloss {
+  z-index: 11 !important;
+  background: radial-gradient(circle at 50% 46%,
+    rgba(255,255,255,.06) 0%,
+    rgba(255,255,255,0) 42%,
+    rgba(90,45,14,.16) 74%,
+    rgba(50,24,6,.24) 100%) !important;
+  mix-blend-mode: multiply;
+  animation: none !important;
+}
+
+/* 4. Food does not levitate. Keep a whisper of life, lose the spin. */
+@keyframes bpFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+.pizza-builder-view { animation-duration: 9s !important; }
+
+
+/* The builder has its own sticky "Add Custom Pizza to Cart" bar, so the
+   global "N items in bag" bar underneath it is a second competing CTA
+   stacked in the same corner. The builder page already has its own. */
+body.on-builder .mcart-cta { display: none !important; }
+body.on-builder.mcart-visible { padding-bottom: 62px; }

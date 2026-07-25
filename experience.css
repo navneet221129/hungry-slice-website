@@ -17,7 +17,12 @@
   position: relative;
 }
 
-body { background: #14100E; }
+/* The engine injects `html,body{background:var(--sw-bg)}` inside @layer sw,
+   which painted the whole homepage #14100E while the site sat in light theme
+   -- near-black body text on a near-black canvas. Hand the page canvas back
+   to the site's own theme token and let the flight own only its own box. */
+html, body { background: var(--bg-lux) !important; }
+.sw-root { background: #14100E; }
 
 /* ---- Site chrome vs engine chrome -------------------------------------
    The engine's own fixed topbar (z-50) sits under the site header (z-100,
@@ -88,35 +93,62 @@ body { background: #14100E; }
 .sw-route { padding: 18px 10px !important; }
 .sw-route__label { padding: 5px 11px !important; }
 
+/* ---- CTA buttons ------------------------------------------------------
+   The engine styles .sw-btn inside @layer sw; the site's unlayered anchor
+   colour rule outranks it, which left the primary button white-on-cream.
+   Restate both buttons unlayered so the cascade lands on brand colours. */
+.sw-btn--primary,
+.sw-btn--primary:link,
+.sw-btn--primary:visited {
+  background: var(--sw-accent) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--sw-accent) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 22px rgba(216, 83, 38, 0.42) !important;
+}
+.sw-btn--primary:hover { filter: brightness(1.08); }
 
-
-/* ---- CTA button styling (override engine defaults) ---- */
-.sw-copy__cta button,
-.sw-root button:not(.sw-nav__item),
-.sw-root [role="button"] {
-  background: #D85326 !important;
-  color: #fff !important;
+.sw-btn--ghost,
+.sw-btn--ghost:link,
+.sw-btn--ghost:visited {
+  background: rgba(20, 16, 14, 0.55) !important;
+  color: var(--sw-ink) !important;
+  border: 1px solid rgba(247, 239, 230, 0.55) !important;
   font-weight: 700 !important;
-  border: none !important;
-  border-radius: 28px !important;
-  padding: 14px 32px !important;
-  font-size: 1.05rem !important;
-  cursor: pointer !important;
-  box-shadow: 0 4px 12px rgba(216, 83, 38, 0.4) !important;
+  backdrop-filter: blur(6px);
+}
+.sw-btn--ghost:hover { border-color: var(--sw-accent) !important; color: var(--sw-accent) !important; }
+
+
+/* ---- Release the flight ------------------------------------------------
+   Every engine layer is position:fixed, so once .sw-track has scrolled past
+   they keep painting over whatever follows. experience-init.js flags the
+   root with .sw-done when the track leaves the viewport; drop the layers
+   then, and restore them when the user scrolls back up. */
+.sw-root > .sw-sky,
+.sw-root > .sw-stage,
+.sw-root > .sw-copylayer,
+.sw-root > .sw-route,
+.sw-root > .sw-topbar,
+.sw-root > .sw-scrollbar,
+.sw-root > .sw-hint {
+  transition: opacity 0.25s ease;
+}
+.sw-root.sw-done > .sw-sky,
+.sw-root.sw-done > .sw-stage,
+.sw-root.sw-done > .sw-copylayer,
+.sw-root.sw-done > .sw-route,
+.sw-root.sw-done > .sw-topbar,
+.sw-root.sw-done > .sw-scrollbar,
+.sw-root.sw-done > .sw-hint {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
-.sw-copy__cta button:first-child,
-.sw-copy__cta :first-child > button {
-  background: #D85326 !important;
-}
-
-.sw-copy__cta button:last-child,
-.sw-copy__cta :last-child > button {
-  background: transparent !important;
-  border: 2px solid rgba(247, 239, 230, 0.5) !important;
-  color: #F7EFE6 !important;
-}
-
-.sw-root button:hover {
-  box-shadow: 0 6px 16px rgba(216, 83, 38, 0.6) !important;
-}
+/* Anything after the flight must also outrank the engine's z-60 ceiling. */
+.hs-trust,
+.hs-fav,
+.hs-deals,
+.hs-close,
+.reviews-section { position: relative; z-index: 70; }

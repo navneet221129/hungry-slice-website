@@ -90,7 +90,13 @@
       function collectMagnets() {
         magnets = Array.prototype.slice.call(
           document.querySelectorAll('.btn-primary, .order-now-btn, .review-cta-btn')
-        );
+        ).filter(function (b) {
+          // Never pull a CTA that lives in a sticky/fixed bar: those are laid
+          // out tight against siblings, so a magnet offset drags the button
+          // straight over the total beside it (and a full-width bar sits
+          // inside its own pull radius, so it never springs back).
+          return !b.closest('.builder-sticky-cta, .mcart-cta, .zom-bottom-nav, .main-header, .cart-drawer, .sticky-order-bar-mobile, .menu-toolbar');
+        });
       }
       collectMagnets();
       if ('MutationObserver' in window) {

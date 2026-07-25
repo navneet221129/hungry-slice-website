@@ -151,12 +151,12 @@
     var sec = document.createElement('section');
     sec.className = 'craft-band';
     sec.innerHTML =
-      '<div class="craft-media"><img src="' + esc(img) + '" alt="Wood-fired pizza" loading="lazy" decoding="async">' +
-        '<span class="craft-chip c1">48-hour fermented dough</span>' +
-        '<span class="craft-chip c2">Wood-fired at 450&deg;C</span></div>' +
+      '<div class="craft-media"><img src="' + esc(img) + '" alt="Fresh pizza" loading="lazy" decoding="async">' +
+        '<span class="craft-chip c1">Fresh dough</span>' +
+        '<span class="craft-chip c2">Baked to order</span></div>' +
       '<div class="craft-copy"><div class="home-eyebrow">The Craft</div>' +
-        '<h2 class="home-title">Slow dough.<br>Fast fire.</h2>' +
-        '<p>Every base is cold-fermented for 48 hours, stretched by hand and blistered in a 450&deg;C wood-fired oven for ninety seconds. No shortcuts, no freezer &mdash; just fire and fresh ingredients.</p>' +
+        '<h2 class="home-title">Made fresh.<br>Delivered fast.</h2>' +
+        '<p>Every order is made from scratch in our Hamilton kitchen and goes straight into the oven &mdash; nothing sits under a heat lamp waiting for a rider. Fresh ingredients, cooked when you order.</p>' +
         '<div class="craft-cta-row"><a class="btn btn-primary" href="menu.html">Order now</a><a class="craft-story-link" href="story.html">Our story &rarr;</a></div></div>';
     return sec;
   }
@@ -206,7 +206,7 @@
     sec.innerHTML = '<div class="home-head"><div class="home-eyebrow">How it works</div><h2 class="home-title">Three steps to hot pizza</h2></div>' +
       '<div class="steps-grid">' +
         '<div class="step-card"><span class="step-n">01</span><i data-lucide="utensils-crossed"></i><h3>Pick your slice</h3><p>Browse the menu or build your own from the base up.</p></div>' +
-        '<div class="step-card"><span class="step-n">02</span><i data-lucide="flame"></i><h3>We fire it</h3><p>Hand-stretched and wood-fired at 450&deg;C in minutes.</p></div>' +
+        '<div class="step-card"><span class="step-n">02</span><i data-lucide="flame"></i><h3>We cook it</h3><p>Topped and baked to order in minutes, never pre-made.</p></div>' +
         '<div class="step-card"><span class="step-n">03</span><i data-lucide="bike"></i><h3>At your door</h3><p>Sealed hot and delivered across Hamilton in about 28 minutes.</p></div>' +
       '</div>';
     return sec;
@@ -310,4 +310,142 @@
       host.classList.add('shine-run');
     }, 6000);
   }
+})();
+
+
+/* ============================================================
+   Homepage favourites rail: live products, one-tap add to cart.
+   Reuses app.js globals (databaseProducts, addProductToCart, hsEsc).
+   ============================================================ */
+(function () {
+  var GRID = 'hs-fav-grid';
+  var WANT = 8;
+
+  var FALLBACK_IMG = 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=420&q=80&fit=crop';
+
+  function esc(v) {
+    return typeof hsEsc === 'function' ? hsEsc(String(v == null ? '' : v))
+      : String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+  }
+
+  // Highest-rated first when ratings exist, then Hungry Special, then price.
+  function pick(all) {
+    var live = all.filter(function (p) { return p.is_available !== false; });
+    var ratings = window.PRODUCT_RATINGS || {};
+    return live.slice().sort(function (a, b) {
+      var ra = (ratings[a.id] && ratings[a.id].avg) || 0;
+      var rb = (ratings[b.id] && ratings[b.id].avg) || 0;
+      if (rb !== ra) return rb - ra;
+      var fa = a.category === 'Hungry Special' ? 1 : 0;
+      var fb = b.category === 'Hungry Special' ? 1 : 0;
+      if (fb !== fa) return fb - fa;
+      return (Number(b.price) || 0) - (Number(a.price) || 0);
+    }).slice(0, WANT);
+  }
+
+  function card(p) {
+    var img = p.image_url || (window.PRODUCT_IMAGES && window.PRODUCT_IMAGES[p.id]) || FALLBACK_IMG;
+    var price = Number(p.price) || 0;
+    var top = p.category === 'Hungry Special';
+    return '' +
+      '<article class="hs-card">' +
+        '<div class="hs-card__media">' +
+          '<span class="hs-card__veg ' + (p.is_veg ? 'veg' : 'nonveg') + '" title="' + (p.is_veg ? 'Veg' : 'Non-veg') + '"></span>' +
+          (top ? '<span class="hs-card__flag">TOP PICK</span>' : '') +
+          '<img src="' + esc(img) + '" alt="' + esc(p.name) + '" loading="lazy" decoding="async">' +
+        '</div>' +
+        '<div class="hs-card__body">' +
+          '<h3 class="hs-card__name">' + esc(p.name) + '</h3>' +
+          '<p class="hs-card__desc">' + esc(p.description || '') + '</p>' +
+          '<div class="hs-card__foot">' +
+            '<span class="hs-card__price">$' + price.toFixed(2) + '</span>' +
+            '<button class="hs-card__add" type="button" data-id="' + esc(p.id) + '" data-name="' + esc(p.name) + '" data-price="' + price + '" data-img="' + esc(img) + '">+ Add</button>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function render(list) {
+    var grid = document.getElementById(GRID);
+    if (!grid) return;
+    grid.innerHTML = list.map(card).join('');
+    grid.querySelectorAll('.hs-card__add').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (typeof addProductToCart !== 'function') return;
+        addProductToCart(btn.dataset.id, btn.dataset.name, Number(btn.dataset.price), btn.dataset.img);
+        btn.classList.add('added');
+        btn.textContent = 'Added ✓';
+        setTimeout(function () { btn.classList.remove('added'); btn.textContent = '+ Add'; }, 1400);
+      });
+    });
+  }
+
+  // databaseProducts is populated asynchronously by app.js; wait for it.
+  function start(tries) {
+    if (!document.getElementById(GRID)) return;
+    var all = (typeof databaseProducts !== 'undefined' && databaseProducts) || [];
+    if (all.length) { render(pick(all)); return; }
+    if (tries > 60) {
+      var grid = document.getElementById(GRID);
+      if (grid) grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-muted)">Menu is loading &mdash; <a href="menu.html">browse the full menu</a>.</p>';
+      return;
+    }
+    setTimeout(function () { start(tries + 1); }, 250);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { start(0); });
+  } else {
+    start(0);
+  }
+})();
+
+/* Copy a promo code from the deals band. */
+function hsCopyCode(el, code) {
+  var done = function () {
+    var tag = el.querySelector('.hs-deal__code em');
+    if (!tag) return;
+    var prev = tag.textContent;
+    tag.textContent = 'copied!';
+    setTimeout(function () { tag.textContent = prev; }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(done, done);
+  } else {
+    done();
+  }
+}
+
+
+/* Fill the hero backdrop with real product photography from the menu. */
+(function () {
+  function fill(tries) {
+    var host = document.getElementById('hs-hero-media');
+    if (!host) return;
+    var all = (typeof databaseProducts !== 'undefined' && databaseProducts) || [];
+    var pics = all.filter(function (p) { return p.image_url && p.is_available !== false; });
+    if (!pics.length) { if (tries < 60) setTimeout(function () { fill(tries + 1); }, 250); return; }
+    // Lead with the signature range, then one shot per other category so
+    // the strip reads varied rather than three near-identical pizzas.
+    var order = ['Hungry Special', 'Gourmet Burgers', 'Loaded Fries'];
+    pics.sort(function (a, b) {
+      var ia = order.indexOf(a.category), ib = order.indexOf(b.category);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    var seen = {}, picked = [];
+    pics.forEach(function (p) {
+      var c = p.category || 'x';
+      if (seen[c] || picked.length >= 3) return;
+      seen[c] = 1; picked.push(p);
+    });
+    while (picked.length < 3 && pics.length) picked.push(pics[picked.length % pics.length]);
+    host.innerHTML = picked.map(function (p) {
+      return '<img src="' + String(p.image_url).replace(/"/g, '&quot;') + '" alt="" decoding="async">';
+    }).join('');
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { fill(0); });
+  } else { fill(0); }
 })();

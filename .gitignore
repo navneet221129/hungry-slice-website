@@ -2,3 +2,7 @@
 *.log
 node_modules/
 .env
+
+# local tooling + scratch render, not part of the site
+.claude/
+leg2_table_raw.mp4

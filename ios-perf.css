@@ -1,0 +1,136 @@
+/* ============================================================
+   ios-perf.css — touch-device performance.
+
+   iOS Safari composites every `backdrop-filter` element on its own
+   GPU layer. This site has ~40 of them plus ~30 always-running
+   infinite animations, which together make scrolling stutter badly
+   on iPhone. Everything below is scoped to coarse-pointer devices,
+   so the desktop glass look is untouched.
+   ============================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+
+  /* ---- 1. Drop live blur, keep the frosted look ----------------
+     Each rule swaps blur for a more opaque background so text stays
+     legible over whatever scrolls underneath. */
+  .glass-card,
+  .main-header,
+  .cart-drawer,
+  .ai-chat-drawer,
+  .zom-bottom-nav,
+  .mobile-nav-overlay,
+  .auth-modal-overlay,
+  .auth-modal-card,
+  .review-modal-overlay,
+  .review-modal-card,
+  .lottie-modal-overlay,
+  .product-modal-overlay,
+  .product-modal-card,
+  .order-method-bar,
+  .promo-bar,
+  .mcart-cta,
+  .ai-fab,
+  .hs-hero__ghost,
+  .filter-pill,
+  .sub-heading,
+  .cart-drawer-overlay,
+  .sticky-order-bar-mobile,
+  .staff-modal-overlay,
+  .main-header.hdr-shrink,
+  .plc,
+  .bento-tile,
+  .craft-band {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Opaque stand-ins for the surfaces that sat over moving content. */
+  .main-header      { background: var(--bg-lux); }
+  .order-method-bar { background: var(--bg-lux); }
+  .zom-bottom-nav   { background: var(--bg-lux); }
+  .cart-drawer,
+  .ai-chat-drawer,
+  .auth-modal-card,
+  .review-modal-card,
+  .product-modal-card { background: var(--bg-section, var(--bg-lux)); }
+  .auth-modal-overlay,
+  .review-modal-overlay,
+  .product-modal-overlay,
+  .lottie-modal-overlay,
+  .mobile-nav-overlay { background: rgba(0, 0, 0, 0.72); }
+
+  /* ---- 2. Stop decorative loops -------------------------------
+     Ambient blobs, orbs, glows and steam repaint every frame while
+     the user scrolls. None of them carry meaning. */
+  .aurora-blob,
+  .fx-orb,
+  .hero-section::after,
+  .hub-icon-pulse,
+  .ai-fab,
+  .bp-glow,
+  .bp-steam,
+  .bp-sheen,
+  .pr-steam,
+  .pr-oven-glow,
+  .plc-video-badge,
+  .fx-grain,
+  .ai-chat-fab-pulse,
+  .hero-title .text-gradient {
+    animation: none !important;
+  }
+
+  /* A full-screen grain layer repainting 4x a second is pure cost. */
+  .fx-grain { display: none !important; }
+
+  /* The shrink-on-scroll header transitions its blur, so the compositor
+     re-runs the whole pass on every scroll frame. Kill the transition too. */
+  .main-header,
+  .main-header.hdr-shrink { transition: height .25s ease, background-color .25s ease !important; }
+
+  /* Hide the purely ambient layers outright — they cost fill rate. */
+  .aurora-blob,
+  .fx-orb { display: none !important; }
+
+  /* ---- 3. Trim compositor hints -------------------------------
+     `will-change` on always-on elements keeps layers alive forever
+     and eats the limited GPU memory an iPhone has. */
+  .aurora-blob,
+  .fx-orb,
+  .hero-visual-container,
+  .bento-tile,
+  .plc { will-change: auto !important; }
+
+  /* ---- 4. Smoother touch --------------------------------------- */
+  a, button, .plc, .hs-card, .filter-pill, .bento-tile {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .testimonials-slider,
+  .product-showcase-track,
+  .category-filters-container,
+  .reco-rail {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+}
+
+/* ---- 5. Viewport units --------------------------------------
+   iOS resizes the visual viewport as the URL bar hides, so 100vh
+   jumps mid-scroll. dvh tracks it without the reflow. */
+@supports (height: 100dvh) {
+  #confetti-canvas,
+  .lottie-modal-overlay { height: 100dvh; }
+  .ai-chat-drawer { max-height: min(620px, calc(100dvh - 40px)); }
+  @media (max-width: 768px) {
+    .ai-chat-drawer { max-height: calc(100dvh - 96px); }
+  }
+}
+
+/* ---- 6. Respect the OS motion setting ------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

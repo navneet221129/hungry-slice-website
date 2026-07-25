@@ -860,7 +860,7 @@ function renderDefaultReviews() {
     </div>
     <div class="review-card glass-card">
       <div class="review-rating">⭐⭐⭐⭐⭐</div>
-      <p>"Truffle White pizza is absolute perfection. Crust has those beautiful woodfire charcoal bubbles. Incredible food tech platform!"</p>
+      <p>"Truffle White pizza is absolute perfection. The crust is unreal. Incredible food tech platform!"</p>
       <div class="reviewer-meta">
         <div class="reviewer-avatar">L</div>
         <div>
@@ -1652,9 +1652,9 @@ const TOPPING_TEX = {
   pepperoni: { tex: 'assets/pepperoni.png',   shape: 'ts-round', size: [26, 36], zoom: [190, 300] },
   basil:     { tex: 'assets/basil.png',       shape: 'ts-leaf',  size: [24, 34], zoom: [170, 260] },
   jalapeno:  { tex: 'assets/jalapeno.png',    shape: 'ts-ring',  size: [22, 30], zoom: [170, 260] },
-  mushrooms: { tex: 'assets/cheese-slice.png',shape: 'ts-mush',  size: [26, 36], zoom: [180, 280], filter: 'sepia(.6) saturate(.7) brightness(.9)' },
+  mushrooms: { tex: 'assets/mushroom.png', shape: 'ts-mush',  size: [26, 36], zoom: [200, 300], filter: 'saturate(.95) brightness(.95)' },
   chicken:   { tex: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=300&q=80', shape: 'ts-chunk', size: [24, 34], zoom: [240, 360], filter: 'saturate(1.15) brightness(.92) contrast(1.05)' },
-  onions:    { tex: 'https://images.unsplash.com/photo-1598511796432-32d9c0ed32c5?w=300&q=80', shape: 'ts-arc',   size: [26, 38], zoom: [230, 340], filter: 'saturate(1.2) brightness(.95)' }
+  onions:    { tex: 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?w=300&q=80', shape: 'ts-arc',   size: [26, 38], zoom: [230, 340], filter: 'saturate(1.2) brightness(.95)' }
 };
 
 // Sprinkle photoreal toppings across the pizza (randomised polar scatter, staggered 3D drop-in).
@@ -1856,8 +1856,8 @@ let realOrderActive = false; // true once a real DB order is being tracked (disa
 const trackerSteps = ['received', 'prep', 'oven', 'delivery', 'delivered'];
 const trackerStepDetails = {
   'received': { title: 'Order Confirmed', desc: 'We\'ve received your order and sent it straight to the kitchen.', progress: '10%', scooterX: 0 },
-  'prep': { title: 'Being Prepared', desc: 'Double-fermented dough stretched by hand, your toppings arranged fresh.', progress: '35%', scooterX: 30 },
-  'oven': { title: 'In the Oven', desc: 'Baking at 450°C in the wood-fired oven until the crust blisters.', progress: '60%', scooterX: 65 },
+  'prep': { title: 'Being Prepared', desc: 'Your base topped fresh, exactly as you ordered it.', progress: '35%', scooterX: 30 },
+  'oven': { title: 'In the Oven', desc: 'In the oven until the cheese is bubbling and the base is crisp.', progress: '60%', scooterX: 65 },
   'delivery': { title: 'Out for Delivery', desc: 'On its way across Hamilton, sealed hot in a thermal bag.', progress: '85%', scooterX: 105 },
   'delivered': { title: 'Delivered', desc: 'Enjoy — and thank you for ordering with The Hungry Slice.', progress: '100%', scooterX: 135 }
 };
@@ -2184,6 +2184,8 @@ function updateCartUI() {
     const mt = document.getElementById('mcart-total');
     if (mc) mc.textContent = totalItems;
     if (mt) mt.textContent = `$${total.toFixed(2)}`;
+    const ml = mcart.querySelector('.mcart-lbl');
+    if (ml) ml.textContent = totalItems === 1 ? 'item in bag' : 'items in bag';
     const _drawer = document.getElementById('cart-drawer');
     const _drawerOpen = _drawer && _drawer.classList.contains('active');
     const _showMcart = (totalItems > 0 && !_drawerOpen);
@@ -3643,7 +3645,7 @@ function _initAIChat(){
   }
 
   var STATUS_RE = /\b(track|status|where)\b[^]*\b(order|pizza|food)\b|\bmy order\b/i;
-  var STATUS_LABELS = { received: 'Order received \u2014 the kitchen has it', preparing: 'Being prepared \u2014 dough stretched, toppings on', oven: 'In the wood-fired oven right now', delivery: 'Out for delivery \u2014 on its way to you', delivered: 'Delivered \u2014 enjoy!' };
+  var STATUS_LABELS = { received: 'Order received \u2014 the kitchen has it', preparing: 'Being prepared \u2014 base out, toppings on', oven: 'In the oven right now', delivery: 'Out for delivery \u2014 on its way to you', delivered: 'Delivered \u2014 enjoy!' };
   async function tryOrderStatus(text){
     if (!STATUS_RE.test(text)) return false;
     var oid = null;
