@@ -352,17 +352,10 @@ function initPaynutsGateway() {
   let script = document.getElementById(scriptId);
   
   const initPaymentLibrary = () => {
-    let paynutsTimeout = setTimeout(() => {
-      console.warn("Paynuts initialization timeout. Falling back to mock payment.");
-      paynutsInstance = null;
-      if (paynutsFields) paynutsFields.style.display = 'none';
-      if (mockFields) mockFields.style.display = 'block';
-    }, 3000);
     try {
       if (typeof PaymentJs === 'undefined') {
         console.error("PaymentJs not defined after loading script.");
         return;
-        clearTimeout(paynutsTimeout);
       }
       
       // Instantiate PaymentJs client
