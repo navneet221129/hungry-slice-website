@@ -409,6 +409,9 @@ function initPaynutsGateway() {
       fallbackScript.onload = initPaymentLibrary;
       fallbackScript.onerror = () => {
         console.error("Failed to load both remote and local Paynuts scripts.");
+        paynutsInstance = null;
+        if (paynutsFields) paynutsFields.style.display = 'none';
+        if (mockFields) mockFields.style.display = 'block';
         if (paynutsStatus) {
           paynutsStatus.innerHTML = `
             <span class="status-dot offline"></span>
