@@ -3680,7 +3680,7 @@ img.hero-pizza-img{
 }
 
 /* Overlay clips drawer — prevents 1px overflow edge */
-.cart-drawer-overlay { overflow: visible; }
+.cart-drawer-overlay { overflow: hidden; }
 
 
 /* ===================== Staff Login Modal ===================== */

@@ -337,10 +337,6 @@ function initPaynutsGateway() {
     return;
   }
   
-  /* Default to mock payment fields — only show Paynuts if init succeeds */
-  if (paynutsFields) paynutsFields.style.display = 'none';
-  if (mockFields) mockFields.style.display = 'block';
-  
   if (paynutsStatus) {
     paynutsStatus.innerHTML = `
       <span class="status-dot online"></span>
@@ -356,19 +352,10 @@ function initPaynutsGateway() {
   let script = document.getElementById(scriptId);
   
   const initPaymentLibrary = () => {
-    let paynutsTimeout = setTimeout(() => {
-      console.warn("Paynuts initialization timeout. Falling back to mock payment.");
-      paynutsInstance = null;
-      if (paynutsFields) paynutsFields.style.display = 'none';
-      if (mockFields) mockFields.style.display = 'block';
-    }, 3000);
-        if (paynutsFields) paynutsFields.style.display = 'block';
-        if (mockFields) mockFields.style.display = 'none';
     try {
       if (typeof PaymentJs === 'undefined') {
         console.error("PaymentJs not defined after loading script.");
         return;
-        clearTimeout(paynutsTimeout);
       }
       
       // Instantiate PaymentJs client
@@ -422,9 +409,6 @@ function initPaynutsGateway() {
       fallbackScript.onload = initPaymentLibrary;
       fallbackScript.onerror = () => {
         console.error("Failed to load both remote and local Paynuts scripts.");
-        paynutsInstance = null;
-        if (paynutsFields) paynutsFields.style.display = 'none';
-        if (mockFields) mockFields.style.display = 'block';
         if (paynutsStatus) {
           paynutsStatus.innerHTML = `
             <span class="status-dot offline"></span>
