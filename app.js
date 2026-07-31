@@ -2490,12 +2490,14 @@ async function notifyOrder(orderId) {
   try {
     const SUPA_URL = 'https://wjhbkkthppbadcjnozal.supabase.co';
     const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGJra3RocHBiYWRjam5vemFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MDQ4MTUsImV4cCI6MjA5NjA4MDgxNX0.VC1rur9Y8lUCo_EW2DK3PJllsgyv6nIQEeEKJjg0IKs';
-    await fetch(`${SUPA_URL}/functions/v1/notify-order`, {
+    const res = await fetch(`${SUPA_URL}/functions/v1/notify-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_ANON}`, 'apikey': SUPA_ANON },
       body: JSON.stringify({ orderId: orderId })
     });
-  } catch (e) { console.warn('notify-order failed:', e.message); }
+    const out = await res.json().catch(function(){ return {}; });
+    return { emailed: res.ok && out.email === 'sent' };
+  } catch (e) { console.warn('notify-order failed:', e.message); return { emailed: false }; }
 }
 
 // Gathers totals and pushes order to Supabase table
@@ -2605,7 +2607,15 @@ async function submitOrderToDatabase(paymentToken) {
         openSuccessModal('Order Placed!', 'Running in Offline Simulator Mode. Your order is registered locally!');
         runSimulatedOrder();
       } else {
-        openSuccessModal('Order Placed!', `Your order is in! Live Tracking ID: ${String(orderId).slice(0,8)}`);
+        showOrderConfirmation({
+          orderId: orderId,
+          items: orderItems,
+          totals: totals,
+          method: cartState.deliveryMethod,
+          address: fullAddress,
+          pickupTime: cartState.pickupTime,
+          email: email
+        });
         subscribeToOrderTracker(orderId);
         try { localStorage.setItem('hs_active_order', orderId); } catch(e){}
         try { localStorage.setItem('hs_last_items', JSON.stringify((cartState.items||[]).map(function(i){ return {id:i.id,name:i.name,price:i.price,img:i.img,qty:i.qty}; }))); } catch(e){}
@@ -2614,7 +2624,11 @@ async function submitOrderToDatabase(paymentToken) {
           const _optin = document.getElementById('ship-offers-optin');
           if (_optin && _optin.checked && email) supabaseClient.rpc('subscribe_email', { p_email: email, p_source: 'checkout' }).then(function(){}, function(){});
         } catch (e) {}
-        notifyOrder(orderId);
+        notifyOrder(orderId).then(function (r) {
+          if (typeof window.setOrderConfirmEmailState === 'function') {
+            window.setOrderConfirmEmailState(!!(r && r.emailed), email);
+          }
+        });
       }
     } catch (err) {
       console.error("Database connection failed:", err);
@@ -2639,14 +2653,6 @@ async function submitOrderToDatabase(paymentToken) {
   toggleCartDrawer(false);
   toggleStepUI(1);
   
-  // Smooth scroll to live tracker section
-  setTimeout(() => {
-    const trackerSection = document.getElementById('tracker');
-    if (trackerSection) {
-      trackerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 400);
-  
   const confirmBtn = document.getElementById('next-checkout-btn');
   if (confirmBtn) {
     confirmBtn.disabled = false;
@@ -2655,9 +2661,6 @@ async function submitOrderToDatabase(paymentToken) {
   const backBtn = document.getElementById('back-checkout-btn');
   if (backBtn) backBtn.style.display = 'none';
   lucide.createIcons();
-  
-  // Scroll to tracking section
-  scrollToSection('tracker');
 }
 
 
@@ -4407,3 +4410,89 @@ function spawnCheeseOoze(view, p) {
     view.appendChild(d);
   }
 }
+
+
+// ============================================================
+// Order confirmation screen
+//
+// The order-placed moment used to reuse the generic coupon modal: one line of
+// text with an 8-char id, a button that only closed it, and two scrollToSection
+// ('tracker') calls that were no-ops on every page except track.html. Customers
+// were left on the menu with no summary and no way through to tracking.
+//
+// Built in JS rather than as markup because the page chrome is duplicated
+// across all 7 HTML files, and app.js already loads on every one of them.
+// ============================================================
+window.showOrderConfirmation = function (o) {
+  var short = String(o.orderId || '').slice(0, 8).toUpperCase();
+  var t = o.totals || {};
+  var isPickup = o.method === 'pickup';
+
+  var lines = (o.items || []).map(function (i) {
+    return '<li><span>' + Number(i.qty) + '&times; ' + hsEsc(i.name) + '</span>' +
+           '<b>$' + (Number(i.price) * Number(i.qty)).toFixed(2) + '</b></li>';
+  }).join('');
+
+  var when = isPickup
+    ? (o.pickupTime && o.pickupTime !== 'ASAP'
+        ? 'Ready for pickup at ' + hsEsc(o.pickupTime)
+        : 'Ready for pickup in about 20 minutes')
+    : 'Arriving in about 28 minutes';
+  var where = isPickup ? 'Pickup &mdash; 5 Peachgrove Road, Hamilton East' : hsEsc(o.address || '');
+
+  var el = document.getElementById('order-confirm');
+  if (el) el.remove();
+  el = document.createElement('div');
+  el.className = 'ocf-overlay active';
+  el.id = 'order-confirm';
+  el.innerHTML =
+    '<div class="ocf-card" role="dialog" aria-modal="true" aria-labelledby="ocf-h">' +
+      '<div class="ocf-tick" aria-hidden="true"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M15 27l8 8 15-16"/></svg></div>' +
+      '<h2 id="ocf-h">Order confirmed</h2>' +
+      '<p class="ocf-when">' + when + '</p>' +
+      '<button type="button" class="ocf-num" onclick="hsCopyOrderNo(this)" title="Tap to copy">' +
+        '<span class="ocf-num-lbl">Order number</span>' +
+        '<span class="ocf-num-val">#' + short + '</span>' +
+        '<span class="ocf-num-copy">Tap to copy</span>' +
+      '</button>' +
+      '<ul class="ocf-items">' + lines + '</ul>' +
+      '<div class="ocf-tot"><span>Total paid</span><b>$' + Number(t.total || 0).toFixed(2) + '</b></div>' +
+      '<p class="ocf-where">' + where + '</p>' +
+      '<p class="ocf-mail" id="ocf-mail">Sending your receipt&hellip;</p>' +
+      '<a class="btn btn-primary ocf-go" href="track.html">Track my order</a>' +
+      '<button type="button" class="ocf-close" onclick="hsCloseOrderConfirm()">Done</button>' +
+    '</div>';
+  document.body.appendChild(el);
+  document.body.style.overflow = 'hidden';
+};
+
+window.setOrderConfirmEmailState = function (ok, email) {
+  var p = document.getElementById('ocf-mail');
+  if (!p) return;
+  if (ok && email) {
+    p.className = 'ocf-mail ok';
+    p.innerHTML = 'Receipt sent to ' + hsEsc(email);
+  } else {
+    // Never claim an email was sent when it wasn't — the order number is the
+    // customer's only reference if the receipt fails.
+    p.className = 'ocf-mail warn';
+    p.innerHTML = 'We couldn\'t email your receipt &mdash; please save your order number above.';
+  }
+};
+
+window.hsCopyOrderNo = function (btn) {
+  var v = btn.querySelector('.ocf-num-val');
+  var c = btn.querySelector('.ocf-num-copy');
+  if (!v) return;
+  var txt = v.innerText.replace('#', '');
+  var done = function () { if (c) { c.innerText = 'Copied'; btn.classList.add('copied'); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(done, done);
+  } else { done(); }
+};
+
+window.hsCloseOrderConfirm = function () {
+  var el = document.getElementById('order-confirm');
+  if (el) el.remove();
+  document.body.style.overflow = '';
+};
