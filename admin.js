@@ -206,6 +206,7 @@ function renderKanban() {
     container.innerHTML = orders.map(o => kanbanCardHTML(o)).join('') || '<div style="color:#444;font-size:.75rem;text-align:center;padding:20px;">— empty —</div>';
   });
   wireKanbanDrag();
+  if (typeof window.syncOrderAlarm === 'function') window.syncOrderAlarm();
 }
 function kanbanCardHTML(o) {
   const arr = parseItems(o);
@@ -227,6 +228,7 @@ function kanbanCardHTML(o) {
     <div class="kc-items">${itemsHtml}</div>
     ${pickupBadge}
     <div class="kc-meta"><span>${fmtNZTime(o.created_at)} ${slaBadge}</span><span class="kc-total">${fmt(o.total)}</span></div>
+    ${statusKey(o.status)==='received' ? `<button class="kc-accept" onclick="event.stopPropagation();acceptOrder('${o.id}')">Accept order</button>` : ''}
   </div>`;
 }
 function renderList() {
@@ -665,8 +667,8 @@ function notify(o) {
   }
 }
 function startRealtime() {
-  sb.channel('orders-rt').on('postgres_changes', {event:'INSERT', schema:'public', table:'orders'}, (p) => {
-    notify(p.new); loadOrders();
+  sb.channel('orders-rt').on('postgres_changes', {event:'INSERT', schema:'public', table:'orders'}, () => {
+    loadOrders(); // the persistent alarm takes over from here (see syncOrderAlarm)
   }).on('postgres_changes', {event:'UPDATE', schema:'public', table:'orders'}, () => loadOrders()).subscribe();
 }
 
@@ -790,3 +792,118 @@ async function loadFunnel() {
     '<div class="stat"><div class="stat-num">' + checkouts + '</div><div class="stat-lbl">Began checkout \u00b7 ' + pct(checkouts,carts) + '</div></div>' +
     '<div class="stat"><div class="stat-num">' + buys + '</div><div class="stat-lbl">Purchased \u00b7 ' + pct(buys,visitors) + ' of visitors</div></div>';
 }
+
+
+/* ============================================================
+   PERSISTENT NEW-ORDER ALARM
+
+   Previously a new order fired one 200ms beep and one auto-dismissing
+   notification, both only from the realtime INSERT handler. Miss that moment
+   and the order sat unnoticed; if realtime dropped, the 30s poll picked it up
+   in total silence.
+
+   This alarm is driven by STATE, not by an event: it keeps sounding while any
+   order is still sitting in 'received'. So it works whether the order arrived
+   via realtime or the poll, it survives a refresh, and it only stops when a
+   human actually accepts the order.
+   ============================================================ */
+let _alarmTimer = null, _alarmAudioCtx = null, _titleFlip = false;
+const _origTitle = document.title;
+
+function unackOrders() {
+  return (allOrders || []).filter(o => statusKey(o.status) === 'received');
+}
+
+// Browsers block audio until a user gesture, so one shared context is created
+// and resumed on the first interaction. Without this the beep is silently
+// dropped and staff think the alarm is broken.
+function _audioCtx() {
+  if (!_alarmAudioCtx) {
+    try { _alarmAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  if (_alarmAudioCtx.state === 'suspended') _alarmAudioCtx.resume().catch(function(){});
+  return _alarmAudioCtx;
+}
+['click','keydown','touchstart'].forEach(function (ev) {
+  document.addEventListener(ev, function () { _audioCtx(); }, { once: true, passive: true });
+});
+
+// Three rising tones — deliberately harder to ignore than a single blip.
+function alarmChime() {
+  if (!soundOn) return;
+  const ac = _audioCtx();
+  if (!ac || ac.state !== 'running') return;
+  [0, 0.22, 0.44].forEach(function (t, i) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.frequency.value = [880, 1100, 1320][i];
+    g.gain.setValueAtTime(0.0001, ac.currentTime + t);
+    g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + t + 0.18);
+    o.start(ac.currentTime + t); o.stop(ac.currentTime + t + 0.2);
+  });
+}
+
+function alarmBanner(list) {
+  let el = document.getElementById('order-alarm');
+  document.body.classList.toggle('has-alarm', list.length > 0);
+  if (!list.length) { if (el) el.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'order-alarm';
+    document.body.appendChild(el);
+  }
+  const oldest = list.slice().sort(function (a, b) { return new Date(a.created_at) - new Date(b.created_at); })[0];
+  const waited = Math.floor((Date.now() - new Date(oldest.created_at).getTime()) / 60000);
+  el.innerHTML =
+    '<span class="oa-dot"></span>' +
+    '<span class="oa-txt"><b>' + list.length + ' new order' + (list.length > 1 ? 's' : '') + '</b> waiting' +
+      (waited > 0 ? ' &middot; oldest ' + waited + ' min' : '') + '</span>' +
+    '<button class="oa-btn" onclick="acceptOrder(\'' + oldest.id + '\')">Accept #' + sid(oldest.id) + '</button>';
+}
+
+// Accepting is the acknowledgement: it moves the order out of 'received', which
+// is what silences the alarm. It also advances the customer's tracker, which
+// previously never moved past step 1 because nobody used the middle columns.
+window.acceptOrder = async function (oid) {
+  await updateOrderStatus(oid, 'preparing');
+};
+
+function alarmTick() {
+  const list = unackOrders();
+  alarmBanner(list);
+  if (!list.length) {
+    document.title = _origTitle;
+    if (_alarmTimer) { clearInterval(_alarmTimer); _alarmTimer = null; }
+    return;
+  }
+  alarmChime();
+  // Title flashing is the one cue that still reaches staff when the dashboard
+  // is in a background tab.
+  _titleFlip = !_titleFlip;
+  document.title = _titleFlip ? ('(' + list.length + ') NEW ORDER') : _origTitle;
+  if (window.Notification && Notification.permission === 'granted') {
+    list.slice(0, 3).forEach(function (o) {
+      try {
+        new Notification('New order #' + sid(o.id), {
+          body: (o.customer_name || '') + ' • ' + fmt(o.total) + '\nTap Accept in the dashboard',
+          tag: 'order-' + o.id,       // replaces rather than stacks duplicates
+          requireInteraction: true    // stays put instead of vanishing after a few seconds
+        });
+      } catch (e) {}
+    });
+  }
+}
+
+// Called after every load/render, so poll and realtime both keep it honest.
+window.syncOrderAlarm = function () {
+  const list = unackOrders();
+  if (list.length && !_alarmTimer) {
+    alarmTick();
+    _alarmTimer = setInterval(alarmTick, 8000);
+  } else if (!list.length) {
+    alarmTick();
+  } else {
+    alarmBanner(list);
+  }
+};
