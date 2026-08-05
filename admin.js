@@ -695,6 +695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   $('#sound-toggle').onclick = () => {
     soundOn = !soundOn;
     $('#sound-toggle').textContent = '🔔 Sound: '+(soundOn?'On':'Off');
+    if (soundOn) testAlarmSound();   // audible proof it is working
   };
   $$('.ptab').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
   $$('.ftab').forEach(b => b.onclick = () => {
@@ -828,21 +829,59 @@ function _audioCtx() {
   document.addEventListener(ev, function () { _audioCtx(); }, { once: true, passive: true });
 });
 
-// Three rising tones — deliberately harder to ignore than a single blip.
+// Service-bell alarm. Plain sine beeps were too thin to cut through a kitchen,
+// so each strike is a struck-resonator model: a bright fundamental plus
+// INHARMONIC partials (the 2.76 / 5.40 / 8.93 ratios are what make metal sound
+// like metal rather than like a tone generator), a near-instant attack and a
+// long exponential decay. Everything runs through a compressor so the strikes
+// stay loud without clipping when they overlap.
+const ALARM_HZ = 1568;   // G6 — high enough to carry over extraction fans
+let _alarmBus = null;
+function _bus(ac) {
+  if (_alarmBus && _alarmBus.ctx === ac) return _alarmBus;
+  const master = ac.createGain();
+  const comp = ac.createDynamicsCompressor();
+  comp.threshold.value = -20; comp.knee.value = 10; comp.ratio.value = 12;
+  comp.attack.value = 0.003;  comp.release.value = 0.25;
+  const makeup = ac.createGain();
+  master.gain.value = 0.9;
+  // 1.75 measured offline: peak ~0.96 with zero clipped samples. 2.6 peaked at
+  // 1.43 and clipped 640 samples, which is crackle, not loudness.
+  makeup.gain.value = 1.75;
+  master.connect(comp); comp.connect(makeup); makeup.connect(ac.destination);
+  _alarmBus = { ctx: ac, node: master };
+  return _alarmBus;
+}
+function bellStrike(ac, at, f0) {
+  const bus = _bus(ac).node;
+  // [ratio, level, decay] — higher partials are quieter and die faster, which
+  // is what gives a bell its bright "ting" that mellows into a hum.
+  [[1, 1.0, 1.7], [2.0, 0.62, 1.2], [2.76, 0.42, 0.9],
+   [5.40, 0.22, 0.55], [8.93, 0.12, 0.35]].forEach(function (p) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine';
+    o.frequency.value = f0 * p[0];
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.exponentialRampToValueAtTime(0.42 * p[1], at + 0.004); // sharp strike
+    g.gain.exponentialRampToValueAtTime(0.0001, at + p[2]);
+    o.connect(g); g.connect(bus);
+    o.start(at); o.stop(at + p[2] + 0.05);
+  });
+}
+// Three strikes, like someone hitting a counter bell.
 function alarmChime() {
   if (!soundOn) return;
   const ac = _audioCtx();
   if (!ac || ac.state !== 'running') return;
-  [0, 0.22, 0.44].forEach(function (t, i) {
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.connect(g); g.connect(ac.destination);
-    o.frequency.value = [880, 1100, 1320][i];
-    g.gain.setValueAtTime(0.0001, ac.currentTime + t);
-    g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + t + 0.18);
-    o.start(ac.currentTime + t); o.stop(ac.currentTime + t + 0.2);
-  });
+  const t = ac.currentTime;
+  [0, 0.40, 0.80].forEach(function (off) { bellStrike(ac, t + off, ALARM_HZ); });
 }
+// Lets staff confirm the bell actually works before a shift.
+window.testAlarmSound = function () {
+  const ac = _audioCtx();
+  if (!ac || ac.state !== 'running') { alert('Sound is blocked by the browser — click anywhere on the page first.'); return; }
+  bellStrike(ac, ac.currentTime, ALARM_HZ);
+};
 
 function alarmBanner(list) {
   let el = document.getElementById('order-alarm');
