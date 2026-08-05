@@ -15,6 +15,19 @@ const fmt = n => '$'+Number(n||0).toFixed(2);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sid = id => String(id).slice(0,8);
 const fmtNZTime = d => new Intl.DateTimeFormat('en-NZ',{timeZone:'Pacific/Auckland',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d)); // store TZ, not admin device
+// created_at was rendered with bare toLocale*(), which uses the ADMIN DEVICE's
+// timezone — an IST laptop showed every NZ order in Indian time. All order
+// timestamps are pinned to store time below.
+const NZ = 'Pacific/Auckland';
+const fmtNZDateTime = d => new Intl.DateTimeFormat('en-NZ',{timeZone:NZ,day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true}).format(new Date(d));
+const fmtNZDate     = d => new Intl.DateTimeFormat('en-NZ',{timeZone:NZ,day:'2-digit',month:'short',year:'numeric'}).format(new Date(d));
+// YYYY-MM-DD in NZ. Comparing date keys avoids UTC-offset maths and stays
+// correct across NZDT/NZST transitions.
+const nzDateKey     = d => new Intl.DateTimeFormat('en-CA',{timeZone:NZ,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d));
+// daily_sales already groups by NZ day, so `day` is a naive timestamp. Parse its
+// date parts from the string — running it through a timeZone would shift the day.
+const nzDayLabel = v => { const [y,m,dd] = String(v).slice(0,10).split('-').map(Number);
+  return new Intl.DateTimeFormat('en-NZ',{timeZone:'UTC',month:'short',day:'numeric'}).format(new Date(Date.UTC(y,m-1,dd))); };
 // items may arrive as an array (jsonb) or a JSON string; normalize so detail view never silently blanks
 function parseItems(o){ let it=o&&o.items; if(typeof it==='string'){ try{ it=JSON.parse(it); }catch(_){ it=[]; } } return Array.isArray(it)?it:[]; }
 
@@ -213,7 +226,7 @@ function kanbanCardHTML(o) {
     <div class="kc-name">${esc(o.customer_name||'Anonymous')}</div>
     <div class="kc-items">${itemsHtml}</div>
     ${pickupBadge}
-    <div class="kc-meta"><span>${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} ${slaBadge}</span><span class="kc-total">${fmt(o.total)}</span></div>
+    <div class="kc-meta"><span>${fmtNZTime(o.created_at)} ${slaBadge}</span><span class="kc-total">${fmt(o.total)}</span></div>
   </div>`;
 }
 function renderList() {
@@ -245,8 +258,8 @@ async function updateOrderStatus(oid, newStatus) {
   await loadOrders();
 }
 function renderStats() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const todays = allOrders.filter(o => new Date(o.created_at)>=today && o.status!=='cancelled');
+  const todayKey = nzDateKey(Date.now());
+  const todays = allOrders.filter(o => nzDateKey(o.created_at)===todayKey && o.status!=='cancelled');
   const revenue = todays.reduce((s,o) => s+Number(o.total||0), 0);
   const active = allOrders.filter(o => !['delivered','cancelled'].includes(o.status)).length;
   $('#stat-today').textContent = todays.length;
@@ -268,7 +281,7 @@ window.openOrderModal = async function(oid) {
   ).join('');
   $('#order-modal-body').innerHTML = `
     <h2>${esc(o.customer_name||'Anonymous')} <small>#${sid(oid)}</small></h2>
-    <div style="color:#888; font-size:0.85rem;">${t.toLocaleString()}</div>
+    <div style="color:#888; font-size:0.85rem;">${fmtNZDateTime(o.created_at)}</div>
     <div class="om-section"><strong>Contact</strong>
       Phone: ${esc(o.customer_phone||'—')}<br>
       Email: ${esc(o.customer_email||'—')}
@@ -327,7 +340,7 @@ window.printTicket = function(oid){
   pa.innerHTML = `<div class="tk">
     <h2>THE HUNGRY SLICE</h2>
     <div class="tk-sub">Kitchen Ticket</div>
-    <div class="tk-row"><b>#${sid(oid)}</b><span>${new Date(o.created_at).toLocaleString()}</span></div>
+    <div class="tk-row"><b>#${sid(oid)}</b><span>${fmtNZDateTime(o.created_at)}</span></div>
     <div class="tk-row"><span>${esc(o.customer_name||'Anonymous')}</span><span>${esc(o.customer_phone||'')}</span></div>
     <div class="tk-method">${when}</div>
     <table class="tk-items">${arr.map(i=>`<tr><td>${i.qty}&times;</td><td>${esc(i.name)}${i.details?'<br><small>'+esc(i.details)+'</small>':''}</td></tr>`).join('')||'<tr><td>-</td><td>No items</td></tr>'}</table>
@@ -449,7 +462,7 @@ function renderCustomers() {
     <div class="cust-row">
       <div>
         <div class="cust-name">${esc(c.name||'Anonymous')}</div>
-        <div class="cust-meta">${esc(c.phone||'—')} • ${esc(c.email||'—')} • last ${new Date(c.last).toLocaleDateString()}</div>
+        <div class="cust-meta">${esc(c.phone||'—')} • ${esc(c.email||'—')} • last ${fmtNZDate(c.last)}</div>
       </div>
       <div class="cust-stats">
         <div class="cust-stat"><div class="cust-stat-num">${c.orders}</div><div class="cust-stat-lbl">Orders</div></div>
@@ -474,7 +487,7 @@ async function loadAnalytics() {
   renderSuburb(suburb||[]);
 }
 function renderRevenueChart(data) {
-  const labels = data.slice().reverse().map(d => new Date(d.day).toLocaleDateString([],{month:'short',day:'numeric'}));
+  const labels = data.slice().reverse().map(d => nzDayLabel(d.day));
   const values = data.slice().reverse().map(d => Number(d.revenue));
   charts.revenue?.destroy();
   charts.revenue = new Chart($('#chart-revenue'), {
@@ -524,7 +537,7 @@ function renderReviews(reviews) {
       <div class="rev-body">
         <strong>${esc(r.customer_name||'Anonymous')}</strong>
         <p>${esc(r.comment||'')}</p>
-        <small style="color:#666;">${new Date(r.created_at).toLocaleString()}</small>
+        <small style="color:#666;">${fmtNZDateTime(r.created_at)}</small>
       </div>
       <div class="rev-actions">
         <button class="ghost-btn" onclick="toggleReviewHidden('${r.id}', ${r.hidden})">${r.hidden?'Show':'Hide'}</button>
@@ -589,7 +602,7 @@ async function loadActivity() {
         <div class="act-user">${esc(a.user_email||'system')}</div>
         <div class="act-action">${esc(a.action)} ${a.target_type?'• '+a.target_type:''} ${a.target_id?'#'+sid(a.target_id):''}</div>
       </div>
-      <div class="act-time">${new Date(a.created_at).toLocaleString()}</div>
+      <div class="act-time">${fmtNZDateTime(a.created_at)}</div>
     </div>`).join('') : '<div class="empty-state">No activity yet</div>';
 }
 
