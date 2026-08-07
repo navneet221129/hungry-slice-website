@@ -2,6 +2,51 @@
   functions = "netlify/functions"
   publish = "."
 
+# ==========================================================================
+# MAINTENANCE MODE  —  TEMPORARY, added 2026-08-05
+#
+# Sends every public page to maintenance.html with HTTP 503 (Service
+# Unavailable). 503 is deliberate: it tells Google the outage is temporary and
+# to come back, whereas a 404/200 risks the pages being dropped from search.
+#
+# The admin console is deliberately excluded so the dashboard still works while
+# the storefront is down. Rules are evaluated top-down, first match wins, so the
+# exclusions must stay ABOVE the catch-all.
+#
+# TO BRING THE SITE BACK: delete this whole block and redeploy.
+# ==========================================================================
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin.js"
+  to = "/admin.js"
+  status = 200
+
+[[redirects]]
+  from = "/admin.css"
+  to = "/admin.css"
+  status = 200
+
+[[redirects]]
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/maintenance.html"
+  to = "/maintenance.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/maintenance.html"
+  status = 503
+  force = true
+# ===================== END MAINTENANCE MODE =====================
+
 [[headers]]
   for = "/assets/*"
   [headers.values]
